@@ -11,19 +11,23 @@ module.exports = {
                 data.password,
                 data.user_role
             ],
-            (error,result,fields)=>{
-                if(error){
+            (error, result, fields) => {
+                if (error) {
                     return callback(error)
                 }
-                // console.log(data)
-                return callback(null,result)
+                return callback(null, result)
             }
         )
     },
 
-    getUserByEmail:(email,callback)=>{
-        pool.query(`select * from users where email=?`,[email],()=>{
-            
+    getUserByEmail: (email, callback) => {
+        pool.query(`select * from users where email=?`, [email], 
+        (error,result,fields) => {
+            if (error) {
+                return callback(error)
+            }
+            // console.log(result)
+            return callback(null, result)
         })
     }
 }
