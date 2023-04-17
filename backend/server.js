@@ -2,8 +2,7 @@ const express=require('express')
 require("dotenv").config();
 const app=express()
 const userRouter=require('./api/users/user.router')
-
-
+const cors = require('cors');
 
 // app.get('/',(req,res)=>{
 //     res.json({
@@ -11,7 +10,7 @@ const userRouter=require('./api/users/user.router')
 //         message:'Rest API working now...........'
 //     })
 // })
-
+app.use(cors());
 app.use(express.json());
 
 app.use('/user',userRouter)

@@ -1,11 +1,15 @@
 <template>
   <v-app>
-    <v-main>
-      <router-view />
-    </v-main>
+    <the-header></the-header>
+    <router-view />
   </v-app>
 </template>
 
-<script lang="ts" setup>
-  //
+<script>
+  import TheHeader from './layouts/TheHeader.vue'
+  export default{
+    components:{
+      TheHeader
+    }
+  }
 </script>

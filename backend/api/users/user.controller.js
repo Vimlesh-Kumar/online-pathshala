@@ -23,25 +23,28 @@ const signup = async (req, res) => {
 
 const signin = async (req, res) => {
     const body = req.body;
-    const user = await userModel.getUserByEmail(body.email, (err, user) => {
+    const user = await userModel.getUserByEmail(body.email, async (err, user) => {
         if (err) {
             console.log(err)
         }
-        console.log(user)
-        const a=user.length
-        if (a===0) {
+        if (!user) {
             console.log(user)
-            return res.json({
+            return res.status(404).json({
                 data: "User not found........"
             })
         }
-        const passwordCheck = bcrypt.compare(body.password, user.password);
-        // console.log((passwordCheck))
+        const passwordCheck = await bcrypt.compare(body.password, user.password);
+        console.log((passwordCheck))
         if (passwordCheck) {
             const jsontoken = jwt.sign({ user: user }, SECRET_KEY);
             return res.json({
                 user: user,
                 token: jsontoken
+            })
+        }
+        else{
+            return res.status(403).json({
+                Message:'Wrong Password'
             })
         }
     })

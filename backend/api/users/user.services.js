@@ -21,13 +21,13 @@ module.exports = {
     },
 
     getUserByEmail: (email, callback) => {
-        pool.query(`select * from users where email=?`, [email], 
-        (error,result,fields) => {
-            if (error) {
-                return callback(error)
-            }
-            // console.log(result)
-            return callback(null, result)
-        })
+        pool.query(`select * from users where email=?`, [email],
+            (error, result, fields) => {
+                if (error) {
+                    return callback(error)
+                }
+                console.log(result[0].full_name)
+                return callback(null, result[0])
+            })
     }
 }
