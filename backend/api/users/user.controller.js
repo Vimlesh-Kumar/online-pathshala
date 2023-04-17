@@ -34,11 +34,12 @@ const signin = async (req, res) => {
             })
         }
         const passwordCheck = await bcrypt.compare(body.password, user.password);
-        console.log((passwordCheck))
+        // console.log((passwordCheck))
         if (passwordCheck) {
+            user.password=null;
             const jsontoken = jwt.sign({ user: user }, SECRET_KEY);
             return res.json({
-                user: user,
+                // user: user,
                 token: jsontoken
             })
         }
