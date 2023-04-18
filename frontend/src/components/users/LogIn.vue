@@ -1,5 +1,5 @@
 <template>
-    <v-sheet class=" pa-12 mt-10" rounded>
+    <v-sheet class=" pa-12 mt-15" rounded>
         <v-card class="mx-auto px-6 py-8" max-width="344">
             <v-form v-model="form" @submit.prevent="onSubmit">
                 <v-text-field v-model="email" :readonly="loading" :rules="[required]" class="mb-2" clearable
@@ -8,9 +8,7 @@
                 <v-text-field v-model="password" :readonly="loading" :rules="[required]" clearable label="Password"
                     placeholder="Enter your password"></v-text-field>
 
-                <br>
-
-                <v-btn :disabled="!form" :loading="loading" block color="success" size="large" type="submit"
+                <v-btn :disabled="!form" :loading="loading" class="mb-3" block color="success" size="large" type="submit"
                     variant="elevated">
                     Sign In
                 </v-btn>
@@ -32,27 +30,19 @@ export default {
     }),
 
     methods: {
-        onSubmit() {
+        async onSubmit() {
             if (!this.form) return
-
             this.loading = true
-
             setTimeout(() => (this.loading = false), 2000)
 
-            const loginUser={
-                email:this.email,
-                password:this.password
+            const loginUser = {
+                email: this.email,
+                password: this.password
             }
-            console.log(loginUser)
-            axios.post('http://localhost:8000/user/signin',loginUser).then(
-                res=>{
-                    console.log(res);
-                }
-            ).catch(
-                err=>{
-                    console.log(err)
-                }
-            )
+            const response=await axios.post('user/signin', loginUser)
+            console.log(response)
+            localStorage.setItem('token',response.data.token);
+            this.$router.push('/user/home')
         },
         required(v) {
             return !!v || 'Field is required'

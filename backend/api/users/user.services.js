@@ -20,14 +20,23 @@ module.exports = {
         )
     },
 
+
+    // Finding user by email from databse
     getUserByEmail: (email, callback) => {
         pool.query(`select * from users where email=?`, [email],
             (error, result, fields) => {
                 if (error) {
                     return callback(error)
                 }
-                console.log(result[0].full_name)
+                // console.log(result[0])
                 return callback(null, result[0])
             })
+    },
+
+    // // find user
+    getUseById:()=>{
+        console.log("Heloooo.")
     }
+
+    
 }

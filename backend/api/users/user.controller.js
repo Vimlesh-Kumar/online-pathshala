@@ -1,13 +1,18 @@
-const userModel = require('./user.services')
-const bcrypt = require('bcrypt')
-const compareSync = require('bcrypt')
-const jwt = require('jsonwebtoken')
-const SECRET_KEY = "MYKEYFORJWT"
+const userModel = require('./user.services');
+const bcrypt = require('bcrypt');
+const compareSync = require('bcrypt');
+const jwt = require('jsonwebtoken');
+require("dotenv").config();
+const SECRET_KEY = "MYSECRETKEYFORJWT"
 
+// User Registration
 const signup = async (req, res) => {
     const body = req.body;
+
+    // Hash Password
     body.password = await bcrypt.hash(body.password, 10)
-    // Sending data to user service
+
+    // Sending data to user service for inserting into Users table
     userModel.create(body, (err, results) => {
         if (err) {
             console.log(err);
@@ -21,6 +26,7 @@ const signup = async (req, res) => {
     })
 }
 
+// User Sign-in
 const signin = async (req, res) => {
     const body = req.body;
     const user = await userModel.getUserByEmail(body.email, async (err, user) => {
@@ -28,28 +34,35 @@ const signin = async (req, res) => {
             console.log(err)
         }
         if (!user) {
-            console.log(user)
+            // console.log(user)
             return res.status(404).json({
                 data: "User not found........"
             })
         }
         const passwordCheck = await bcrypt.compare(body.password, user.password);
-        // console.log((passwordCheck))
         if (passwordCheck) {
-            user.password=null;
-            const jsontoken = jwt.sign({ user: user }, SECRET_KEY);
+            user.password = null;
+            const jsontoken = jwt.sign({ user: user }, SECRET_KEY, { expiresIn: "1h" });
             return res.json({
                 // user: user,
+                message: "Login successfully and token generated.",
                 token: jsontoken
             })
         }
-        else{
+        else {
             return res.status(403).json({
-                Message:'Wrong Password'
+                Message: 'Wrong Password'
             })
         }
     })
 
 }
 
-module.exports = { signin, signup }
+const getDetails = async (req, res) => {
+    userModel.getUseById();
+    res.json({
+        message: "Request received"
+    })
+}
+
+module.exports = { signin, signup, getDetails }

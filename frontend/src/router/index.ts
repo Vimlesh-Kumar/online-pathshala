@@ -1,13 +1,11 @@
 // Composables
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router';
+import HomePage from '../views/HomePage.vue'
 
 const routes = [
-  {
-    path: '/',
-    component: () => import('@/views/HomePage.vue'),
-  },
-  {path:'/user/sign-up',component:()=> import('@/components/users/SignUp.vue')},
-  {path:'/user/sign-in',component:()=>import('@/components/users/LogIn.vue')}
+  { path: '/user/home', component: HomePage },
+  { path: '/user/sign-up', component: () => import('@/components/users/SignUp.vue') },
+  { path: '/user/sign-in', component: () => import('@/components/users/LogIn.vue') }
 ]
 
 const router = createRouter({

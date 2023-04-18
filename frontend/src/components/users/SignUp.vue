@@ -1,11 +1,11 @@
 <template>
-    <v-container class="mt-7" >
+    <v-container class="mt-7">
         <v-row allign="center" justify="center">
             <v-col cols="12">
                 <v-card class="elevation-6 mx-auto mt-10" max-width="450">
                     <v-card-text class="mt-1">
                         <h2 class="text-center">Sign up and start learning</h2>
-                        
+
                         <form class="mt-5" @submit.prevent="userRegister">
                             <v-text-field v-model="state.name" :error-messages="v$.name.$errors.map(e => e.$message)"
                                 :counter="50" label="Name" required @input="v$.name.$touch"
@@ -89,25 +89,19 @@ export default {
 
         return { state, clear, v$ }
     },
-    
-    methods:{
-        userRegister(){
-            const user={
-                full_name:this.state.name,
-                email:this.state.email,
-                password:this.state.password,
-                user_role:this.state.select
+
+    methods: {
+        async userRegister() {
+            const user = {
+                full_name: this.state.name,
+                email: this.state.email,
+                password: this.state.password,
+                user_role: this.state.select
             }
             // console.log(user)
-            axios.post('http://localhost:8000/user/signup',user).then(
-                res=>{
-                    console.log(res)
-                }
-            ).catch(
-                err=>{
-                    console.log(err)
-                }
-            )
+            const response=await axios.post('user/signup', user)
+            console.log(response);
+            this.$router.push('/user/sign-in');
         }
     }
 }

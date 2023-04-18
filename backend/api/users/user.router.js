@@ -1,9 +1,9 @@
-const express=require('express')
-const { signup, signin } = require('./user.controller');
-const router=require('express').Router();
-// const bodyParser = require('body-parser')
+const { signup, signin ,getDetails} = require('./user.controller');
+const router = require('express').Router();
+const auth= require ('../../auth/token_validation')
 
-router.post('/signup',signup)
-router.post('/signin',signin)
+router.post('/signup', signup)
+router.post('/signin', signin)
+router.get('/details',auth.checkToken,getDetails)
 
-module.exports=router
+module.exports = router
