@@ -39,9 +39,14 @@ export default {
                 email: this.email,
                 password: this.password
             }
+            // Request send to the Backend
             const response=await axios.post('user/signin', loginUser)
-            console.log(response)
+            // console.log(response)
+
+            // Saving token in local storage
             localStorage.setItem('token',response.data.token);
+
+            // redirescting to the homepage
             this.$router.push('/user/home')
         },
         required(v) {

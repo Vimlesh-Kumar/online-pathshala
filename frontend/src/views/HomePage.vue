@@ -1,49 +1,9 @@
 <template>
-    <v-sheet class=" pa-12 mt-15" rounded>
-        <v-card class="mx-auto px-6 py-8" max-width="344">
-            <v-card-text>Hello{{ username }}</v-card-text>
-        </v-card>
+    <v-sheet class="ma-15">
+        <div>
+            <h1>This is homepage</h1>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo consequatur animi voluptatibus eligendi alias delectus voluptatem nobis, recusandae asperiores illo tempore at officiis in vero sit corporis, amet harum voluptatum!
+        </div>
+
     </v-sheet>
 </template>
-
-<script>
-// import axios from 'axios'
-
-// export default {
-//     // async created() {
-//     //     const respone=await axios.get()
-//     // },
-//     mounted() {
-//         this.details();
-//     },
-//     methods: {
-//         async details() {
-//             await axios.get("user/details")
-//         }
-//     },
-// }
-
-// import jwt from 'jsonwebtoken';
-
-// export default {
-//     data() {
-//         return {
-//             username: '',
-//             user:''
-//         };
-//     },
-//     created() {
-//         const token = localStorage.getItem('token'); // assuming the token is stored in local storage
-//         const secret = 'mysecretkey'; // replace with your own secret key
-
-//         try {
-//             const decoded = jwt.verify(token, secret);
-//             this.username = decoded.username;
-//             this.user=decoded
-//         } catch (err) {
-//             console.log('Error decoding token:', err);
-//         }
-//     },
-// };
-
-</script>

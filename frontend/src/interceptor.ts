@@ -5,7 +5,7 @@ const httpInterceptor = () => {
     axios.interceptors.request.use(
         (config) => {
             const token = localStorage.getItem("token");
-            config.headers["Authorization"] = `Bearer ${token}`;
+            config.headers.Authorization= `Bearer ${token}`;
             // Return the modified config object
             return config;
         },

@@ -11,7 +11,7 @@ module.exports = {
                 data.password,
                 data.user_role
             ],
-            (error, result, fields) => {
+            (error, result) => {
                 if (error) {
                     return callback(error)
                 }
@@ -24,7 +24,7 @@ module.exports = {
     // Finding user by email from databse
     getUserByEmail: (email, callback) => {
         pool.query(`select * from users where email=?`, [email],
-            (error, result, fields) => {
+            (error, result) => {
                 if (error) {
                     return callback(error)
                 }
@@ -34,9 +34,16 @@ module.exports = {
     },
 
     // // find user
-    getUseById:()=>{
-        console.log("Heloooo.")
+    getUserById: (id, callback) => {
+        pool.query(`select * from users where id=?`, [id], 
+        (error, result) => {
+            if(error){
+                return callback(error)
+            }
+            // console.log(result)
+            return callback(null,result[0])
+        })
     }
 
-    
+
 }

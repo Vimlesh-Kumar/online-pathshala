@@ -9,7 +9,8 @@ const auth = {
             verify(token, SECRET_KEY, (err, decoded) => {
                 if (err) {
                     res.status(403).json({
-                        message: "Invalid token."
+                        message: "Invalid token.",
+                        token:"Invalid"
                     })
                 }
                 else {

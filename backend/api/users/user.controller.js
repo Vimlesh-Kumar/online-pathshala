@@ -59,9 +59,31 @@ const signin = async (req, res) => {
 }
 
 const getDetails = async (req, res) => {
-    userModel.getUseById();
-    res.json({
-        message: "Request received"
+    const token=req.params.token
+    let id=null
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+        // console.log(decoded)
+        id=decoded.user.id
+        console.log(id)
+    })
+    userModel.getUserById(id,(err,user)=>{
+        if(err){
+            console.log(err)
+            return ;
+        }
+        if(!user){
+            return res.json({
+                message: 'User not found by user ID'
+            })
+        }
+        else{
+            user.password=null
+            return res.json({
+                message: "User found by its own ID",
+                user: user
+            })
+        }
+        
     })
 }
 

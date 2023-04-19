@@ -4,6 +4,6 @@ const auth= require ('../../auth/token_validation')
 
 router.post('/signup', signup)
 router.post('/signin', signin)
-router.get('/details',auth.checkToken,getDetails)
+router.get('/details/:token',auth.checkToken,getDetails)
 
 module.exports = router
