@@ -23,32 +23,19 @@
 </template>
 
 <script>
-import jwtDecode from 'jwt-decode';
+import { mapGetters } from 'vuex'
+
 export default {
-    data() {
-        return {
-            user: ''
-        }
-    },
-    mounted() {
-        // const token = localStorage.getItem("token")
-        this.userDetails();
-    },
+      
     methods: {
-        userDetails() {
-            // const token = localStorage.getItem("token")
-            // console.log(token)
-            // const decoded=jwtDecode(token);
-            // this.user=decoded.user
-            // console.log(this.user)
-            this.user = this.$store.state.user
-            console.log(this.user)
-            console.log("sdhfg")
-        },
         handleLogoutClick(){
             localStorage.removeItem('token')
+            this.$store.dispatch('user',null)
             this.$router.push('/')
         }
+    },
+    computed:{
+        ...mapGetters(['user'])
     }
 }
 </script>

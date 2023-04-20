@@ -44,7 +44,7 @@ const signin = async (req, res) => {
             user.password = null;
             const jsontoken = jwt.sign({ user: user }, SECRET_KEY, { expiresIn: "1h" });
             return res.json({
-                // user: user,
+                user: user,
                 message: "Login successfully and token generated.",
                 token: jsontoken
             })

@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "db-up-dev": "db-migrate up --config ./database/config/dev.json -e dev",
+    "db-down-dev": "db-migrate down --config ./database/config/dev.json -e dev"
   },
   "keywords": [],
   "author": "",
@@ -13,12 +15,14 @@
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
+    "db-migrate-mysql": "^2.2.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "mysql": "^2.18.1"
   },
   "devDependencies": {
+    "db-migrate": "^0.11.13",
     "nodemon": "^2.0.22"
   }
 }

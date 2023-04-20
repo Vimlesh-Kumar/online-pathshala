@@ -4,9 +4,10 @@
             <v-col cols="12">
                 <v-card class="elevation-6 mx-auto mt-10" max-width="450">
                     <v-card-text class="mt-1">
-                        <h2 class="text-center">Sign up and start learning</h2>
+                        <h2>Sign up and start learning</h2>
 
                         <form class="mt-5" @submit.prevent="userRegister">
+                            <error :error="error"></error>
                             <v-text-field v-model="state.name" :error-messages="v$.name.$errors.map(e => e.$message)"
                                 :counter="50" label="Name" required @input="v$.name.$touch"
                                 @blur="v$.name.$touch"></v-text-field>
@@ -52,9 +53,18 @@
 import { reactive, } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { email, required } from '@vuelidate/validators';
-import axios from 'axios'
+import axios from 'axios';
+import Error from './../error/error.vue'
 
 export default {
+    components: {
+        Error
+    },
+    data() {
+        return {
+            error: ''
+        }
+    },
     setup() {
         const initialState = {
             name: '',
@@ -92,16 +102,20 @@ export default {
 
     methods: {
         async userRegister() {
-            const user = {
-                full_name: this.state.name,
-                email: this.state.email,
-                password: this.state.password,
-                user_role: this.state.select
+            try {
+                const user = {
+                    full_name: this.state.name,
+                    email: this.state.email,
+                    password: this.state.password,
+                    user_role: this.state.select
+                }
+                // console.log(user)
+                const response = await axios.post('user/signup', user)
+                console.log(response);
+                this.$router.push('/user/sign-in');
+            } catch (e) {
+                this.error = 'Sorry, This email already exists, Please try a different email address to register or login to your account.'
             }
-            // console.log(user)
-            const response=await axios.post('user/signup', user)
-            console.log(response);
-            this.$router.push('/user/sign-in');
         }
     }
 }

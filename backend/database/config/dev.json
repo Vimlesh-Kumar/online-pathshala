@@ -1,0 +1,11 @@
+{
+    "dev": {
+        "host": "localhost",
+        "user": "root",
+        "password": "argusadmin",
+        "database": "online_pathshala",
+        "driver": "mysql",
+        "multipleStatements": true
+    },
+    "sql-files": true
+}
