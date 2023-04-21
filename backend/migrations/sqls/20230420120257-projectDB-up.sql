@@ -8,19 +8,19 @@ create table IF NOT EXISTS users (
     full_name varchar(100),
     email varchar(100) not null unique,
     password varchar(500) not null,
-    user_role enum('student', 'teacher','admin') not null
+    user_role enum('Student','Tutor','admin') not null
 
 );
 
 create table IF NOT EXISTS courses(
     id int primary key AUTO_INCREMENT,
-    title varchar(255),
-    sub_title varchar(255),
     author varchar(100),
     categeory varchar(50),
     price decimal(6,2),
     rating decimal(4,2),
-    url varchar(255)
+    subtitle varchar(500),
+    thumb_url varchar(255),
+    title varchar(255),
 );
 
 
@@ -101,3 +101,34 @@ create table IF NOT EXISTS course_objectives(
     course_id int not null,
     FOREIGN KEY(course_id) REFERENCES courses(id)
 );
+
+INSERT INTO `courses` (`id`, `author`, `category`, `price`, `rating`, `subtitle`, `thumb_url`, `title`)
+VALUES (10010, 'Corey Schafer', 'Development', '17.99', '4.50',
+        'Learn Python like a Professional. Start from the basics and go all the way to creating your own applications and games.',
+        'https://i3.ytimg.com/vi/XKHEtdqhLK8/maxresdefault.jpg', 'Complete Python Bootcamp'),
+       (10011, 'Dani Krossing', 'Development', '18.99', '4.50',
+        'Master fundamentals with JavaScript exercises, projects, live examples & more',
+        'https://i3.ytimg.com/vi/jS4aFq5-91M/maxresdefault.jpg', 'Learn JavaScript Programming'),
+       (10012, 'Caleb Curry', 'Development', '19.99', '3.50', 'Obtain valuable Core Java Skills And Java Certification',
+        'https://i3.ytimg.com/vi/GoXwIVyNvX0/maxresdefault.jpg', 'Java Programming Essentials'),
+       (10013, 'Gareth David Studio', 'PhotoVideo', '21.99', '4.50',
+        'Learn graphic design, logo design, and more with this in-depth, practical, easy-to-follow course!',
+        'https://i3.ytimg.com/vi/9EGI-FSr0Ig/maxresdefault.jpg', 'Beginners Guide To Adobe Illustrator'),
+       (10014, 'chinfat', 'PhotoVideo', '22.50', '3.50',
+        'Learn Beginner-Advanced Video Editing, Audio Editing, Color Grading, Motion Graphics, and more',
+        'https://i3.ytimg.com/vi/u99i1SmDgIc/maxresdefault.jpg', 'Learn Adobe Premiere Pro CC'),
+       (10015, 'Jacob Clifford', 'Finance', '15.99', '4.50',
+        'The Easiest Beginner level Course on Economics with real life examples and graphic content. Perfect for Newbies!',
+        'https://i3.ytimg.com/vi/g9aDizJpd_s/maxresdefault.jpg', 'Crash Course Economics'),
+       (10016, 'MrandMrsMuscle', 'Health', '18.99', '3.50',
+        'This course will help jump-start your body to lose belly fat, lose weight and guide you with a 14 day exercise plan. NO EQUIPMENT needed',
+        'https://i3.ytimg.com/vi/By6GXzcldGY/maxresdefault.jpg', 'Lose Belly Fat in 14 Days'),
+       (10017, 'Robert Kiyosaki', 'Real Estate', '21.99', '4.50',
+        'Learn professional investment techniques for real estate investing in residential and commercial properties',
+        'https://i3.ytimg.com/vi/UJv9-F7SN5A/maxresdefault.jpg', 'Real Estate Investing'),
+       (10018, 'Bill Hilton', 'Music', '15.99', '4.50',
+        'Learn Piano in WEEKS not years. Play-By-Ear & learn to Read Music. Pop, Blues, Jazz, Ballads, Classical',
+        'https://i3.ytimg.com/vi/WJ3-F02-F_Y/maxresdefault.jpg', 'How To Play Piano for Beginners'),
+       (10019, 'TTFS', 'Office', '17.99', '3.50',
+        'Microsoft Excel Beginner to Professional. Includes Pivot Tables, Power Query, NEW Formulas',
+        'https://i3.ytimg.com/vi/Vl0H-qTclOg/maxresdefault.jpg', 'Master Microsoft Excel');

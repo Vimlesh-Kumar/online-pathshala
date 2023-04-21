@@ -16,8 +16,8 @@
                                 label="E-mail" required @input="v$.email.$touch" @blur="v$.email.$touch"></v-text-field>
 
                             <v-text-field v-model="state.password"
-                                :error-messages="v$.password.$errors.map(e => e.$message)" label="Password" required
-                                @input="v$.password.$touch" @blur="v$.password.$touch"></v-text-field>
+                                :error-messages="v$.password.$errors.map(e => e.$message)" type="password" label="Password"
+                                required @input="v$.password.$touch" @blur="v$.password.$touch"></v-text-field>
 
 
                             <v-select v-model="state.select" :items="['Student', 'Tutor']"
@@ -62,7 +62,7 @@ export default {
     },
     data() {
         return {
-            error: ''
+            error: '',
         }
     },
     setup() {
@@ -117,6 +117,6 @@ export default {
                 this.error = 'Sorry, This email already exists, Please try a different email address to register or login to your account.'
             }
         }
-    }
+    },
 }
 </script>
