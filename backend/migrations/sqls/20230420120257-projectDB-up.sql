@@ -1,32 +1,28 @@
 /* Replace with your SQL commands */
-
 -- !!!!!!!   CREATE DATABSE online_pathshala IF NOT EXISTS
 
 create table IF NOT EXISTS users (
     id int primary key AUTO_INCREMENT,
-    created_at datetime not null,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     full_name varchar(100),
     email varchar(100) not null unique,
     password varchar(500) not null,
-    user_role enum('Student','Tutor','admin') not null
-
+    user_role enum('Student', 'Tutor', 'Admin') not null
 );
 
 create table IF NOT EXISTS courses(
     id int primary key AUTO_INCREMENT,
     author varchar(100),
-    categeory varchar(50),
-    price decimal(6,2),
-    rating decimal(4,2),
+    category varchar(50),
+    price decimal(6, 2),
+    rating decimal(4, 2),
     subtitle varchar(500),
     thumb_url varchar(255),
-    title varchar(255),
+    title varchar(255)
 );
 
-
-
 create table IF NOT EXISTS cart(
-    id int  primary key AUTO_INCREMENT,
+    id int primary key AUTO_INCREMENT,
     course_id int not null,
     user_id int not null,
     FOREIGN KEY(course_id) REFERENCES courses(id),
@@ -42,11 +38,11 @@ create table IF NOT EXISTS wishlist(
 );
 
 create table IF NOT EXISTS reviews(
-    id int  primary key AUTO_INCREMENT,
+    id int primary key AUTO_INCREMENT,
     content varchar(100),
     rating int not null,
-    created_at datetime,
-    updated_at datetime,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     course_id int not null,
     user_id int not null,
     FOREIGN KEY(course_id) REFERENCES courses(id),
@@ -54,11 +50,11 @@ create table IF NOT EXISTS reviews(
 );
 
 create table IF NOT EXISTS order_details(
-    id int  primary key AUTO_INCREMENT,
+    id int primary key AUTO_INCREMENT,
     tranaction_id varchar(50) unique,
-    created_at datetime,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     payment_method varchar(50) not null,
-    total_paid decimal(6,2) not null,
+    total_paid decimal(6, 2) not null,
     course_id int not null,
     user_id int not null,
     FOREIGN KEY(course_id) REFERENCES courses(id),
@@ -66,14 +62,14 @@ create table IF NOT EXISTS order_details(
 );
 
 create table IF NOT EXISTS enrollment(
-    id int  primary key AUTO_INCREMENT,
-    created_at datetime,
+    id int primary key AUTO_INCREMENT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_completed boolean,
     course_id int not null,
     user_id int not null,
     FOREIGN KEY(course_id) REFERENCES courses(id),
     FOREIGN KEY(user_id) REFERENCES users(id),
-    progress decimal(6,2)
+    progress decimal(6, 2)
 );
 
 create table IF NOT EXISTS lesson(
@@ -93,8 +89,6 @@ create table IF NOT EXISTS enroll_progress(
     FOREIGN KEY (lesson_id) REFERENCES lesson(id)
 );
 
-
-
 create table IF NOT EXISTS course_objectives(
     id int primary key AUTO_INCREMENT,
     objective varchar(255),
@@ -102,8 +96,10 @@ create table IF NOT EXISTS course_objectives(
     FOREIGN KEY(course_id) REFERENCES courses(id)
 );
 
+INSERT INTO users(full_name,email,password,user_role) VALUES('Admin','admin@test.com','Admin@123','Admin');
+
 INSERT INTO `courses` (`id`, `author`, `category`, `price`, `rating`, `subtitle`, `thumb_url`, `title`)
-VALUES (10010, 'Corey Schafer', 'Development', '17.99', '4.50',
+    VALUES (10010, 'Corey Schafer', 'Development', '17.99', '4.50',
         'Learn Python like a Professional. Start from the basics and go all the way to creating your own applications and games.',
         'https://i3.ytimg.com/vi/XKHEtdqhLK8/maxresdefault.jpg', 'Complete Python Bootcamp'),
        (10011, 'Dani Krossing', 'Development', '18.99', '4.50',
@@ -131,4 +127,6 @@ VALUES (10010, 'Corey Schafer', 'Development', '17.99', '4.50',
         'https://i3.ytimg.com/vi/WJ3-F02-F_Y/maxresdefault.jpg', 'How To Play Piano for Beginners'),
        (10019, 'TTFS', 'Office', '17.99', '3.50',
         'Microsoft Excel Beginner to Professional. Includes Pivot Tables, Power Query, NEW Formulas',
-        'https://i3.ytimg.com/vi/Vl0H-qTclOg/maxresdefault.jpg', 'Master Microsoft Excel');
+        'https://i3.ytimg.com/vi/Vl0H-qTclOg/maxresdefault.jpg', 'Master Microsoft Excel'
+);
+

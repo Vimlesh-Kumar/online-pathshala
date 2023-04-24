@@ -5,9 +5,10 @@ import HomePage from '../views/HomePage.vue'
 
 const routes = [
   { path: '/', component: HomePage },
-  { path: '/user/home', component: UserHomePage },
+  { path: '/user/home', component: UserHomePage},
   { path: '/user/sign-up', component: () => import('@/components/users/SignUp.vue') },
-  { path: '/user/sign-in', component: () => import('@/components/users/LogIn.vue') }
+  { path: '/user/sign-in', component: () => import('@/components/users/LogIn.vue') },
+  {path:'/user/tutor/add-course',component:()=>import('@/components/course/AddCourse.vue')}
 ]
 
 const router = createRouter({

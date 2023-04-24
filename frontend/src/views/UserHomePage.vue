@@ -19,6 +19,7 @@
 <script>
 import axios from 'axios';
 import { mapGetters } from 'vuex';
+import jwt_decode from 'jwt-decode'
 
 export default {
     data() {
@@ -31,11 +32,13 @@ export default {
     },
     async created() {
         const token = localStorage.getItem('token');
-        await axios.get(`/user/details/${token}`)
+        const decoded = jwt_decode(token);
+        const id = decoded.user.id
+        await axios.get(`/user/details/${id}`)
             .then(response => {
                 // this.$store.state.user = response.data.user
                 this.$store.dispatch('user', response.data.user)
-                console.log(response.data.user);
+                // console.log(response.data.user);
             })
             .catch(error => {
                 let tokenError = error.response.data.token
