@@ -45,7 +45,18 @@ export default {
             };
             console.log(courseDetails);
             const response = await axios.post('user/tutor/add-course', courseDetails)
-            console.log(response)
+            console.log(response.data.data.insertId)
+
+            // enrolling
+            const enrollmentDetails={
+                cours_id:response.data.data.insertId,
+                user_id:this.user.id
+            }
+
+            console.log(enrollmentDetails)
+
+            const enrollResponse=await axios.post('user/course/course-enrollment',enrollmentDetails)
+            console.log(enrollResponse)
             
             this.$router.push('/user/home')
 

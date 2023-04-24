@@ -1,6 +1,6 @@
-const router = require('../../api/controller/enrollment.controller')
+const router = require('express').Router()
 const enrollmentController=require('../controller/enrollment.controller')
 
-router.post('/course-enrollment', )
+router.post('/course-enrollment',enrollmentController.enrollment )
 
 module.exports=router
