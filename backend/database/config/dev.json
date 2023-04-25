@@ -1,7 +1,7 @@
 {
     "dev": {
         "host": "localhost",
-        "user": "springstudent",
+        "user": "root",
         "password": "argusadmin",
         "database": "online_pathshala",
         "driver": "mysql",

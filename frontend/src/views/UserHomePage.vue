@@ -1,34 +1,52 @@
 <template>
-    <v-sheet class=" pa-12 mt-15" rounded>
-        <v-card v-if="user === null" class="mx-auto px-6 py-8 text-center" max-width="344">
-            <v-card-title>Hello, You are not logged in!</v-card-title>
-            <v-card-text>Please login <router-link to="/user/sign-in">Log in</router-link></v-card-text>
-        </v-card>
-        <v-card v-else class="mx-auto px-6 py-8 text-center" max-width="344">
-            <v-card-title>Hello {{ user.full_name }}</v-card-title>
-            <v-card-text>{{ user.user_role }}</v-card-text>
+    <v-main>
+        <v-container v-if="user === null">
+            <v-card class="mx-auto px-6 py-8 text-center" max-width="344">
+                <v-card-title>Hello, You are not logged in!</v-card-title>
+                <v-card-text>Please login <router-link to="/user/sign-in">Log in</router-link></v-card-text>
+            </v-card>
+        </v-container>
+        <!-- <v-container v-if="courses.length === 0">
+            <v-card class="mx-auto px-6 py-8 text-center" max-width="800">
+                <v-card-title>Hello {{ user.full_name }}</v-card-title>
+                <v-card-text>{{ user.user_role }}</v-card-text>
 
-            <v-card-subtitle v-if="user.user_role === 'Student'">Let's start learning, {{ user.full_name
-            }}</v-card-subtitle>
-            <v-card-subtitle v-else-if="user.user_role === 'Tutor'">Please add a course, {{ user.full_name
-            }}</v-card-subtitle>
-        </v-card>
-    </v-sheet>
+                <v-card-subtitle v-if="user.user_role === 'Student'">Let's start learning, {{ user.full_name
+                }}</v-card-subtitle>
+                <v-card-subtitle v-else-if="user.user_role === 'Tutor'">Please add a course, {{ user.full_name
+                }}</v-card-subtitle>
+                 {{ courses[0] }}
+            </v-card>
+        </v-container> -->
+        <v-container v-if="user && courses.length !== 0">
+            <!-- <v-row>
+                <v-col v-for="n in courses" :key="n" cols="4">
+                    <v-card height="250"></v-card>
+                </v-col>
+            </v-row> -->
+            <all-courses :allCourses="courses"></all-courses>
+        </v-container>
+    </v-main>
+    <all-courses :allCourses="allCourses"></all-courses>
 </template>
 
 <script>
 import axios from 'axios';
 import { mapGetters } from 'vuex';
-import jwt_decode from 'jwt-decode'
+import jwt_decode from 'jwt-decode';
+import AllCourses from '../components/course/AllCourses.vue'
 
 export default {
     data() {
         return {
-
+            courses: ''
         }
     },
+    components: {
+        AllCourses
+    },
     computed: {
-        ...mapGetters(['user'])
+        ...mapGetters(['user', 'enrollmentDetails','allCourses'])
     },
     async created() {
         const token = localStorage.getItem('token');
@@ -47,6 +65,9 @@ export default {
                 }
                 console.log(error);
             });
+        const response = await axios.get(`/user/courses/${id}`)
+        console.log(response.data.courses)
+        this.courses = response.data.courses
     },
 }
 // import jwt_decode from 'jwt-decode';

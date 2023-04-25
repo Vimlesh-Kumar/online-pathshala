@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/user', userRouter);
-app.use('/user/tutor',courseRouter)
+app.use('/',courseRouter)
 app.use('/user/course',enrollmentRouter)
 
 app.listen(process.env.APP_PORT, () => {

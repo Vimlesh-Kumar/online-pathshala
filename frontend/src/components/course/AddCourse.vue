@@ -43,21 +43,23 @@ export default {
                 price: this.price,
                 thumb_url: this.url
             };
-            console.log(courseDetails);
             const response = await axios.post('user/tutor/add-course', courseDetails)
-            console.log(response.data.data.insertId)
+            // console.log(response.data.data.insertId)
 
-            // enrolling
-            const enrollmentDetails={
-                cours_id:response.data.data.insertId,
-                user_id:this.user.id
+            // enrolling details
+            const enrollmentDetails = {
+                course_id: response.data.data.insertId,
+                user_id: this.user.id
             }
 
-            console.log(enrollmentDetails)
-
-            const enrollResponse=await axios.post('user/course/course-enrollment',enrollmentDetails)
+            // Enrolling in database
+            const enrollResponse = await axios.post('user/course/course-enrollment', enrollmentDetails)
             console.log(enrollResponse)
-            
+
+            // Added enrollment details in store
+            this.$store.dispatch('enrollmentDetails', enrollmentDetails)
+
+            // Redirecting to user homepage
             this.$router.push('/user/home')
 
         }

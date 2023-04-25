@@ -5,15 +5,15 @@
         </template> -->
 
         <v-img src="../assets/logof.png"></v-img>
-            <v-select variant="solo"  density="compact" label="Category" :items="category" required single-line
-                hide-details></v-select>
-        <v-text-field density="compact" variant="solo" label="Search" append-inner-icon="mdi-magnify" single-line
-            hide-details class="mx-1">
+        <v-select class="select mx-5" variant="solo" density="compact" label="Category" :items="category" required single-line hide-details></v-select>
+        <v-text-field class="mx-14" density="compact" variant="solo" label="Search" append-inner-icon="mdi-magnify" single-line
+            hide-details >
         </v-text-field>
 
-        <v-btn v-if="!user || user.user_role === 'Student'" class="mx-3">Teach on Pathshala</v-btn>
-        <v-btn v-if="user && user.user_role === 'Tutor'" class="mx-3 px-5 py-1" @click="handleAddCourse">Add course</v-btn>
-        <v-icon>mdi-cart</v-icon>
+        <v-btn v-if="!user || user.user_role === 'Student'" class="mx-5 bg-green-lighten-5">Teach on Pathshala</v-btn>
+        <v-btn v-if="user && user.user_role === 'Tutor'" class="mx-5 bg-green-lighten-3" @click="handleAddCourse">Add Course</v-btn>
+
+        <v-icon class="bg-blue">mdi-cart</v-icon>
 
         <v-btn v-if="user" flat class="bg-green-lighten-3 mx-5" @click="handleLogoutClick">Log out</v-btn>
         <v-btn v-if="!user" flat class="bg-green-lighten-3 mx-5"><router-link to="/user/sign-in">Log
@@ -29,7 +29,7 @@ import { mapGetters } from 'vuex'
 
 export default {
     data() {
-        return{
+        return {
 
         }
     },
@@ -47,7 +47,7 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(['user','category'])
+        ...mapGetters(['user', 'category'])
     }
 }
 </script>
@@ -60,5 +60,11 @@ export default {
 .v-btn a {
     text-decoration: none;
 }
+
+.select {
+      max-width: 180px;
+      /* max-height: 60px; */
+      /* font-size: 11px; */
+    }
 </style>
 

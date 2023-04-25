@@ -1,9 +1,10 @@
-const enrollmentServices=require('../services/enrollment.services')
+const enrollmentServices = require('../services/enrollment.services')
 
-module.exports={
-    enrollment:async(req,res)=>{
-        const body=req.body;
-        enrollmentServices.enrolling(body,(err,result)=>{
+module.exports = {
+    enrollment: async (req, res) => {
+        const body = req.body;
+        // console.log(body)
+        enrollmentServices.enrolling(body, (err, result) => {
             if (err) {
                 console.log(err)
                 return res.status(500).json({

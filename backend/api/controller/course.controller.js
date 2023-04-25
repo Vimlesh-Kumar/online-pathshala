@@ -21,14 +21,29 @@ module.exports = {
     },
     allcourseByUserId: async (req, res) => {
         const id = req.params.id
-        courseServices.allCourseById(id, (err, courses) => {
+        // console.log(id)
+        courseServices.courseByUserId(id, (err, courses) => {
             if (err) {
                 return res.status(404).json({
                     message: "No any course found by user id."
                 })
             }
             return res.status(200).json({
-                courses:courses
+                courses: courses,
+                message: "All Courses.."
+            })
+        })
+    },
+    allCOURSES: async (req, res) => {
+        courseServices.allCourses((err, courses) => {
+            if (err) {
+                return res.status(500).json({
+                    message: "Error in finding all courses."
+                })
+            }
+            return res.status(200).json({
+                courses: courses,
+                message: "All courses from database."
             })
         })
     }
