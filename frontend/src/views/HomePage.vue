@@ -1,36 +1,42 @@
 <template>
     <v-main>
         <v-container>
-            <div>
-                <h1>Good Evening</h1>
-            </div>
+            <v-card max-height="400">
+                <v-img cover src="./../assets/homepage2.jpg"></v-img>
+            </v-card>
+        </v-container>
+        <!-- <v-divider class="my-5"></v-divider> -->
+        <v-container class="my-0">
+            <v-container class="bg-black" max-height="400">
+                    <v-text class="font-weight-bold mx-1" style="font-size:40px; font-family: 'Times New Roman', Times, serif;">Expand your skillset with these courses</v-text>
+                </v-container>
+            <!-- <h1 :style="{ fontFamily: 'Times New Roman' }">Expand your skillset with these courses</h1> -->
+             <all-courses :allCourses="allCourses"></all-courses>
+        </v-container>
+        <v-container>
+           
         </v-container>
     </v-main>
-    <all-courses :allCourses="allCourses"></all-courses>
 </template>
 
 <script>
-import axios from 'axios'
 import { mapGetters } from 'vuex'
 import AllCourses from '../components/course/AllCourses.vue'
 
 export default {
-    components:{
+    components: {
         AllCourses
     },
-    data(){
-        return{
-            // courses:this.allCourses
+    data() {
+        return {
+
         }
     },
     computed: {
         ...mapGetters(['allCourses'])
     },
-    async created() {
-        const response = await axios.get('/courses')
-        // console.log(response.data.courses)
-        this.$store.dispatch('allCourses', response.data.courses)
-        // console.log(this.courses)
+    created() {
+        this.$store.dispatch('allCourses');
     }
 }
 </script>

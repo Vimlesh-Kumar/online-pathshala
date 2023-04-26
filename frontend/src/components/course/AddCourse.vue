@@ -51,8 +51,9 @@ export default {
                 course_id: response.data.data.insertId,
                 user_id: this.user.id
             }
+            console.log(enrollmentDetails)
 
-            // Enrolling in database
+            // course-user details Enrolling in database enrollment table
             const enrollResponse = await axios.post('user/course/course-enrollment', enrollmentDetails)
             console.log(enrollResponse)
 

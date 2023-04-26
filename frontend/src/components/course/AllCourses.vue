@@ -1,5 +1,5 @@
 <template>
-    <v-main>
+    <!-- <v-main> -->
         <v-container>
             <v-sheet class="px-15 py-5 mx-15 border true ">
 
@@ -24,11 +24,11 @@
                             </v-card-item>
 
                             <v-card-text>
-                                <v-row align="center" class="mx-0">
+                                <v-row align-content="center" class="mx-0">
                                     <v-rating :model-value="course.rating" color="amber" density="compact" half-increments
                                         readonly size="small"></v-rating>
 
-                                    <div class="text-grey ms-4">
+                                    <div class="text-grey ms-5">
                                         {{ course.rating }}
                                     </div>
                                 </v-row>
@@ -42,12 +42,10 @@
                 </v-row>
             </v-sheet>
         </v-container>
-    </v-main>
+    <!-- </v-main> -->
 </template>
-<script>
-// import axios from 'axios';
-// import { mapGetters } from 'vuex';
 
+<script>
 export default {
     data: () => ({
         loading: false,
@@ -61,14 +59,6 @@ export default {
 
             setTimeout(() => (this.loading = false), 2000)
         },
-    },
-    // computed: {
-    //     ...mapGetters(['allCourses'])
-    // },
-    // async created() {
-    //     const response = await axios.get('/courses')
-    //     console.log(response.data.courses)
-    //     this.$store.dispatch('allCourses', response.data.courses)
-    // }
+    }
 }
 </script>

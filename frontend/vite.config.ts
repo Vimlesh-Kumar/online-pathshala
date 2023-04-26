@@ -10,7 +10,13 @@ import { fileURLToPath, URL } from 'node:url'
 export default defineConfig({
   plugins: [
     vue({
-      template: { transformAssetUrls }
+      template: {
+        transformAssetUrls,
+        // compilerOptions: {
+        //   // treat all tags with a dash as custom elements
+        //   isCustomElement: (tag) => tag.includes('-')
+        // }
+      }
     }),
     // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
     vuetify({
@@ -37,5 +43,8 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    // hmr:{
+    //   overlay:false
+    // }
   },
 })

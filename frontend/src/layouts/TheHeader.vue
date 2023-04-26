@@ -5,13 +5,15 @@
         </template> -->
 
         <v-img src="../assets/logof.png"></v-img>
-        <v-select class="select mx-5" variant="solo" density="compact" label="Category" :items="category" required single-line hide-details></v-select>
-        <v-text-field class="mx-14" density="compact" variant="solo" label="Search" append-inner-icon="mdi-magnify" single-line
-            hide-details >
+        <v-select class="select mx-5 no-color" variant="solo" density="compact" label="Category" :items="category" required
+            single-line hide-details></v-select>
+        <v-text-field class="mx-14" density="compact" variant="solo" label="Search" append-inner-icon="mdi-magnify"
+            single-line hide-details>
         </v-text-field>
 
         <v-btn v-if="!user || user.user_role === 'Student'" class="mx-5 bg-green-lighten-5">Teach on Pathshala</v-btn>
-        <v-btn v-if="user && user.user_role === 'Tutor'" class="mx-5 bg-green-lighten-3" @click="handleAddCourse">Add Course</v-btn>
+        <v-btn v-if="user && user.user_role === 'Tutor'" class="mx-5 bg-green-lighten-3" @click="handleAddCourse">Add
+            Course</v-btn>
 
         <v-icon class="bg-blue">mdi-cart</v-icon>
 
@@ -30,7 +32,7 @@ import { mapGetters } from 'vuex'
 export default {
     data() {
         return {
-
+            // user1:''
         }
     },
 
@@ -48,7 +50,7 @@ export default {
     },
     computed: {
         ...mapGetters(['user', 'category'])
-    }
+    },
 }
 </script>
 
@@ -62,9 +64,9 @@ export default {
 }
 
 .select {
-      max-width: 180px;
-      /* max-height: 60px; */
-      /* font-size: 11px; */
-    }
+    max-width: 180px;
+    /* max-height: 60px; */
+    /* font-size: 11px; */
+}
 </style>
 
