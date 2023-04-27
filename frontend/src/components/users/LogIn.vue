@@ -57,7 +57,7 @@ export default {
                 localStorage.setItem('token', response.data.token);
                 // console.log(response.data.user)
 
-                this.$store.dispatch('user', response.data.user)
+                // this.$store.dispatch('user', response.data.user)
 
                 // redirescting to the homepage
                 this.$router.push('/user/home')

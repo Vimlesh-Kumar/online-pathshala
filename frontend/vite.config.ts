@@ -13,9 +13,8 @@ export default defineConfig({
       template: {
         transformAssetUrls,
         // compilerOptions: {
-        //   // treat all tags with a dash as custom elements
-        //   isCustomElement: (tag) => tag.includes('-')
-        // }
+        //   isCustomElement: (tag) => tag.startsWith('v-'),
+        // },
       }
     }),
     // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin

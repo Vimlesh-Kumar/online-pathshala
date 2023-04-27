@@ -58,10 +58,11 @@ const signin = async (req, res) => {
 
 }
 
-const getDetails = async (req, res) => {
-    let id = req.params.id
-    // console.log(id)
-    userModel.getUserById(id, (err, user) => {
+const userById = async (req, res) => {
+    // console.log(req.headers)
+    // console.log(req.user)
+
+    userModel.getUserById(req.user.id, (err, user) => {
         if (err) {
             console.log(err)
             return;
@@ -82,4 +83,6 @@ const getDetails = async (req, res) => {
     })
 }
 
-module.exports = { signin, signup, getDetails }
+
+
+module.exports = { signin, signup, userById }

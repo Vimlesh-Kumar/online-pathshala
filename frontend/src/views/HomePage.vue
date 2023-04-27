@@ -5,16 +5,19 @@
                 <v-img cover src="./../assets/homepage2.jpg"></v-img>
             </v-card>
         </v-container>
-        <!-- <v-divider class="my-5"></v-divider> -->
-        <v-container class="my-0">
+
+        <v-container>
             <v-container class="bg-black" max-height="400">
-                    <v-text class="font-weight-bold mx-1" style="font-size:40px; font-family: 'Times New Roman', Times, serif;">Expand your skillset with these courses</v-text>
-                </v-container>
+                <v-text class="font-weight-bold mx-1"
+                    style="font-size:40px; font-family: 'Times New Roman', Times, serif;">Expand your skillset with these
+                    courses
+                </v-text>
+            </v-container>
             <!-- <h1 :style="{ fontFamily: 'Times New Roman' }">Expand your skillset with these courses</h1> -->
-             <all-courses :allCourses="allCourses"></all-courses>
+            <all-courses :allCourses="allCourses"></all-courses>
         </v-container>
         <v-container>
-           
+
         </v-container>
     </v-main>
 </template>
@@ -36,7 +39,7 @@ export default {
         ...mapGetters(['allCourses'])
     },
     created() {
-        this.$store.dispatch('allCourses');
+        this.$store.dispatch('fetchingAllCourses');
     }
 }
 </script>

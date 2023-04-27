@@ -10,7 +10,7 @@
             <v-card class="mx-auto px-6 py-8 text-center" max-width="800">
                 <v-card-title style="font-size: 30px;">Hello {{ user.full_name }}</v-card-title>
                 <v-card-text>{{ user.user_role }}</v-card-text>
-                <v-card-subtitle  v-if="user.user_role === 'Student'">Let's start learning, {{ user.full_name
+                <v-card-subtitle v-if="user.user_role === 'Student'">Let's start learning, {{ user.full_name
                 }}</v-card-subtitle>
                 <v-card-subtitle v-else-if="user.user_role === 'Tutor'">Please add a course, {{ user.full_name
                 }}</v-card-subtitle>
@@ -18,7 +18,7 @@
             </v-card>
             <all-courses :allCourses="allCourses"></all-courses>
         </v-container>
-        {{userCourses}}
+        <!-- {{userCourses}} -->
 
         <v-container v-if="user && userCourses.length !== 0">
             <v-container class="bg-black" max-height="400">
@@ -35,9 +35,7 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import jwt_decode from 'jwt-decode';
-import AllCourses from '../components/course/AllCourses.vue'
-// import axios from 'axios';
+import AllCourses from '../components/course/AllCourses.vue';
 
 export default {
     data() {
@@ -52,18 +50,14 @@ export default {
         ...mapGetters(['user', 'enrollmentDetails', 'allCourses', 'userCourses'])
     },
     async created() {
-        const token = localStorage.getItem('token');
-        const decoded = jwt_decode(token);
-        const id = decoded.user.id
-
         // user details
-        await this.$store.dispatch('user', id)
+        await this.$store.dispatch('fetchingUser')
 
         // User's Courses
-        await this.$store.dispatch('userCourses', id)
+        await this.$store.dispatch('fetchingUserCourses')
 
         // All courses reloading
-        await this.$store.dispatch('allCourses')
+        await this.$store.dispatch('fetchingAllCourses')
         // console.log(this.userCourses)
     },
 }

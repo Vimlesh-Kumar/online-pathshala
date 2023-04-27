@@ -14,6 +14,7 @@ const auth = {
                     })
                 }
                 else {
+                    req.user=decoded.user
                     next();
                 }
             })

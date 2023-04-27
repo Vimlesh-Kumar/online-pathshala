@@ -37,9 +37,9 @@ export default {
     },
 
     methods: {
-        handleLogoutClick() {
+        async handleLogoutClick() {
             localStorage.removeItem('token')
-            this.$store.dispatch('user', null)
+            this.$store.dispatch('fetchingUser')
             this.$router.push('/')
         },
         handleAddCourse() {

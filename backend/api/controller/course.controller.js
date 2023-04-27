@@ -1,4 +1,5 @@
-const courseServices = require('../services/course.service')
+const courseServices = require('../services/course.service');
+const enrollmentServices = require('../services/enrollment.services')
 
 module.exports = {
 
@@ -12,15 +13,22 @@ module.exports = {
                     message: "Unable to insert course details..."
                 })
             }
+            const enrollmentDetails = {
+                course_id: result.insertId,
+                user_id: req.user.id
+            }
+            // console.log(enrollmentDetails)
+            enrollmentServices.enrolling(enrollmentDetails)
             return res.status(200).json({
                 data: result,
-                message: "Course Added!"
+                // enrolllll:this.enroll,
+                message: "Course Added & course_id and user_id added in enrollment table"
 
             })
         })
     },
     allcourseByUserId: async (req, res) => {
-        const id = req.params.id
+        const id = req.user.id
         // console.log(id)
         courseServices.courseByUserId(id, (err, courses) => {
             if (err) {
@@ -30,7 +38,7 @@ module.exports = {
             }
             return res.status(200).json({
                 courses: courses,
-                message: "All Courses.."
+                message: "User's All Courses.."
             })
         })
     },

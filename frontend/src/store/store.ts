@@ -6,9 +6,10 @@ const store = createStore({
         return {
             user: null,
             categories: ["Development", "Finance", "Health", "Music", "Business", "Design", "PhotoVedio", "Real Estate", "Others"],
-            enrollmentDetails: null,
+            // enrollmentDetails: null,
             allCourses: [],
-            userCourses: []
+            userCourses: [],
+            singleCourseDetails: null
         }
     },
 
@@ -16,34 +17,33 @@ const store = createStore({
         updateUser(state, user) {       //user=payload
             state.user = user;
         },
-        updateEnrolling(state, enrollmentDetails) {
-            state.enrollmentDetails = enrollmentDetails;
-        },
+
         updateAllCourses(state, allCourses) {
             state.allCourses = allCourses;
         },
+
         updateUserCourses(state, userCourses) {
             state.userCourses = userCourses;
+        },
+
+        updateSingleCourseDetails(state, course) {
+            state.singleCourseDetails = course
         }
     },
 
     actions: {
-        async user(context, id) {
-
-            if (id === null) {
+        async fetchingUser(context) {
+            const token = localStorage.getItem('token')
+            if (token === null) {
                 context.commit('updateUser', null)
             }
             else {
-                const response = await axios.get(`/user/details/${id}`)
+                const response = await axios.get(`/user/details`)
                 context.commit('updateUser', response.data.user)
             }
         },
 
-        enrollmentDetails(context, enrollmentDetails) {
-            context.commit('updateEnrolling', enrollmentDetails)
-        },
-
-        async allCourses({ commit }) {
+        async fetchingAllCourses({ commit }) {
             try {
                 const response = await axios.get('/courses')
                 commit('updateAllCourses', response.data.courses)
@@ -53,9 +53,14 @@ const store = createStore({
             }
         },
 
-        async userCourses(context, id) {
-            const response = await axios.get(`/user/courses/${id}`)
+        async fetchingUserCourses(context) {
+            const response = await axios.get(`/user/courses`)
+            // console.log(response)
             context.commit('updateUserCourses', response.data.courses)
+        },
+
+        async getACourse(context, course) {
+            context.commit('updateSingleCourseDetails', course)
         }
     },
 
@@ -68,16 +73,16 @@ const store = createStore({
             return state.categories;
         },
 
-        enrollmentDetails(state) {
-            return state.enrollmentDetails;
-        },
-
         allCourses(state) {
             return state.allCourses;
         },
 
         userCourses(state) {
             return state.userCourses;
+        },
+
+        singleCourse(state) {
+            return state.singleCourseDetails;
         }
     }
 })

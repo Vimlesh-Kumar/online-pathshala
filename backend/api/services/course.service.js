@@ -16,6 +16,7 @@ module.exports = {
                 if (error) {
                     return callback(error)
                 }
+                // console.log(result)
                 return callback(null, result)
             }
         )
