@@ -2,7 +2,7 @@
     <v-main>
         <div class="bg-black">
             <v-container>
-                <v-row>
+                <v-row style="position: relative;">
                     <v-col cols="8">
                         <div>
                             <v-text style="font-size: 15px;">{{ singleCourse.category }} > {{
@@ -32,25 +32,67 @@
                             <v-text style="font-size: 14px;">Created by {{ singleCourse.author }}</v-text>
                         </div>
                     </v-col>
-                    <v-col cols="4">
-                        <div class="">
-                            vim
-                            <v-card height="400">
-                               
-                            </v-card>
+                    <v-col cols="4" style="position: fixed; top: 70px; right: 85px; z-index: 1000;">
+                        <div>
+                            <v-sheet class="ms-15 pa-8 border true">
+                                <v-card>
+                                    <v-img cover :src="singleCourse.thumb_url"></v-img>
+                                    <v-card-title class="font-weight-bold">₹{{ singleCourse.price }}</v-card-title>
+                                    <v-row>
+                                        <v-col cols="8" class="ms-5">
+                                            <v-btn class="bg-purple" block>Add to Cart</v-btn>
+                                        </v-col>
+                                        <v-col class="py-4">
+                                            <!-- <v-btn></v-btn> -->
+                                            <v-icon class="mdi mdi-heart" color="red" @click="addToWishlist"></v-icon>
+                                        </v-col>
+                                    </v-row>
+                                    <v-card-text>
+                                        <h2>This course includes:</h2>
+                                        <v-divider class="my-2"></v-divider>
+                                        <div><span class="mdi mdi-video-outline"></span> Full lifetime access</div>
+                                        <div><span class="mdi mdi-trophy"></span> Certificate of completion</div>
+                                        <div><span class="mdi mdi-cash"></span> 30-Day Money-Back Guarantee</div>
+                                    </v-card-text>
+                                </v-card>
+                            </v-sheet>
                         </div>
                     </v-col>
                 </v-row>
-
-
             </v-container>
         </div>
-        <div class="bg-amber">
-            <v-container class="bg-red">
-                vim
+        <div>
+            <v-container class="my-5">
+                <v-row>
+                    <v-col cols="8">
+                        <v-sheet class="border true px-15" height="400">
+                            <v-container>
+                                <h2>What You'll Learn</h2>
+                            </v-container>
+                        </v-sheet>
+
+                        <v-sheet class="border true px-15 my-10">
+                            <v-container>
+                                <h2>Course Content</h2>
+                            </v-container>
+                        </v-sheet>
+                        <v-sheet class="border true px-15 my-10">
+                            <v-container>
+                                <h2>Student Reviews</h2>
+                                <v-row>
+                                    <v-rating v-model="rating" length="1" color="amber" :model-value="1"></v-rating>
+                                    <div class="pt-2 text-amber font-weight-bold" style="font-size: 1.5rem;">
+                                        {{ singleCourse.rating }}
+                                    </div>
+                                </v-row>
+
+                            </v-container>
+                        </v-sheet>
+
+                    </v-col>
+                </v-row>
             </v-container>
         </div>
-        <v-container>Vimlesh</v-container>
     </v-main>
 </template>
 
@@ -62,3 +104,5 @@ export default {
     }
 }
 </script>
+
+<style scoped></style>

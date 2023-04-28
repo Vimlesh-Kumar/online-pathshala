@@ -15,7 +15,7 @@
         <v-btn v-if="user && user.user_role === 'Tutor'" class="mx-5 bg-green-lighten-3" @click="handleAddCourse">Add
             Course</v-btn>
 
-        <v-icon class="bg-blue">mdi-cart</v-icon>
+        <v-icon class="bg-green-lighten-5">mdi-cart</v-icon>
 
         <v-btn v-if="user" flat class="bg-green-lighten-3 mx-5" @click="handleLogoutClick">Log out</v-btn>
         <v-btn v-if="!user" flat class="bg-green-lighten-3 mx-5"><router-link to="/user/sign-in">Log
