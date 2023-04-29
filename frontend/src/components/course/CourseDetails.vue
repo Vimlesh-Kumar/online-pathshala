@@ -1,5 +1,6 @@
 <template>
     <v-main>
+        <!-- <v-container>vvvvv{{ course }}</v-container> -->
         <div class="bg-black">
             <v-container>
                 <v-row style="position: relative;">
@@ -40,10 +41,10 @@
                                     <v-card-title class="font-weight-bold">₹{{ singleCourse.price }}</v-card-title>
                                     <v-row>
                                         <v-col cols="8" class="ms-5">
-                                            <v-btn class="bg-purple" block>Add to Cart</v-btn>
+                                            <v-btn class="bg-green-lighten-3" block>Add to Cart</v-btn>
                                         </v-col>
                                         <v-col class="py-4">
-                                            <!-- <v-btn></v-btn> -->
+                                            
                                             <v-icon class="mdi mdi-heart" color="red" @click="addToWishlist"></v-icon>
                                         </v-col>
                                     </v-row>
@@ -97,11 +98,28 @@
 </template>
 
 <script>
+import axios from 'axios'
 import { mapGetters } from 'vuex'
 export default {
     computed: {
-        ...mapGetters(['singleCourse'])
+        // ...mapGetters(['singleCourse'])
+    },
+data() {
+    return {
+        singleCourse:''
     }
+},
+    async created() {
+        const courseId=this.$route.params.id
+        console.log(courseId)
+        // console.log(this.$route.params)
+        const response=await axios.get(`/course/${courseId}`)
+        // console.log(singleCourse)
+        const course=response.data.course
+        console.log(course)
+        this.singleCourse=course
+
+    },
 }
 </script>
 

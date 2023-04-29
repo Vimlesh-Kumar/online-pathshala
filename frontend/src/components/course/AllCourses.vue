@@ -62,7 +62,8 @@ export default {
 
         handleOnCourseClick(course) {
             this.$store.dispatch('getACourse', course)
-            this.$router.push('/course/details')
+            // console.log(course)
+            this.$router.push(`/course/${course.id}`)
         }
     }
 }

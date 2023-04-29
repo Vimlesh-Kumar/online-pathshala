@@ -38,7 +38,17 @@ module.exports = {
             if (error) {
                 return callback(error)
             }
-            return callback(null,result)
+            return callback(null, result)
+        })
+    },
+
+    // course by course-id
+    courseById: (id, callback) => {
+        pool.query(`select * from courses where id=?`, [id], (error, result) => {
+            if (error) {
+                return callback(error)
+            }
+            return callback(null, result[0])
         })
     }
 }

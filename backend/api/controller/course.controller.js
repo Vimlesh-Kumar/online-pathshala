@@ -54,5 +54,20 @@ module.exports = {
                 message: "All courses from database."
             })
         })
+    },
+
+    courseByCourseId: async (req, res) => {
+        // console.log(req.params)
+        courseServices.courseById(req.params.id, (error, result) => {
+            if (error) {
+                return res.status(404).json({
+                    message: "Course Not found!!"
+                })
+            }
+            return res.status(200).json({
+                message: "Course found by its own id",
+                course: result
+            })
+        })
     }
 }
