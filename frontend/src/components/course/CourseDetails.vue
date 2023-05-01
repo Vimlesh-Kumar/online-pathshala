@@ -1,6 +1,5 @@
 <template>
     <v-main>
-        <!-- <v-container>vvvvv{{ course }}</v-container> -->
         <div class="bg-black">
             <v-container>
                 <v-row style="position: relative;">
@@ -39,13 +38,20 @@
                                 <v-card>
                                     <v-img cover :src="singleCourse.thumb_url"></v-img>
                                     <v-card-title class="font-weight-bold">₹{{ singleCourse.price }}</v-card-title>
-                                    <v-row>
+                                    <v-row v-if="user?.user_role === 'Tutor' && user.id === courseAuthor?.id"
+                                        :class="'text-center'">
+                                        <v-col>
+                                            <v-btn class="bg-green-darken-4" @click="handleAddCourseLesson">Add Course
+                                                Content</v-btn>
+                                        </v-col>
+                                    </v-row>
+                                    <v-row v-else>
                                         <v-col cols="8" class="ms-5">
                                             <v-btn class="bg-green-lighten-3" block>Add to Cart</v-btn>
                                         </v-col>
                                         <v-col class="py-4">
-                                            
-                                            <v-icon class="mdi mdi-heart" color="red" @click="addToWishlist"></v-icon>
+
+                                            <v-icon class="mdi mdi-heart" color="red"></v-icon>
                                         </v-col>
                                     </v-row>
                                     <v-card-text>
@@ -100,26 +106,48 @@
 <script>
 import axios from 'axios'
 import { mapGetters } from 'vuex'
+
 export default {
     computed: {
-        // ...mapGetters(['singleCourse'])
+        ...mapGetters(['user'])
     },
-data() {
-    return {
-        singleCourse:''
-    }
-},
+    data() {
+        return {
+            singleCourse: '',
+            courseAuthor: null,
+            courseId:null
+        }
+    },
     async created() {
-        const courseId=this.$route.params.id
-        console.log(courseId)
-        // console.log(this.$route.params)
-        const response=await axios.get(`/course/${courseId}`)
-        // console.log(singleCourse)
-        const course=response.data.course
-        console.log(course)
-        this.singleCourse=course
+        this.courseId = this.$route.params.id
+        
+        const response = await axios.get(`/course/${this.courseId}`)
+        // console.log(response.data.tutorId.id)
+        const tutorId = response.data.tutorId
+        this.courseAuthor = tutorId
 
+        // console.log(this.courseAuthor)
+
+
+        const course = response.data.course
+        // console.log(course)
+        this.singleCourse = course
+
+
+        await this.$store.dispatch('fetchingUser')
+        // console.log(this.user)
+        // this.name=this.user.full_name
+        // this.user1=this.user
     },
+    methods: {
+        handleAddCourseLesson() {
+            // console.log(this.)
+            const currentUrl=this.$route.path
+            console.log(currentUrl)
+            this.$router.push(currentUrl+"/objectives")
+            // this.$router.push(`/course/${this.courseId}/objectives`)
+        }
+    }
 }
 </script>
 

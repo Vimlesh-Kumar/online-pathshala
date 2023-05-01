@@ -9,7 +9,8 @@ const routes = [
   { path: '/user/sign-in', component: () => import('@/components/users/LogIn.vue') },
   { path: '/user/home', component: UserHomePage},
   {path:'/user/tutor/add-course',component:()=>import('@/components/course/AddCourse.vue')},
-  {path:'/course/:id',component:()=>import('@/components/course/CourseDetails.vue')}
+  {path:'/course/:id',component:()=>import('@/components/course/CourseDetails.vue')},
+  {path:'/course/:id/objectives',component:()=>import('@/components/course/CourseObjectives.vue')}
 ]
 
 const router = createRouter({
