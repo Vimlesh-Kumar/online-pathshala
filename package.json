@@ -3,8 +3,11 @@
     "concurrently": "^8.0.1"
   },
   "scripts": {
-    "client":"cd frontend && npm start",
-    "server":"cd backend && npm start",
-    "start": "concurrently \"npm run client\" \"npm run server\""  
+    "client": "cd frontend && npm start",
+    "server": "cd backend && npm start",
+    "c": "cd frontend && npm install",
+    "b": "cd backend && npm install",
+    "nodePackage": "concurrently  \"npm run c\" \"npm run b\"",
+    "start": "concurrently \"npm run client\" \"npm run server\""
   }
 }

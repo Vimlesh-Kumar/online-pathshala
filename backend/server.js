@@ -5,7 +5,7 @@ const userRouter = require('./api/routes/user.router')
 const cors = require('cors');
 const courseRouter=require('./api/routes/course.router')
 const enrollmentRouter=require('./api/routes/enrollment.router')
-
+const objectivesRouter=require('./api/routes/courseObjectives.router')
 // app.get('/',(req,res)=>{
 //     res.json({
 //         success:200,
@@ -16,8 +16,9 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/user', userRouter);
-app.use('/',courseRouter)
-app.use('/user/course',enrollmentRouter)
+app.use('/',courseRouter);
+app.use('/user/course',enrollmentRouter);
+app.use('/',objectivesRouter);
 
 app.listen(process.env.APP_PORT, () => {
     console.log('Server is running on PORT:', process.env.APP_PORT)

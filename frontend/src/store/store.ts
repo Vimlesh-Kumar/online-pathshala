@@ -9,7 +9,8 @@ const store = createStore({
             // enrollmentDetails: null,
             allCourses: [],
             userCourses: [],
-            singleCourseDetails: null
+            singleCourseDetails: null,
+            courseObjectives: []
         }
     },
 
@@ -28,6 +29,10 @@ const store = createStore({
 
         updateSingleCourseDetails(state, course) {
             state.singleCourseDetails = course
+        },
+
+        updateCourseObjctives(state, objectives) {
+            state.courseObjectives = objectives;
         }
     },
 
@@ -61,6 +66,16 @@ const store = createStore({
 
         async getACourse(context, course) {
             context.commit('updateSingleCourseDetails', course)
+        },
+
+        // async addingCourseObjective(objectives) {
+        //     const response=await axios.post('/')
+        // },
+
+        async getObjectives(conetxt, id) {
+            const response = await axios.get(`/course/objectives-display/${id}`)
+            console.log(response)
+            conetxt.commit('updateCourseObjctives', response.data.objectives)
         }
     },
 
@@ -83,6 +98,10 @@ const store = createStore({
 
         singleCourse(state) {
             return state.singleCourseDetails;
+        },
+
+        courseObjectives(state) {
+            return state.courseObjectives
         }
     }
 })

@@ -72,9 +72,11 @@
             <v-container class="my-5">
                 <v-row>
                     <v-col cols="8">
-                        <v-sheet class="border true px-15" height="400">
+                        <v-sheet class="border true px-15">
                             <v-container>
                                 <h2>What You'll Learn</h2>
+                                <v-spacer></v-spacer>
+                                <p v-for="objective in courseObjectives" :key="objective"><span class="mdi mdi-arrow-right-bold"></span> {{ objective.objective }}</p>
                             </v-container>
                         </v-sheet>
 
@@ -109,42 +111,43 @@ import { mapGetters } from 'vuex'
 
 export default {
     computed: {
-        ...mapGetters(['user'])
+        ...mapGetters(['user','courseObjectives'])
     },
     data() {
         return {
             singleCourse: '',
             courseAuthor: null,
-            courseId:null
+            courseId: null
         }
     },
     async created() {
         this.courseId = this.$route.params.id
-        
+
         const response = await axios.get(`/course/${this.courseId}`)
         // console.log(response.data.tutorId.id)
-        const tutorId = response.data.tutorId
-        this.courseAuthor = tutorId
-
-        // console.log(this.courseAuthor)
-
-
         const course = response.data.course
         // console.log(course)
         this.singleCourse = course
 
 
+        const tutorId = response.data.tutorId
+        this.courseAuthor = tutorId
+        
+        
+
+        await this.$store.dispatch('getObjectives',this.courseId)
+
+
+
         await this.$store.dispatch('fetchingUser')
-        // console.log(this.user)
-        // this.name=this.user.full_name
-        // this.user1=this.user
+       
     },
     methods: {
         handleAddCourseLesson() {
             // console.log(this.)
-            const currentUrl=this.$route.path
+            const currentUrl = this.$route.path
             console.log(currentUrl)
-            this.$router.push(currentUrl+"/objectives")
+            this.$router.push(currentUrl + "/objectives")
             // this.$router.push(`/course/${this.courseId}/objectives`)
         }
     }

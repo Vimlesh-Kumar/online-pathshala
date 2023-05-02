@@ -10,7 +10,8 @@ const routes = [
   { path: '/user/home', component: UserHomePage},
   {path:'/user/tutor/add-course',component:()=>import('@/components/course/AddCourse.vue')},
   {path:'/course/:id',component:()=>import('@/components/course/CourseDetails.vue')},
-  {path:'/course/:id/objectives',component:()=>import('@/components/course/CourseObjectives.vue')}
+  {path:'/course/:id/objectives',component:()=>import('@/components/course/CourseObjectives.vue')},
+  {path:'/course/:id/lesson',component:()=>import('@/components/course/CourseLesson.vue')}
 ]
 
 const router = createRouter({

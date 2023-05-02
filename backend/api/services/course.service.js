@@ -60,7 +60,7 @@ module.exports = {
                     return callback(error)
                 }
                 if (result) {
-                    console.log(result[0])
+                    // console.log(result[0])
                     return callback(null, result[0])
 
                 }

@@ -96,7 +96,7 @@ module.exports = {
                         message: "Unable to find tutor by course id"
                     })
                 }
-                console.log(tutorId)
+                // console.log(tutorId)
                 return res.status(200).json({
                     course: result,
                     tutorId: tutorId,
