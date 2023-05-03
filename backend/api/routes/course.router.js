@@ -1,6 +1,6 @@
 const router=require('express').Router();
 const courseController =require('../controller/course.controller')
-const auth=require('../../auth/token_validation')
+const auth=require('../../middlewares/token_validation')
 
 
 router.post('/user/tutor/add-course',auth.checkToken,courseController.addCourse);

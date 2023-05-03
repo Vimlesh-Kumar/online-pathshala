@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "crafty-hall-385607",
+  "private_key_id": "5ff8e8ce4605f47d4c66776c22477f936cd3a894",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDUE+jrLqY1qkZ5\nmbg1mDd35GHFtQKcpOaNHj9vF35CqrOZPOsW7u4kaPkbQejzpQTPsEz46bbwGoMQ\nuGdugqKDVTqvE5P5Oa1BRVMk7IIhtuwDoIEZU19iR+jXfOhUS6kwYM+ay33EZXPC\ndVECsrv0vF0YuQEUC10nSxcFPkBBHT11ICzYcBQokzSEWkYytZphecR0F6tKmbn9\nTGW0hN9kJr9Wo3vAQD+yMf/XuAfwRbNxqZAtE9UUSx2fDmZIFzv6nKnFWZOiLtRQ\nAtpbl9kpNk/1skIBAm5ZvnaHADMP9f1cjwz31rOBh+NsG9U9JGYI0VUgwR/YfhJk\no4CY0MVBAgMBAAECggEAOf51z7ZSglNdcUxNeO52oKUF7Zw5qh9X4pg2bYkloFJw\nyYNEoGFXIwLHuCH2c4YZQjgqXFkBCzicxbo/opM7oKFyakT2zozsqXAtM+gvD8wn\nTziZhRTs/QHAFQlVuRN1oUKgEur5qfa6SJ9vN0csKdlGtgeFWXdgEmow0eC7jnJS\nKSSdS24UPiKquUgY06rTMHKvjhV3PpzSL3Nd0q7Nbnzltso6Ba4F4GKhOcNgihLu\nAy75HbxShNz6Dwbnu7/bNoDMrUMnyT+NwXr7v75u5GblPh8CIRsdL7+w67xVRPmo\nQmJ2wpT1P/Qj7qemCKjAyXKCWksmd6PriqlwHHNl/wKBgQD9BPTvHpr38lnRsLIs\n4b979Hr8C/PZL4Tmg2PIva1G76dRZvZJe6t067PddJnmqi5ow410cpvNz5skaVjg\nmDKPBRVQlk7ex1nHldhE2KQtHkLrq3ifIpFKLt8iZH7tyk3eTih4coHUk/8HMrer\nPWeJjTMGjywB9TRguWPBQwtNWwKBgQDWk3vDiuqxD4HcTZWvQc99CQ4ud0Ctix78\nOd7TB8n5Pilysov6+yMANTno7eIYT5rbqMKtAZBUceXgkabiTkHeTMHG0QmtYqiq\n664iT4+JHpZ9hfdwK+kbCqfH55s0PZRyu/9ND9aXRyoVh4psJWxgO7gxfPvygGl7\nSzNAbtcukwKBgDtAFOeGID4d96CeIytVdhTd7IrndaQPd6zPaeeRW2l4J5NtbBFL\nL5yCsa0TaBLXGWUZHh/90rSAgFEnhlOZ8IUDaLllaXTL9B9D3NBKdy/FnWA42FdT\nrfhUP5Z7OCoRLOj5HosOLY8NVTRnURF9oKhac29+yYxv0mMwJscUHypvAoGAfcgs\nh57aHnq5o/ty4C5Sw7fYMVLEfjaMLkx6Gvh44/sVbt/NAI3QoaGR1cIEhD29yD+w\nBpxhD69IkpCu4//9yqLyAGqvIo0v1CmdhQ1gVX+xtdkfCAkldy2S1rMknsXuTCd5\n66F6KGmV+NLgSK7TTcIUIiZixm+R5a1aWM3go7MCgYEA014ArSVYLdIp9AeykJMR\nIX5dTEcKyusPKVyiQYHY6Zw7B2TAbVcpFk9l5fkI9Wm+lpar8fJ9Qyq6gnUE+gXn\nz1ivQcg8o3vfelP0z+EiCJ1/sFZ33Z1H+hUlveXmIAFDMPVT9NHnWagUrUbz2gwU\nf51RwHY88L9up8WXviSrOoo=\n-----END PRIVATE KEY-----\n",
+  "client_email": "google-drive-api-check@crafty-hall-385607.iam.gserviceaccount.com",
+  "client_id": "103245950127186834009",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-drive-api-check%40crafty-hall-385607.iam.gserviceaccount.com"
+}

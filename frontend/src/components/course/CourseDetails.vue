@@ -75,7 +75,7 @@
                         <v-sheet class="border true px-15">
                             <v-container>
                                 <h2>What You'll Learn</h2>
-                                <v-spacer></v-spacer>
+                                <v-divider class="my-3"></v-divider>
                                 <p v-for="objective in courseObjectives" :key="objective"><span class="mdi mdi-arrow-right-bold"></span> {{ objective.objective }}</p>
                             </v-container>
                         </v-sheet>
