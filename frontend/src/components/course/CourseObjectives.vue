@@ -70,7 +70,7 @@ export default {
 
             // console.log(newUrl)
             // console.log(course_id)
-            this.$router.push(newUrl + '/lesson')
+            this.$router.push(newUrl + '/section')
         }
     },
 

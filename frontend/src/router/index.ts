@@ -11,7 +11,7 @@ const routes = [
   {path:'/user/tutor/add-course',component:()=>import('@/components/course/AddCourse.vue')},
   {path:'/course/:id',component:()=>import('@/components/course/CourseDetails.vue')},
   {path:'/course/:id/objectives',component:()=>import('@/components/course/CourseObjectives.vue')},
-  {path:'/course/:id/lesson',component:()=>import('@/components/course/CourseLesson.vue')}
+  {path:'/course/:id/section',component:()=>import('@/components/course/CourseSection.vue')}
 ]
 
 const router = createRouter({
