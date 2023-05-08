@@ -1,4 +1,8 @@
 const router = require('express').Router();
+const sectionLectureController=require('../controller/section&Lectures.controller')
+const authuser = require('../../middlewares/token_validation')
+
+
 const { google } = require('googleapis')
 const google_API_Folder_ID = '1-vZD_0PPbk9JJd3k99-sAa8vA8QZ8L6w'
 
@@ -13,8 +17,8 @@ const drive = google.drive({ version: 'v3', auth });
 
 
 
-router.post('/upload', async (req, res) => {
-    // console.log(req.body)
+router.post('/lectures/upload', authuser.checkToken, async (req, res) => {
+    // console.log(req)
     try {
 
         const media = {
@@ -30,7 +34,7 @@ router.post('/upload', async (req, res) => {
             media: media,
             fields: 'id'
         });
-        console.log(response.data.id)
+        // console.log(response.data.id)
         return res.json({
             video_id:response.data.id,
             message:'Uploaded Successfully!!'
@@ -40,5 +44,7 @@ router.post('/upload', async (req, res) => {
     }
 
 })
+
+router.post('/save',authuser.checkToken,sectionLectureController.sectionLectures)
 
 module.exports = router;

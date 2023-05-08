@@ -1,20 +1,22 @@
 <template>
     <div>
-        <!-- <h1>vvvv{{ sectionName }}</h1> -->
-        <v-container class="d-flex justify-center" v-for="i in lessonCount" :key="i">
+        <v-container class="d-flex justify-center" v-for="(lesson, index) in lessons" :key="index">
             <v-card class="px-10 justify-center" width="700">
-                <v-card-title class="my-2">Lecture {{ i }}</v-card-title>
+                <v-card-title class="my-2">Lecture {{ index + 1 }}</v-card-title>
+                <!-- {{ sectionName }} -->
                 <div>
                     <v-form @submit.prevent="submitForm">
-                        <v-text-field label="Lesson Name" v-model="lessonName" required></v-text-field>
-                        <v-text-field label="Lesson Duration" v-model="lessonDuration" required></v-text-field>
+                        <v-text-field label="Lesson Name" v-model="lessons[index].name" required></v-text-field>
+                        <v-text-field label="Lesson Duration" v-model="lessons[index].duration" required></v-text-field>
                         <div class="my-3">
 
 
                             <v-row>
-                                <v-file-input type="file" ref="fileInput" label="Select a file"
-                                    accept=".jpg,.jpeg,.png,.pdf,.mp4"></v-file-input>
-                                <v-btn class="mx-5 my-3 bg-yellow" @click="uploadFile"><span class="mdi mdi-upload"></span>
+                                <v-file-input label="Select a file" accept=".jpg,.jpeg,.png,.pdf,.mp4" type="file"
+                                    @change="onFileSelected"></v-file-input>
+
+                                <v-btn class="mx-5 my-3 bg-yellow" @click="uploadFile(index)"><span
+                                        class="mdi mdi-upload"></span>
                                     Upload</v-btn>
                             </v-row>
 
@@ -28,18 +30,20 @@
 
 
                         </div>
-                        <!-- <v-btn class="my-8" type="submit" block color="primary">Submit</v-btn> -->
+
                     </v-form>
                 </div>
+                <v-btn class="bg-green-lighten-3 mb-8" @click="saveAndAddNewLecture"
+                    v-if="index === lessons.length - 1"><span class="mdi mdi-plus-thick"></span>Next Lecture</v-btn>
             </v-card>
+
         </v-container>
         <div class="d-flex justify-end mt-3 me-15">
             <div class="mx-10">
 
-                <v-btn class="" type="submit" color="primary">Submit</v-btn>
+                <v-btn type="submit" color="green-lighten-3" @click="submitForm">Save Section</v-btn>
             </div>
-            <v-btn class="bg-green-lighten-3" @click="addNewLecture">Add Next
-                Lecture</v-btn>
+
         </div>
     </div>
 </template>
@@ -52,49 +56,51 @@ import axios from 'axios';
 export default {
     data() {
         return {
-            lessonCount: 1,
-            lessonName: '',
-            lessonDuration: '',
-            uploadId: '',
-
-
-            sections: [],
-
-
-
+            lessons: [{ name: '', duration: '', video_key: '', sectionName: '', course_id: null }],
+            selectedFile: null,
             uploadProgress: null,
-            uploadStatus: ''
+            uploadStatus: '',
+            courseId: ''
         }
     },
 
     props: ['sectionName'],
+
+    mounted() {
+        const currentUrl = this.$route.path
+        const url = currentUrl.split("/")
+        const courseId = url[2];
+        // console.log(courseId)
+        this.courseId = courseId
+        // this.lessons.course_id=courseId
+    },
+
     methods: {
-        async uploadFile() {
-            console.log(this.$refs.fileInput)
-            const file = this.$refs.fileInput.files[0];
+        onFileSelected(event) {
+            console.log(event.target.files[0])
+            this.selectedFile = event.target.files[0]
+        },
+        async uploadFile(index) {
+            const file = this.selectedFile;
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = async (event) => {
                 const fileContent = event.target.result;
-                // console.log(fileContent)
-                const response = await axios.post('/lessons/upload',
-                    {
-                        name: file.name,
-                        content: fileContent
-                    },
+                this.content = fileContent
 
-                    {
-                        onUploadProgress: (progressEvent) => {
-                            // console.log(progressEvent)
-                            const percentCompleted = parseInt(Math.round((progressEvent.loaded * 100) / progressEvent.total))
-                            this.uploadProgress = percentCompleted
-                            this.uploadStatus = `Uploading file: ${percentCompleted}%`
-                        }
+                const response = await axios.post('/section/lectures/upload', {
+                    name: this.selectedFile.name,
+                    content: fileContent
+                }, {
+                    onUploadProgress: (uploadEvent) => {
+                        console.log("progress: " + Math.round(uploadEvent.loaded / uploadEvent.total * 100) + '%')
+                        const percentCompleted = Math.round((uploadEvent.loaded * 100) / uploadEvent.total)
+                        this.uploadProgress = percentCompleted
+                        this.uploadStatus = `Uploading file: ${percentCompleted}%`
+
                     }
-                )
+                })
                 try {
-                    // const data = response;
-                    // console.log(data);
                     this.uploadProgress = null
                     this.uploadStatus = 'File uploaded successfully!'
 
@@ -104,22 +110,39 @@ export default {
                     this.uploadProgress = null
                     this.uploadStatus = 'Error in uploading file.'
                 }
+
+
+                this.lessons[index].video_key = response.data.video_id;
+                this.lessons[index].sectionName = this.sectionName;
+                this.lessons[index].course_id = this.courseId
+                console.log(this.courseId)
             }
+
         },
 
-        submitForm() {
-            const formData = {
-                lessonName: this.lessonName,
-                lessonDuration: this.lessonDuration,
-                videoKey: this.uploadId
-            }
+
+        async submitForm() {
+
+            const formData = this.lessons
             console.log(formData);
             // submit the form data to the server here
+            await axios.post('/section/save', formData)
         },
 
-        addNewLecture() {
-            this.lessonCount++
+        saveAndAddNewLecture() {
+            this.lectureCount++;
+            this.lessons.push({ name: '', duration: '', video_key: '', sectionName: this.sectionName, course_id: null })
+            console.log(this.lessons)
+
         }
     }
 }
 </script>
+
+<style scoped>
+.v-btn {
+    text-transform: none;
+}
+</style>
+
+

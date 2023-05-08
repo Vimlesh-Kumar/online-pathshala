@@ -76,7 +76,8 @@
                             <v-container>
                                 <h2>What You'll Learn</h2>
                                 <v-divider class="my-3"></v-divider>
-                                <p v-for="objective in courseObjectives" :key="objective"><span class="mdi mdi-arrow-right-bold"></span> {{ objective.objective }}</p>
+                                <p v-for="objective in courseObjectives" :key="objective"><span
+                                        class="mdi mdi-arrow-right-bold"></span> {{ objective.objective }}</p>
                             </v-container>
                         </v-sheet>
 
@@ -111,7 +112,7 @@ import { mapGetters } from 'vuex'
 
 export default {
     computed: {
-        ...mapGetters(['user','courseObjectives'])
+        ...mapGetters(['user', 'courseObjectives'])
     },
     data() {
         return {
@@ -132,15 +133,15 @@ export default {
 
         const tutorId = response.data.tutorId
         this.courseAuthor = tutorId
-        
-        
 
-        await this.$store.dispatch('getObjectives',this.courseId)
+
+
+        await this.$store.dispatch('getObjectives', this.courseId)
 
 
 
         await this.$store.dispatch('fetchingUser')
-       
+
     },
     methods: {
         handleAddCourseLesson() {

@@ -15,6 +15,7 @@ module.exports = {
             allObjectives.push(Object.values(element));
         });
 
+        console.log(allObjectives)
         objectiveServices.addingObjectivesInDB(allObjectives, (err, result) => {
             if (err) {
                 return res.status(404).json({
