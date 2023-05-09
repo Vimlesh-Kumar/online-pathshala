@@ -78,7 +78,8 @@ create table IF NOT EXISTS lesson(
     course_id int not null,
     FOREIGN KEY(course_id) REFERENCES courses(id),
     lesson_name varchar(200),
-    video_key varchar(200)
+    video_key varchar(200),
+    section_name varchar(200)
 );
 
 create table IF NOT EXISTS enroll_progress(

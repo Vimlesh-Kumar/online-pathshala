@@ -33,7 +33,7 @@
                                 </div>
                             </v-row>
                             <div class="mt-5">
-                                <v-text>₹ {{ course.price }}</v-text>
+                                <h3>₹ {{ course.price }}</h3>
                             </div>
                         </v-card-text>
                     </v-card>

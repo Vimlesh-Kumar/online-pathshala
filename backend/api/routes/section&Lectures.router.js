@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const sectionLectureController=require('../controller/section&Lectures.controller')
+const sectionLectureController = require('../controller/section&Lectures.controller')
 const authuser = require('../../middlewares/token_validation')
 
 
@@ -36,8 +36,8 @@ router.post('/lectures/upload', authuser.checkToken, async (req, res) => {
         });
         // console.log(response.data.id)
         return res.json({
-            video_id:response.data.id,
-            message:'Uploaded Successfully!!'
+            video_id: response.data.id,
+            message: 'Uploaded Successfully!!'
         })
     } catch (error) {
         console.log(error, "!!!!!!!!!!!!!!!!!")
@@ -45,6 +45,7 @@ router.post('/lectures/upload', authuser.checkToken, async (req, res) => {
 
 })
 
-router.post('/save',authuser.checkToken,sectionLectureController.sectionLectures)
+router.post('/save', authuser.checkToken, sectionLectureController.sectionLectures);
+router.get('/all-sections', authuser.checkToken, sectionLectureController.allSectionForTutur)
 
 module.exports = router;

@@ -3,7 +3,7 @@
         <!-- <template v-slot:prepend>
             <v-app-bar-nav-icon></v-app-bar-nav-icon>
         </template> -->
-
+        
         <v-img src="../assets/logof.png"></v-img>
         <v-select class="select mx-5 no-color" variant="solo" density="compact" label="Category" :items="category" required
             single-line hide-details></v-select>

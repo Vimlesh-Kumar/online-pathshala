@@ -5,20 +5,20 @@
                 <v-row style="position: relative;">
                     <v-col cols="8">
                         <div>
-                            <v-text style="font-size: 15px;">{{ singleCourse.category }} > {{
+                            <p style="font-size: 15px;">{{ singleCourse.category }} > {{
                                 singleCourse.title }}
-                            </v-text>
+                            </p>
                         </div>
                         <div class="my-1">
-                            <v-text class="font-weight-bold"
+                            <p class="font-weight-bold"
                                 style="font-size:45px; font-family: 'Times New Roman', Times, serif;">{{
                                     singleCourse.title }}
-                            </v-text>
+                            </p>
                         </div>
                         <div>
-                            <v-text>
+                            <p>
                                 {{ singleCourse.subtitle }}
-                            </v-text>
+                            </p>
                         </div>
                         <div class="d-flex">
                             <v-rating :model-value="singleCourse.rating" color="amber" density="compact" half-increments
@@ -29,7 +29,7 @@
                             </div>
                         </div>
                         <div>
-                            <v-text style="font-size: 14px;">Created by {{ singleCourse.author }}</v-text>
+                            <p style="font-size: 14px;">Created by {{ singleCourse.author }}</p>
                         </div>
                     </v-col>
                     <v-col cols="4" style="position: fixed; top: 70px; right: 85px; z-index: 1000;">

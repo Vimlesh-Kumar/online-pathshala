@@ -2,7 +2,7 @@
     <div>
         <v-container class="d-flex justify-center" v-for="(lesson, index) in lessons" :key="index">
             <v-card class="px-10 justify-center" width="700">
-                <v-card-title class="my-2">Lecture {{ index + 1 }}</v-card-title>
+                <v-card-title class="my-2">Lecture {{ index + 1 }}:</v-card-title>
                 <!-- {{ sectionName }} -->
                 <div>
                     <v-form @submit.prevent="submitForm">
@@ -88,7 +88,7 @@ export default {
                 const fileContent = event.target.result;
                 this.content = fileContent
 
-                const response = await axios.post('/section/lectures/upload', {
+                const response = await axios.post('/course/section/lectures/upload', {
                     name: this.selectedFile.name,
                     content: fileContent
                 }, {
@@ -126,7 +126,7 @@ export default {
             const formData = this.lessons
             console.log(formData);
             // submit the form data to the server here
-            await axios.post('/section/save', formData)
+            await axios.post('/course/section/save', formData)
         },
 
         saveAndAddNewLecture() {
@@ -139,10 +139,5 @@ export default {
 }
 </script>
 
-<style scoped>
-.v-btn {
-    text-transform: none;
-}
-</style>
 
 

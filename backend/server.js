@@ -21,7 +21,7 @@ app.use('/user', userRouter);
 app.use('/', courseRouter);
 app.use('/user/course', enrollmentRouter);
 app.use('/', objectivesRouter);
-app.use('/section', lecturesRouter)
+app.use('/course/section', lecturesRouter)
 
 
 app.listen(process.env.APP_PORT, () => {

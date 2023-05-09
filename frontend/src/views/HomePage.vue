@@ -40,6 +40,7 @@ export default {
     },
     created() {
         this.$store.dispatch('fetchingAllCourses');
+        this.$store.dispatch('fetchingUser')
     }
 }
 </script>
