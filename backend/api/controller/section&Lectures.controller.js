@@ -24,7 +24,7 @@ module.exports = {
         })
     },
     allSectionForTutur:(req,res)=>{
-        console.log(req.query)
+        // console.log(req.query)
         sectionLecturesServices.allSectionsbycourseId(req.query.course_id, (error, result) => {
             if (error) {
                 return res.status(404).json({

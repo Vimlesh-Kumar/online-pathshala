@@ -29,12 +29,16 @@
                         <!-- Lecture Adding -->
                         <div v-if="addLectureform === true">
                             <v-divider class="my-3"></v-divider>
-                            <CourseSectionLesson :sectionName="sectionName"></CourseSectionLesson>
+                            <CourseSectionLesson :sectionName="sectionName" :sectionWithLectures="sectionsWithLectures">
+                            </CourseSectionLesson>
                         </div>
 
+                        <!-- Curriculum Display -->
+                        
                     </v-container>
                 </v-sheet>
             </div>
+            <CurruculumDisplay></CurruculumDisplay>
 
         </v-container>
     </v-main>
@@ -45,6 +49,7 @@ import axios from 'axios';
 // import axios from 'axios';
 import { mapGetters } from 'vuex';
 import CourseSectionLesson from './CourseSectionLesson.vue';
+import CurruculumDisplay from './CurruculumDisplay.vue';
 
 export default {
     data() {
@@ -53,18 +58,22 @@ export default {
             addLectureform: false,
             sectionName: '',
             editSection: false,
+            sectionLectures: [],
+            sectionsWithLectures: []
         }
     },
     components: {
-        CourseSectionLesson
+        CourseSectionLesson,
+        CurruculumDisplay
     },
 
     computed: {
         ...mapGetters(['user'])
     },
     mounted() {
-        
+
     },
+
     async created() {
         await this.$store.dispatch('fetchingUser');
 
@@ -73,20 +82,26 @@ export default {
         const currentUrl = this.$route.path;
         const url = currentUrl.split("/");
         const courseId = url[2]
-    
-        const response = await axios.get('/course/section/all-sections',{
-            params:{
-                course_id:courseId
+
+        const response = await axios.get('/course/section/all-sections', {
+            params: {
+                course_id: courseId
             }
         })
-
+        this.sectionLectures = response.data.allsectionLecturesDetails
         console.log(response)
     },
+
     methods: {
         async handleEditSection() {
-            this.editSection = true
-            this.sectionName = "vvvvvvvvvvvvvvvv"
+            this.editSection = true;
+            this.addLectureform = true;
             // const response=await axios.get()
+            const allLectures = this.sectionLectures
+            console.log(allLectures)
+
+            this.sectionName = allLectures[0].section_name
+            this.sectionsWithLectures = allLectures
         },
 
     }

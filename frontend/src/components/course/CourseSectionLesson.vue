@@ -1,8 +1,14 @@
 <template>
     <div>
+        <v-container>
+
+        </v-container>
+    </div>
+    <div>
         <v-container class="d-flex justify-center" v-for="(lesson, index) in lessons" :key="index">
             <v-card class="px-10 justify-center" width="700">
                 <v-card-title class="my-2">Lecture {{ index + 1 }}:</v-card-title>
+                {{ sectionWithLectures }}
                 <!-- {{ sectionName }} -->
                 <div>
                     <v-form @submit.prevent="submitForm">
@@ -64,7 +70,7 @@ export default {
         }
     },
 
-    props: ['sectionName'],
+    props: ['sectionName', 'sectionWithLectures'],
 
     mounted() {
         const currentUrl = this.$route.path
@@ -115,7 +121,7 @@ export default {
                 this.lessons[index].video_key = response.data.video_id;
                 this.lessons[index].sectionName = this.sectionName;
                 this.lessons[index].course_id = this.courseId
-                console.log(this.courseId)
+                // console.log(this.courseId)
             }
 
         },
@@ -132,9 +138,9 @@ export default {
         saveAndAddNewLecture() {
             this.lectureCount++;
             this.lessons.push({ name: '', duration: '', video_key: '', sectionName: this.sectionName, course_id: null })
-            console.log(this.lessons)
+            // console.log(this.lessons)
 
-        }
+        },
     }
 }
 </script>
