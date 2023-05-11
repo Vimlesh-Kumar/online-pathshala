@@ -9,7 +9,7 @@
             <v-card width="1100" class="mx-auto pb-10 bg-">
                 <v-card-title class="bg-black mb-5">Section: {{ section[0].section_name }}</v-card-title>
                 <v-container v-for="(lecture, index) in section" :key="index">
-                    <v-sheet class="border true mx-15 pa-5">
+                    <v-sheet class="border true mx-15 pa-5 pb-0">
                         <h3>Lecture : {{ index + 1 }}</h3>
                         <v-divider class="my-1"></v-divider>
                         <v-row>
@@ -22,7 +22,7 @@
                                 <!-- <h1>v</h1> -->
                                 <v-responsive aspect-ratio="16/9">
                                     <video controls>
-                                        <source href="https://drive.google.com/drive/folders/1-vZD_0PPbk9JJd3k99-sAa8vA8QZ8L6w">
+                                        <source>
                                     </video>
                                 </v-responsive>
                             </v-col>

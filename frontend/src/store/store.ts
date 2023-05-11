@@ -1,4 +1,5 @@
 import axios from "axios";
+// import { stat } from "fs/promises";
 import { createStore } from "vuex";
 
 const store = createStore({
@@ -10,7 +11,8 @@ const store = createStore({
             allCourses: [],
             userCourses: [],
             singleCourseDetails: null,
-            courseObjectives: []
+            courseObjectives: [],
+            cartCourses: []
         }
     },
 
@@ -33,6 +35,10 @@ const store = createStore({
 
         updateCourseObjctives(state, objectives) {
             state.courseObjectives = objectives;
+        },
+
+        updateCartCourses(state, courses) {
+            state.cartCourses = courses
         }
     },
 
@@ -68,14 +74,15 @@ const store = createStore({
             context.commit('updateSingleCourseDetails', course)
         },
 
-        // async addingCourseObjective(objectives) {
-        //     const response=await axios.post('/')
-        // },
-
         async getObjectives(conetxt, id) {
             const response = await axios.get(`/course/objectives-display/${id}`)
-            console.log(response)
+            // console.log(response)
             conetxt.commit('updateCourseObjctives', response.data.objectives)
+        },
+
+        async getCartCourses(context) {
+            const response = await axios.get('/user/cart');
+            context.commit('updateCartCourses', response.data.courses)
         }
     },
 
@@ -102,6 +109,10 @@ const store = createStore({
 
         courseObjectives(state) {
             return state.courseObjectives
+        },
+
+        coursesInCart(state) {
+            return state.cartCourses
         }
     }
 })

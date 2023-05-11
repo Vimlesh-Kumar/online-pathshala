@@ -49,7 +49,7 @@ import axios from 'axios';
 // import axios from 'axios';
 import { mapGetters } from 'vuex';
 import CourseSectionLesson from './CourseSectionLesson.vue';
-import CurruculumDisplay from './CurruculumDisplay.vue';
+import CurruculumDisplay from './CurruculumDisplayForTutor.vue';
 
 export default {
     data() {
@@ -70,10 +70,7 @@ export default {
     computed: {
         ...mapGetters(['user'])
     },
-    mounted() {
-
-    },
-
+    
     async created() {
         await this.$store.dispatch('fetchingUser');
 

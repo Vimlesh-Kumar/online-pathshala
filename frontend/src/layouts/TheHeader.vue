@@ -3,8 +3,7 @@
         <!-- <template v-slot:prepend>
             <v-app-bar-nav-icon></v-app-bar-nav-icon>
         </template> -->
-        
-        <v-img src="../assets/logof.png"></v-img>
+        <v-btn height="180" width="300"><router-link to="/"><v-img src="../assets/logof.png" width="300"></v-img></router-link></v-btn>
         <v-select class="select mx-5 no-color" variant="solo" density="compact" label="Category" :items="category" required
             single-line hide-details></v-select>
         <v-text-field class="mx-14" density="compact" variant="solo" label="Search" append-inner-icon="mdi-magnify"
@@ -67,6 +66,10 @@ export default {
     max-width: 180px;
     /* max-height: 60px; */
     /* font-size: 11px; */
+}
+
+::v-deep .v-img__img {
+    position: relative;
 }
 </style>
 

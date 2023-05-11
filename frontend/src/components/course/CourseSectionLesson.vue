@@ -86,6 +86,10 @@ export default {
             console.log(event.target.files[0])
             this.selectedFile = event.target.files[0]
         },
+        /**
+         * Function to upload video file for course 
+         * @param {Integer} index Index to provide lecture to fetch lecture details 
+         */
         async uploadFile(index) {
             const file = this.selectedFile;
             const reader = new FileReader();
@@ -102,6 +106,7 @@ export default {
                         console.log("progress: " + Math.round(uploadEvent.loaded / uploadEvent.total * 100) + '%')
                         const percentCompleted = Math.round((uploadEvent.loaded * 100) / uploadEvent.total)
                         this.uploadProgress = percentCompleted
+                        console.log(percentCompleted)
                         this.uploadStatus = `Uploading file: ${percentCompleted}%`
 
                     }

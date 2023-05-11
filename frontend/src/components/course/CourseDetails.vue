@@ -32,12 +32,15 @@
                             <p style="font-size: 14px;">Created by {{ singleCourse.author }}</p>
                         </div>
                     </v-col>
+
+
                     <v-col cols="4" style="position: fixed; top: 70px; right: 85px; z-index: 1000;">
                         <div>
                             <v-sheet class="ms-15 pa-8 border true">
                                 <v-card>
                                     <v-img cover :src="singleCourse.thumb_url"></v-img>
                                     <v-card-title class="font-weight-bold">₹{{ singleCourse.price }}</v-card-title>
+                                    <error :error="error" class="ma-2"></error>
                                     <v-row v-if="user?.user_role === 'Tutor' && user.id === courseAuthor?.id"
                                         :class="'text-center'">
                                         <v-col>
@@ -47,7 +50,7 @@
                                     </v-row>
                                     <v-row v-else>
                                         <v-col cols="8" class="ms-5">
-                                            <v-btn class="bg-green-lighten-3" block>Add to Cart</v-btn>
+                                            <v-btn class="bg-green-lighten-3" block @click="addToCart">Add to Cart</v-btn>
                                         </v-col>
                                         <v-col class="py-4">
 
@@ -90,7 +93,7 @@
                             <v-container>
                                 <h2>Student Reviews</h2>
                                 <v-row>
-                                    <v-rating v-model="rating" length="1" color="amber" :model-value="1"></v-rating>
+                                    <v-rating length="1" color="amber" :model-value="1"></v-rating>
                                     <div class="pt-2 text-amber font-weight-bold" style="font-size: 1.5rem;">
                                         {{ singleCourse.rating }}
                                     </div>
@@ -108,9 +111,13 @@
 
 <script>
 import axios from 'axios'
-import { mapGetters } from 'vuex'
+import { mapGetters } from 'vuex';
+import Error from '../error/error.vue'
 
 export default {
+    components: {
+        Error
+    },
     computed: {
         ...mapGetters(['user', 'courseObjectives'])
     },
@@ -118,7 +125,8 @@ export default {
         return {
             singleCourse: '',
             courseAuthor: null,
-            courseId: null
+            courseId: null,
+            error: ''
         }
     },
     async created() {
@@ -142,6 +150,10 @@ export default {
 
         await this.$store.dispatch('fetchingUser')
 
+
+        await this.$store.dispatch('getCartCourses')
+        console.log(this.$store.state.cartCourses)
+
     },
     methods: {
         handleAddCourseLesson() {
@@ -150,6 +162,19 @@ export default {
             console.log(currentUrl)
             this.$router.push(currentUrl + "/objectives")
             // this.$router.push(`/course/${this.courseId}/objectives`)
+        },
+
+        async addToCart() {
+            try {
+                const course_id = {
+                    course_id: this.courseId
+                }
+                const response = await axios.post('/user/cart', course_id)
+                // console.log(response)
+            } catch (error) {
+                this.error = "Already in cart!"
+            }
+
         }
     }
 }
