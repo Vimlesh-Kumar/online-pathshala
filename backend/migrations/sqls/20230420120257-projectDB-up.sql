@@ -23,7 +23,7 @@ create table IF NOT EXISTS courses(
 
 create table IF NOT EXISTS cart(
     id int primary key AUTO_INCREMENT,
-    course_id int not null,
+    course_id int not null unique,
     user_id int not null,
     FOREIGN KEY(course_id) REFERENCES courses(id),
     FOREIGN KEY(user_id) REFERENCES users(id)

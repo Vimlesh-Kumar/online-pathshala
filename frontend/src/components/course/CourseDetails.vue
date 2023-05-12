@@ -2,6 +2,7 @@
     <v-main>
         <div class="bg-black">
             <v-container>
+                <!-- {{ coursesInCart }} -->
                 <v-row style="position: relative;">
                     <v-col cols="8">
                         <div>
@@ -119,7 +120,7 @@ export default {
         Error
     },
     computed: {
-        ...mapGetters(['user', 'courseObjectives'])
+        ...mapGetters(['user', 'courseObjectives', 'coursesInCart'])
     },
     data() {
         return {
@@ -152,7 +153,7 @@ export default {
 
 
         await this.$store.dispatch('getCartCourses')
-        console.log(this.$store.state.cartCourses)
+        // console.log(this.$store.state.cartCourses)
 
     },
     methods: {
@@ -165,15 +166,21 @@ export default {
         },
 
         async addToCart() {
-            try {
-                const course_id = {
-                    course_id: this.courseId
+            if (this.user) {
+                try {
+                    const course_id = {
+                        course_id: this.courseId
+                    }
+                    const response = await axios.post('/user/cart', course_id)
+                    console.log(response)
+                    await this.$store.dispatch('getCartCourses')
+                } catch (error) {
+                    this.error = "Already in cart!"
                 }
-                const response = await axios.post('/user/cart', course_id)
-                // console.log(response)
-            } catch (error) {
-                this.error = "Already in cart!"
+            } else {
+                this.$router.push('/user/sign-in')
             }
+
 
         }
     }

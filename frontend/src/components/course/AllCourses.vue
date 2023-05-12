@@ -1,19 +1,19 @@
 <template>
     <!-- <v-main> -->
     <v-container>
-        <v-sheet class="px-15 py-5 mx-15 border true ">
+        <v-sheet class="px-7 py-5 border true ">
 
             <v-row>
-                <v-col v-for="course in allCourses" :key="course" cols="4">
+                <v-col v-for="course in allCourses" :key="course" cols="3">
                     <!-- <v-card height="500"> -->
-                    <v-card :loading="loading" class="mx-auto my-2" max-width="374" @click="handleOnCourseClick(course)">
+                    <v-card :loading="loading" class="mx-auto my-2"  @click="handleOnCourseClick(course)">
                         <!-- {{ course.thumb_url }} -->
                         <template v-slot:loader="{ isActive }">
                             <v-progress-linear :active="isActive" color="deep-purple" height="4"
                                 indeterminate></v-progress-linear>
                         </template>
 
-                        <v-img cover height="150" :src="course.thumb_url"></v-img>
+                        <v-img cover height="150" :src="course.thumb_url" alt="My Image"></v-img>
 
                         <v-card-item>
                             <v-card-title>{{ course.title }}</v-card-title>

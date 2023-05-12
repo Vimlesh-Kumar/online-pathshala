@@ -14,8 +14,10 @@
                 </v-text>
             </v-container>
             <!-- <h1 :style="{ fontFamily: 'Times New Roman' }">Expand your skillset with these courses</h1> -->
-            <all-courses :allCourses="allCourses"></all-courses>
+            <div>
+            </div>
         </v-container>
+        <all-courses :allCourses="allCourses"></all-courses>
         <v-container>
 
         </v-container>

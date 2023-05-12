@@ -1,28 +1,31 @@
 <template>
-    <v-app-bar>
-        <!-- <template v-slot:prepend>
-            <v-app-bar-nav-icon></v-app-bar-nav-icon>
-        </template> -->
-        <v-btn height="180" width="300"><router-link to="/"><v-img src="../assets/logof.png" width="300"></v-img></router-link></v-btn>
-        <v-select class="select mx-5 no-color" variant="solo" density="compact" label="Category" :items="category" required
-            single-line hide-details></v-select>
-        <v-text-field class="mx-14" density="compact" variant="solo" label="Search" append-inner-icon="mdi-magnify"
-            single-line hide-details>
-        </v-text-field>
+    <v-flex>
+        <v-app-bar>
+            <template v-slot:prepend v-if="cols='8'">
+                <v-app-bar-nav-icon></v-app-bar-nav-icon>
+            </template>
+            <v-btn height="180" width="300"><router-link to="/"><v-img src="../assets/logof.png"
+                        width="300"></v-img></router-link></v-btn>
+            <v-select class="select mx-5 no-color" variant="solo" density="compact" label="Category" :items="category"
+                required single-line hide-details></v-select>
+            <v-text-field class="mx-14" density="compact" variant="solo" label="Search" append-inner-icon="mdi-magnify"
+                single-line hide-details>
+            </v-text-field>
 
-        <v-btn v-if="!user || user.user_role === 'Student'" class="mx-5 bg-green-lighten-5">Teach on Pathshala</v-btn>
-        <v-btn v-if="user && user.user_role === 'Tutor'" class="mx-5 bg-green-lighten-3" @click="handleAddCourse">Add
-            Course</v-btn>
+            <!-- <v-btn v-if="!user || user.user_role === 'Student'" class="mx-5 bg-green-lighten-5">Teach on Pathshala</v-btn> -->
+            <v-btn v-if="user && user.user_role === 'Tutor'" class="mx-5 bg-green-lighten-3" @click="handleAddCourse">Add
+                Course</v-btn>
 
-        <v-icon class="bg-green-lighten-5">mdi-cart</v-icon>
+            <v-icon class="bg-green-lighten-5" v-if="user">mdi-cart</v-icon>
 
-        <v-btn v-if="user" flat class="bg-green-lighten-3 mx-5" @click="handleLogoutClick">Log out</v-btn>
-        <v-btn v-if="!user" flat class="bg-green-lighten-3 mx-5"><router-link to="/user/sign-in">Log
-                in</router-link></v-btn>
-        <v-btn v-if="!user" flat class="bg-green-lighten-2"><router-link to="/user/sign-up" class="white text">Sign
-                up</router-link></v-btn>
+            <v-btn v-if="user" flat class="bg-green-lighten-3 mx-5" @click="handleLogoutClick">Log out</v-btn>
+            <v-btn v-if="!user" flat class="bg-green-lighten-3 mx-5"><router-link to="/user/sign-in">Log
+                    in</router-link></v-btn>
+            <v-btn v-if="!user" flat class="bg-green-lighten-2"><router-link to="/user/sign-up" class="white text">Sign
+                    up</router-link></v-btn>
 
-    </v-app-bar>
+        </v-app-bar>
+    </v-flex>
 </template>
 
 <script>

@@ -60,7 +60,7 @@ export default {
                 // this.$store.dispatch('user', response.data.user)
 
                 // redirescting to the homepage
-                this.$router.push('/user/home')
+                this.$router.push('/user')
             } catch (e) {
                 this.error = 'There was a problem logging in. Check your email and password or create an account.'
             }

@@ -7,7 +7,7 @@ const courseRouter = require('./api/routes/course.router')
 const enrollmentRouter = require('./api/routes/enrollment.router')
 const objectivesRouter = require('./api/routes/courseObjectives.router')
 const lecturesRouter = require('./api/routes/section&Lectures.router')
-
+const cartRouter=require('./api/routes/cart.router')
 
 
 var bodyParser = require('body-parser');
@@ -21,7 +21,8 @@ app.use('/user', userRouter);
 app.use('/', courseRouter);
 app.use('/user/course', enrollmentRouter);
 app.use('/', objectivesRouter);
-app.use('/course/section', lecturesRouter)
+app.use('/course/section', lecturesRouter);
+app.use('/',cartRouter)
 
 
 app.listen(process.env.APP_PORT, () => {
