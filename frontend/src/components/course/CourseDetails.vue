@@ -50,13 +50,16 @@
                                         </v-col>
                                     </v-row>
                                     <v-row v-else>
-                                        <v-col cols="8" class="ms-5">
-                                            <v-btn class="bg-green-lighten-3" block @click="addToCart">Add to Cart</v-btn>
-                                        </v-col>
-                                        <v-col class="py-4">
-
-                                            <v-icon class="mdi mdi-heart" color="red"></v-icon>
-                                        </v-col>
+                                        <div class="d-flex mx-5 my-1 justify-sm-space-between align-center">
+                                            <!-- <Error :error="error"></Error> -->
+                                            <v-btn v-if="showAddTocart" width="140" class="bg-green-lighten-3 align-center"
+                                                block @click="addToCart(singleCourse.id)">Add to
+                                                Cart</v-btn>
+                                            <v-btn v-if="!showAddTocart" max-width="140" class="bg-red" block
+                                                @click="removeFromCart(singleCourse.id)">Remove from
+                                                Cart</v-btn>
+                                            <wish-list :course_id="singleCourse.id"></wish-list>
+                                        </div>
                                     </v-row>
                                     <v-card-text>
                                         <h2>This course includes:</h2>
@@ -113,11 +116,13 @@
 <script>
 import axios from 'axios'
 import { mapGetters } from 'vuex';
-import Error from '../error/error.vue'
+import Error from '../error/error.vue';
+import WishList from '../wishlist/WishList.vue';
 
 export default {
     components: {
-        Error
+        Error,
+        WishList
     },
     computed: {
         ...mapGetters(['user', 'courseObjectives', 'coursesInCart'])
@@ -127,7 +132,9 @@ export default {
             singleCourse: '',
             courseAuthor: null,
             courseId: null,
-            error: ''
+            error: '',
+            showAddTocart: true,
+            updatedCousesInCart: this.coursesInCart
         }
     },
     async created() {
@@ -165,23 +172,35 @@ export default {
             // this.$router.push(`/course/${this.courseId}/objectives`)
         },
 
-        async addToCart() {
+        async addToCart(id) {
             if (this.user) {
-                try {
-                    const course_id = {
-                        course_id: this.courseId
-                    }
-                    const response = await axios.post('/user/cart', course_id)
+                console.log(this.coursesInCart)
+                const result = await this.coursesInCart.find(function (obj) {
+                    return obj.course_id === id
+                })
+                console.log(result)
+                if (!result) {
+                    const response = await axios.post('/user/cart', {course_id:id})
                     console.log(response)
                     await this.$store.dispatch('getCartCourses')
-                } catch (error) {
-                    this.error = "Already in cart!"
+                    this.showAddTocart = false
                 }
+                else {
+                    this.showAddTocart = false;
+                    // this.error="Course Already in Cart."
+                }
+
             } else {
                 this.$router.push('/user/sign-in')
             }
+        },
 
-
+        async removeFromCart(id) {
+            this.showAddTocart = true;
+            // console.log(singleCourse)
+            const response = await axios.post('/user/cart-remove', { course_id: id })
+            console.log(response)
+            await this.$store.dispatch('getCartCourses')
         }
     }
 }

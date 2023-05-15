@@ -31,7 +31,7 @@
             <div v-else>
                 <v-sheet class="border true">
                     <v-card class="ma-5" height="100">
-                        <v-card-title>Oops! It looks like you haven't enrolled in any courses yet.</v-card-title>
+                        <v-card-title>Oops! It looks like you haven't {{ user.user_role==='Student'? 'enrolled in' : 'added' }} any courses yet.</v-card-title>
                     </v-card>
                 </v-sheet>
             </div>

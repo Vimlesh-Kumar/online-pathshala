@@ -8,7 +8,7 @@ const enrollmentRouter = require('./api/routes/enrollment.router')
 const objectivesRouter = require('./api/routes/courseObjectives.router')
 const lecturesRouter = require('./api/routes/section&Lectures.router')
 const cartRouter=require('./api/routes/cart.router')
-
+const wishListRouter=require('./api/routes/wishlist.router')
 
 var bodyParser = require('body-parser');
 app.use(bodyParser.json({ limit: "500mb" }));
@@ -23,7 +23,7 @@ app.use('/user/course', enrollmentRouter);
 app.use('/', objectivesRouter);
 app.use('/course/section', lecturesRouter);
 app.use('/',cartRouter)
-
+app.use('/',wishListRouter)
 
 app.listen(process.env.APP_PORT, () => {
     console.log('Server is running on PORT:', process.env.APP_PORT)

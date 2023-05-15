@@ -8,7 +8,7 @@
         <v-container class="d-flex justify-center" v-for="(lesson, index) in lessons" :key="index">
             <v-card class="px-10 justify-center" width="700">
                 <v-card-title class="my-2">Lecture {{ index + 1 }}:</v-card-title>
-                {{ sectionWithLectures }}
+                <!-- {{ sectionWithLectures }} -->
                 <!-- {{ sectionName }} -->
                 <div>
                     <v-form @submit.prevent="submitForm">

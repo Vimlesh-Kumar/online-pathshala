@@ -26,5 +26,16 @@ module.exports = {
             // console.log(result)
             return callback(null, result)
         })
+    },
+
+    removeCartCourseById: (data, callback) => {
+        const sql = 'DELETE FROM cart WHERE course_id=? AND user_id=?'
+        pool.query(sql, [data.course_id,data.user_id], (error, result) => {
+            if (error) {
+                return callback(error)
+            }
+            // console.log(result)
+            return callback(null, result)
+        })
     }
 }

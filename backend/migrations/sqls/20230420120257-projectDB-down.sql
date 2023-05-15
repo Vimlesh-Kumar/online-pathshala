@@ -2,13 +2,13 @@
 
 
 
-drop table users;
-drop table courses;
-drop table cart;
 drop table wishlist;
+drop table cart;
 drop table reviews;
 drop table order_details;
-drop table enrollment;
-drop table lesson;
 drop table enroll_progress;
 drop table course_objectives;
+drop table lesson;
+drop table enrollment;
+drop table courses;
+drop table users;

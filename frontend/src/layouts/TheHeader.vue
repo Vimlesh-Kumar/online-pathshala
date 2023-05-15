@@ -1,7 +1,7 @@
 <template>
     <v-flex>
         <v-app-bar>
-            <template v-slot:prepend v-if="cols='8'">
+            <template v-slot:prepend v-if="cols = '8'">
                 <v-app-bar-nav-icon></v-app-bar-nav-icon>
             </template>
             <v-btn height="180" width="300"><router-link to="/"><v-img src="../assets/logof.png"
@@ -16,7 +16,18 @@
             <v-btn v-if="user && user.user_role === 'Tutor'" class="mx-5 bg-green-lighten-3" @click="handleAddCourse">Add
                 Course</v-btn>
 
-            <v-icon class="bg-green-lighten-5" v-if="user">mdi-cart</v-icon>
+            <div v-if="user" class="d-flex">
+                <v-btn icon><router-link to="/user/cart"><v-icon class="text-green"
+                            size="large">mdi-cart</v-icon></router-link>
+
+                </v-btn>
+                <v-btn icon><router-link to="/user/wishlist">
+
+                        <v-icon class="text-red">mdi-heart</v-icon>
+                    </router-link>
+                </v-btn>
+
+            </div>
 
             <v-btn v-if="user" flat class="bg-green-lighten-3 mx-5" @click="handleLogoutClick">Log out</v-btn>
             <v-btn v-if="!user" flat class="bg-green-lighten-3 mx-5"><router-link to="/user/sign-in">Log

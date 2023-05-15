@@ -47,7 +47,7 @@ export default {
             // console.log(response)
 
             // Redirecting to user homepage
-            this.$router.push('/user/home')
+            this.$router.push('/user')
 
         }
     },
