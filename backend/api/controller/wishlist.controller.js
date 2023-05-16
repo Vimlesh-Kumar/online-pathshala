@@ -12,7 +12,7 @@ module.exports = {
             course_id: req.body.course_id,
             user_id: req.user.id
         }
-        // console.log(data)
+        console.log(data)
         wishlistServices.addToWishList(data, (error, result) => {
             if (error) {
                 return res.status(404).json({

@@ -39,9 +39,16 @@
                         <div>
                             <v-sheet class="ms-15 pa-8 border true">
                                 <v-card>
+                                    <messageDisplay :message="message" v-if="showMessage" class="mb-3"></messageDisplay>
+                                    <v-snackbar v-model="showMessage" :timeout="3000" color="success" class="">{{ message
+                                    }}</v-snackbar>
+
+
+
                                     <v-img cover :src="singleCourse.thumb_url"></v-img>
+
                                     <v-card-title class="font-weight-bold">₹{{ singleCourse.price }}</v-card-title>
-                                    <error :error="error" class="ma-2"></error>
+
                                     <v-row v-if="user?.user_role === 'Tutor' && user.id === courseAuthor?.id"
                                         :class="'text-center'">
                                         <v-col>
@@ -51,14 +58,17 @@
                                     </v-row>
                                     <v-row v-else>
                                         <div class="d-flex mx-5 my-1 justify-sm-space-between align-center">
-                                            <!-- <Error :error="error"></Error> -->
-                                            <v-btn v-if="showAddTocart" width="140" class="bg-green-lighten-3 align-center"
-                                                block @click="addToCart(singleCourse.id)">Add to
+                                            <v-btn v-if="!cartCourses.includes(singleCourse.id)" width="140"
+                                                class="bg-green-lighten-3 align-center" block
+                                                @click="addToCart(singleCourse.id)">Add to
                                                 Cart</v-btn>
-                                            <v-btn v-if="!showAddTocart" max-width="140" class="bg-red" block
-                                                @click="removeFromCart(singleCourse.id)">Remove from
-                                                Cart</v-btn>
-                                            <wish-list :course_id="singleCourse.id"></wish-list>
+
+                                            <v-btn v-else width="140" class="bg-green" block><router-link to="/user/cart"
+                                                    style="text-decoration: none;">Go to
+                                                    Cart</router-link></v-btn>
+
+                                            <!-- Add to Wishlist -->
+                                            <wish-list :course_id="singleCourse.id" :user="user"></wish-list>
                                         </div>
                                     </v-row>
                                     <v-card-text>
@@ -116,24 +126,31 @@
 <script>
 import axios from 'axios'
 import { mapGetters } from 'vuex';
-import Error from '../error/error.vue';
+import messageDisplay from '../Message&Error/messageDisplay.vue';
 import WishList from '../wishlist/WishList.vue';
 
 export default {
     components: {
-        Error,
+        messageDisplay,
         WishList
     },
     computed: {
-        ...mapGetters(['user', 'courseObjectives', 'coursesInCart'])
+        ...mapGetters(['user', 'courseObjectives', 'coursesInCart']),
+        cartCourses() {
+            if (this.coursesInCart) {
+                return this.coursesInCart.map((c) => c.course_id)
+            }
+            return []
+        }
     },
     data() {
         return {
             singleCourse: '',
             courseAuthor: null,
             courseId: null,
-            error: '',
-            showAddTocart: true,
+            // error: '',
+            message: '',
+            showMessage: false,
             updatedCousesInCart: this.coursesInCart
         }
     },
@@ -152,16 +169,10 @@ export default {
 
 
 
-        await this.$store.dispatch('getObjectives', this.courseId)
-
-
-
-        await this.$store.dispatch('fetchingUser')
-
-
-        await this.$store.dispatch('getCartCourses')
-        // console.log(this.$store.state.cartCourses)
-
+        this.$store.dispatch('getObjectives', this.courseId);
+        this.$store.dispatch('fetchingUser');
+        this.$store.dispatch('getCartCourses');
+        this.$store.dispatch('getWishlistCourses');
     },
     methods: {
         handleAddCourseLesson() {
@@ -174,34 +185,16 @@ export default {
 
         async addToCart(id) {
             if (this.user) {
-                console.log(this.coursesInCart)
-                const result = await this.coursesInCart.find(function (obj) {
-                    return obj.course_id === id
-                })
-                console.log(result)
-                if (!result) {
-                    const response = await axios.post('/user/cart', {course_id:id})
-                    console.log(response)
+                if (!this.cartCourses.includes(id)) {
+                    await axios.post('/user/cart', { course_id: id })
+                    this.message = "Course added to cart!"
                     await this.$store.dispatch('getCartCourses')
-                    this.showAddTocart = false
+                    this.showMessage = true
                 }
-                else {
-                    this.showAddTocart = false;
-                    // this.error="Course Already in Cart."
-                }
-
             } else {
                 this.$router.push('/user/sign-in')
             }
         },
-
-        async removeFromCart(id) {
-            this.showAddTocart = true;
-            // console.log(singleCourse)
-            const response = await axios.post('/user/cart-remove', { course_id: id })
-            console.log(response)
-            await this.$store.dispatch('getCartCourses')
-        }
     }
 }
 </script>

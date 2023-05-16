@@ -38,7 +38,8 @@
 
                                     </div>
                                     <div class="ms-auto">
-                                        <wish-list :course_id="item.course_id"></wish-list>
+                                        <wish-list :course_id="item.course_id" :user="user"
+                                            :wishlistCourses="wishlistCourses" :coursesInCart="coursesInCart"></wish-list>
                                         <v-btn icon>
                                             <v-icon @click="removeFromCart(item.course_id)" color="red">mdi-delete</v-icon>
                                         </v-btn>
@@ -62,7 +63,7 @@
 
 <script>
 import axios from 'axios';
-import { mapGetters } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import WishList from '../wishlist/WishList.vue'
 
 export default {
@@ -75,13 +76,15 @@ export default {
     components: {
         WishList
     },
-    async created() {
-        await this.$store.dispatch('fetchingUser')
-        await this.$store.dispatch('getCartCourses')
+    created() {
+        this.$store.dispatch('fetchingUser');
+        this.$store.dispatch('getCartCourses');
+        this.$store.dispatch('getWishlistCourses');
     },
 
     computed: {
-        ...mapGetters(['coursesInCart', 'user']),
+        ...mapGetters(['coursesInCart', 'user',]),
+        ...mapState(['wishlistCourses'])
     },
 
     methods: {

@@ -12,7 +12,8 @@ const store = createStore({
             userCourses: [],
             singleCourseDetails: null,
             courseObjectives: [],
-            cartCourses: []
+            cartCourses: [],
+            wishlistCourses: []
         }
     },
 
@@ -39,6 +40,10 @@ const store = createStore({
 
         updateCartCourses(state, courses) {
             state.cartCourses = courses
+        },
+
+        updateWishlistCourses(state, courses) {
+            state.wishlistCourses = courses;
         }
     },
 
@@ -83,6 +88,24 @@ const store = createStore({
         async getCartCourses(context) {
             const response = await axios.get('/user/cart');
             context.commit('updateCartCourses', response.data.courses)
+        },
+
+        async getWishlistCourses(context) {
+            const response = await axios.get('/user/wishlist')
+            context.commit('updateWishlistCourses', response.data.courses)
+        },
+
+        /***
+         * POST REQUEST for adding a course into WISHLIST
+         * id-number taking course id of that course
+         */
+        async addToWishlist(commit, id) {
+            await axios.post('/user/wishlist', { course_id: id })
+        },
+
+        async removeFromWishlist(context, id) {
+            await axios.post('/user/wishlist/remove', { course_id: id })
+
         }
     },
 
@@ -113,7 +136,7 @@ const store = createStore({
 
         coursesInCart(state) {
             return state.cartCourses
-        }
+        },
     }
 })
 

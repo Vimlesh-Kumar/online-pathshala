@@ -24,7 +24,7 @@
 
 <script>
 import axios from 'axios';
-import Error from './../error/error.vue'
+import Error from './../Message&Error/error.vue'
 
 export default {
     components: {

@@ -54,7 +54,7 @@ import { reactive, } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { email, required } from '@vuelidate/validators';
 import axios from 'axios';
-import Error from './../error/error.vue'
+import Error from './../Message&Error/error.vue'
 
 export default {
     components: {
