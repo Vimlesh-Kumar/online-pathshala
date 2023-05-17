@@ -2,8 +2,7 @@
     <v-main>
         <div class="bg-black">
             <v-container>
-                <!-- {{ coursesInCart }} -->
-                <v-row style="position: relative;">
+                <v-row>
                     <v-col cols="8">
                         <div>
                             <p style="font-size: 15px;">{{ singleCourse.category }} > {{
@@ -38,10 +37,12 @@
                     <v-col cols="4" style="position: fixed; top: 70px; right: 85px; z-index: 1000;">
                         <div>
                             <v-sheet class="ms-15 pa-8 border true">
+
                                 <v-card>
-                                    <messageDisplay :message="message" v-if="showMessage" class="mb-3"></messageDisplay>
-                                    <v-snackbar v-model="showMessage" :timeout="3000" color="success" class="">{{ message
-                                    }}</v-snackbar>
+                                    <v-snackbar v-model="showMessage" :timeout="2000" color="pink" class=" justify-end"
+                                        min-width="100px">{{ message
+                                        }}</v-snackbar>
+                                    <!-- <messageDisplay :message="message" v-if="showMessage" class="mb-3"></messageDisplay> -->
 
 
 
@@ -126,12 +127,12 @@
 <script>
 import axios from 'axios'
 import { mapGetters } from 'vuex';
-import messageDisplay from '../Message&Error/messageDisplay.vue';
+// import messageDisplay from '../Message&Error/messageDisplay.vue';
 import WishList from '../wishlist/WishList.vue';
 
 export default {
     components: {
-        messageDisplay,
+        // messageDisplay,
         WishList
     },
     computed: {
@@ -199,4 +200,12 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+::v-deep .v-snackbar__wrapper {
+    bottom: unset !important;
+    left: unset !important;
+    transform: unset !important;
+    top: inherit;
+    margin-top: 58px;
+}
+</style>

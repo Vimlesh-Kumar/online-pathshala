@@ -2,7 +2,7 @@
     <v-main>
         <v-container>
             <h1 class="mt-2">Shopping Cart</h1>
-
+            <!-- {{ total }} -->
             <!-- <div> -->
             <v-row>
                 <v-col cols="8">
@@ -53,7 +53,13 @@
                     </v-list>
                 </v-col>
                 <v-col cols="4" class="ms-">
-                    <h3>Total</h3>
+                    <h3>Total:</h3>
+                    <!-- <v-card> -->
+                        <!-- <v-card-subtitle>
+                            Total:
+                        </v-card-subtitle> -->
+                        <v-card-title class="font-weight-bold">₹{{ total }}</v-card-title>
+                    <!-- </v-card> -->
                 </v-col>
             </v-row>
             <!-- </div> -->
@@ -84,7 +90,18 @@ export default {
 
     computed: {
         ...mapGetters(['coursesInCart', 'user',]),
-        ...mapState(['wishlistCourses'])
+        ...mapState(['wishlistCourses']),
+        total() {
+            console.log(this.coursesInCart)
+            var sum = 0;
+            for (let course of this.coursesInCart) {
+                console.log(course)
+                sum = sum + course.price
+            }
+
+            console.log(sum)
+            return sum;
+        }
     },
 
     methods: {
@@ -93,7 +110,7 @@ export default {
          * courseId-Id of course that want to remove
          */
         async removeFromCart(courseId) {
-            console.log(courseId)
+            // console.log(courseId)
             const response = await axios.post('/user/cart-remove', { course_id: courseId })
             console.log(response)
             await this.$store.dispatch('getCartCourses')

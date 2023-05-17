@@ -1,5 +1,5 @@
 <template>
-    <v-flex>
+    <v-flex style="position:sticky; z-index: 100;">
         <v-app-bar>
             <template v-slot:prepend v-if="cols = '8'">
                 <v-app-bar-nav-icon></v-app-bar-nav-icon>
