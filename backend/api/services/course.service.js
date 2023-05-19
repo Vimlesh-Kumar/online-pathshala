@@ -52,6 +52,16 @@ module.exports = {
         })
     },
 
+    coursesByCategory:(category,callback)=>{
+        const sql='SELECT * FROM courses where category=?';
+        pool.query(sql, [category], (error, result) => {
+            if (error) {
+                return callback(error)
+            }
+            return callback(null, result)
+        })
+    },
+
     // user by courseID
     tutorByCourseId: (id, callback) => {
         pool.query(`select users.id from users inner join enrollment on users.id=enrollment.user_id where enrollment.course_id=? and users.user_role='Tutor'`,

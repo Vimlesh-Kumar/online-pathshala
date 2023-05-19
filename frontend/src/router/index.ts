@@ -18,6 +18,7 @@ const routes = [
   { path: '/course/:id/objectives', component: () => import('@/components/course/CourseObjectives.vue') },
   { path: '/course/:id/section', component: () => import('@/components/course/CourseSection.vue') },
   { path: '/course/display', component: () => import('@/components/course/CurriculumDisplayForStudent.vue') },
+  {path:'/courses/category',component:()=>import('@/components/course/CategoryCourses.vue')},
   { path: '/user/cart', component: cart },
   { path: '/user/wishlist', component: wishlist }
 

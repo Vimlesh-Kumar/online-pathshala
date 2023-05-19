@@ -6,8 +6,10 @@
             </template>
             <v-btn height="180" width="300"><router-link to="/"><v-img src="../assets/logof.png"
                         width="300"></v-img></router-link></v-btn>
-            <v-select class="select mx-5 no-color" variant="solo" density="compact" label="Category" :items="category"
-                required single-line hide-details></v-select>
+
+            <v-select v-if="select" v-model="selectValue" class="select mx-5 no-color" variant="solo" density="compact" label="Category"
+                :items="category" required single-line hide-details></v-select>
+
             <v-text-field class="mx-14" density="compact" variant="solo" label="Search" append-inner-icon="mdi-magnify"
                 single-line hide-details>
             </v-text-field>
@@ -34,18 +36,19 @@
                     in</router-link></v-btn>
             <v-btn v-if="!user" flat class="bg-green-lighten-2"><router-link to="/user/sign-up" class="white text">Sign
                     up</router-link></v-btn>
-
+            <!-- {{ select }} -->
         </v-app-bar>
     </v-flex>
 </template>
 
 <script>
+import axios from 'axios'
 import { mapGetters } from 'vuex'
 
 export default {
     data() {
         return {
-            // user1:''
+            selectValue: '',
         }
     },
 
@@ -59,10 +62,21 @@ export default {
             if (this.user.user_role === 'Tutor') {
                 this.$router.push('/user/tutor/add-course')
             }
+        },
+
+        async handleCategorySelect(select) {
+            const response=await axios.get(`/courses/category/${select}`);
+            this.$router.push(`/courses/category`)
+            console.log(response)
         }
+
     },
     computed: {
-        ...mapGetters(['user', 'category'])
+        ...mapGetters(['user', 'category']),
+        select() {
+            this.handleCategorySelect(this.selectValue)
+            return true;
+        }
     },
 }
 </script>

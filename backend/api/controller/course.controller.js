@@ -65,31 +65,6 @@ module.exports = {
                     message: "Course Not found!!"
                 })
             }
-
-
-
-            // pool.query(`select users.id from users inner join enrollment on users.id=enrollment.user_id where enrollment.course_id=?`,
-            //     [id], (error, result1) => {
-            //         if (error) {
-            //             return (error)
-            //         }
-            //         // console.log(result[0].id)
-            //         return res.status(200).json({
-            //             message: "Course found by its own id",
-            //             tutorId: result1,
-            //             course:result
-            //         })
-            //     })
-
-            // const tutorId=null;
-            // const tutorId=courseServices.tutorByCourseId(req.params.id)
-            // console.log(tutorId)
-            // return res.status(200).json({
-            //     message: "Course found by its own id",
-            //     course: result
-            // })
-
-
             courseServices.tutorByCourseId(id, (error, tutorId) => {
                 if (error) {
                     return res.status(500).json({
@@ -102,6 +77,21 @@ module.exports = {
                     tutorId: tutorId,
                     message: "Course by course Id and it also contain own author id."
                 })
+            })
+        })
+    },
+
+    categoryCourse: (req, res) => {
+        // console.log(req.params)
+        courseServices.coursesByCategory(req.params.select, (err, courses) => {
+            if (err) {
+                return res.status(404).json({
+                    message: "No any course found by category."
+                })
+            }
+            return res.status(200).json({
+                courses: courses,
+                message: "Categories All Courses.."
             })
         })
     }
