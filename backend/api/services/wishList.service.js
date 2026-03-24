@@ -1,37 +1,26 @@
-const pool = require('../../database/database');
+import pool from '../../database/database.js';
 
-module.exports = {
-    addToWishList: (data, callback) => {
-        const sql = 'INSERT INTO wishlist(course_id,user_id) VALUES(?,?)'
-        pool.query(sql, [data.course_id, data.user_id], (error, result) => {
-            if (error) {
-                return callback(error)
-            }
-            // console.log(result)
-            return callback(null, result)
-        })
-    },
+export const addToWishList = async (data) => {
+    const [result] = await pool.query(
+        'INSERT INTO wishlist(course_id,user_id) VALUES(?,?)',
+        [data.course_id, data.user_id]
+    );
+    return result;
+};
 
-    removewishlistCourseFromDB: (data, callback) => {
-        const sql = 'DELETE FROM wishlist where course_id=? AND user_id=?';
-        pool.query(sql, [data.course_id, data.user_id], (error, result) => {
-            if (error) {
-                return callback(error)
-            }
-            // console.log(result)
-            return callback(null, result)
-        })
-    },
+export const removewishlistCourseFromDB = async (data) => {
+    const [result] = await pool.query(
+        'DELETE FROM wishlist where course_id=? AND user_id=?',
+        [data.course_id, data.user_id]
+    );
+    return result;
+};
 
-    allCoursesOfUserInWishlist: (id, callback) => {
-        const sql ='SELECT course_id as id,author,category,price,rating,subtitle,thumb_url,title FROM courses JOIN wishlist on wishlist.course_id=courses.id where wishlist.user_id=?'
-        pool.query(sql, [id], (error, result) => {
-            if (error) {
-                return callback(error)
-            }
-            // console.log(result)
-            return callback(null, result)
-        })
-    }
-}
+export const allCoursesOfUserInWishlist = async (id) => {
+    const [results] = await pool.query(
+        'SELECT course_id as id,author,category,price,rating,subtitle,thumb_url,title FROM courses JOIN wishlist on wishlist.course_id=courses.id where wishlist.user_id=?',
+        [id]
+    );
+    return results;
+};
 

@@ -1,31 +1,29 @@
-const { verify } = require("jsonwebtoken")
-const SECRET_KEY = "MYSECRETKEYFORJWT"
+import jwt from 'jsonwebtoken';
+const SECRET_KEY = process.env.JWT_SECRET || "MYSECRETKEYFORJWT";
 
 const auth = {
     checkToken(req, res, next) {
         let token = req.get("authorization");
-        if (token) {
+        if (token && token.startsWith('Bearer ')) {
             token = token.slice(7);
-            verify(token, SECRET_KEY, (err, decoded) => {
+            jwt.verify(token, SECRET_KEY, (err, decoded) => {
                 if (err) {
-                    res.status(403).json({
+                    return res.status(403).json({
                         message: "Invalid token.",
-                        token:"Invalid"
-                    })
-                }
-                else {
-                    req.user=decoded.user
+                        token: "Invalid"
+                    });
+                } else {
+                    // Decoded contains { id, email, role } based on my update in controller
+                    req.user = decoded;
                     next();
                 }
-            })
-        }
-        else {
-            res.status(403).json({
-                message: "Access denied! unauthorized user."
-            })
+            });
+        } else {
+            return res.status(403).json({
+                message: "Access denied! Unauthorized user."
+            });
         }
     }
-}
+};
 
-
-module.exports = auth
+export default auth;

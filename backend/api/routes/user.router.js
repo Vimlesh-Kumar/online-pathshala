@@ -1,9 +1,10 @@
-const { signup, signin, getDetails,userById } = require('../controller/user.controller');
-const router = require('express').Router();
-const auth = require('../../middlewares/token_validation')
+import express from 'express';
+const router = express.Router();
+import { signup, signin, userById } from '../controller/user.controller.js';
+import auth from '../../middlewares/token_validation.js';
 
-router.post('/signup', signup)
-router.post('/signin', signin)
-router.get('/details',auth.checkToken,userById)
+router.post('/signup', signup);
+router.post('/signin', signin);
+router.get('/details', auth.checkToken, userById);
 
-module.exports = router
+export default router;

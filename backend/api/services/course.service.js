@@ -1,79 +1,45 @@
-const pool = require('../../database/database')
+import pool from '../../database/database.js';
 
-module.exports = {
+// Adding a course in database
+export const addCourseInDB = async (data) => {
+    const [result] = await pool.query(
+        `insert into courses(author,category,price,subtitle,thumb_url,title) values(?,?,?,?,?,?)`,
+        [data.author, data.category, data.price, data.subtitle, data.thumb_url, data.title]
+    );
+    return result;
+};
 
-    // Adding a course in databse
-    addCourseInDB: (data, callback) => {
-        pool.query(`insert into courses(author,category,price,subtitle,thumb_url,title) values(?,?,?,?,?,?)`,
-            [
-                data.author,
-                data.category,
-                data.price,
-                data.subtitle,
-                data.thumb_url,
-                data.title
-            ], (error, result) => {
-                if (error) {
-                    return callback(error)
-                }
-                // console.log(result)
-                return callback(null, result)
-            }
-        )
-    },
+// All courses by user's id
+export const courseByUserId = async (id) => {
+    const [results] = await pool.query(
+        `select courses.* from courses inner join enrollment on courses.id=enrollment.course_id inner join users on users.id=enrollment.user_id where users.id=?`,
+        [id]
+    );
+    return results;
+};
 
-    // All courses by user's id
-    courseByUserId: (id, callback) => {
-        pool.query(`select courses.* from courses inner join enrollment on courses.id=enrollment.course_id inner join users on users.id=enrollment.user_id where users.id=?`, [id], (error, result) => {
-            if (error) {
-                return callback(error)
-            }
-            return callback(null, result)
-        })
-    },
+// Finding all courses from database
+export const allCourses = async () => {
+    const [results] = await pool.query(`select * from courses`);
+    return results;
+};
 
-    // Finding all courses from databse
-    allCourses: (callback) => {
-        pool.query(`select * from courses`, (error, result) => {
-            if (error) {
-                return callback(error)
-            }
-            return callback(null, result)
-        })
-    },
+// course by course-id
+export const courseById = async (id) => {
+    const [results] = await pool.query(`select * from courses where id=?`, [id]);
+    return results[0];
+};
 
-    // course by course-id
-    courseById: (id, callback) => {
-        pool.query(`select * from courses where id=?`, [id], (error, result) => {
-            if (error) {
-                return callback(error)
-            }
-            return callback(null, result[0])
-        })
-    },
+export const coursesByCategory = async (category) => {
+    const [results] = await pool.query('SELECT * FROM courses where category=?', [category]);
+    return results;
+};
 
-    coursesByCategory:(category,callback)=>{
-        const sql='SELECT * FROM courses where category=?';
-        pool.query(sql, [category], (error, result) => {
-            if (error) {
-                return callback(error)
-            }
-            return callback(null, result)
-        })
-    },
-
-    // user by courseID
-    tutorByCourseId: (id, callback) => {
-        pool.query(`select users.id from users inner join enrollment on users.id=enrollment.user_id where enrollment.course_id=? and users.user_role='Tutor'`,
-            [id], (error, result) => {
-                if (error) {
-                    return callback(error)
-                }
-                if (result) {
-                    // console.log(result[0])
-                    return callback(null, result[0])
-
-                }
-            })
-    }
-}
+// user by courseID
+export const tutorByCourseId = async (id) => {
+    const [results] = await pool.query(
+        `select users.id from users inner join enrollment on users.id=enrollment.user_id where enrollment.course_id=? and users.user_role='Tutor'`,
+        [id]
+    );
+    return results[0];
+};

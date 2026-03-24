@@ -1,103 +1,144 @@
 <template>
-    <v-flex style="position:sticky; z-index: 100;">
-        <v-app-bar>
-            <template v-slot:prepend v-if="cols = '8'">
-                <v-app-bar-nav-icon></v-app-bar-nav-icon>
-            </template>
-            <v-btn height="180" width="300"><router-link to="/"><v-img src="../assets/logof.png"
-                        width="300"></v-img></router-link></v-btn>
+  <v-app-bar flat class="border-b" color="white" elevation="0" height="72">
+    <!-- Logo -->
+    <router-link to="/" class="ml-4 d-flex align-center text-decoration-none">
+      <v-img src="../assets/logof.png" width="160" height="48" contain></v-img>
+    </router-link>
 
-            <v-select v-if="select" v-model="selectValue" class="select mx-5 no-color" variant="solo" density="compact" label="Category"
-                :items="category" required single-line hide-details></v-select>
+    <!-- Categories Dropdown (Modern) -->
+    <v-menu open-on-hover transition="slide-y-transition">
+      <template v-slot:activator="{ props }">
+        <v-btn v-bind="props" variant="text" class="ml-4 font-weight-medium text-grey-darken-3">
+          Categories
+          <v-icon end>mdi-chevron-down</v-icon>
+        </v-btn>
+      </template>
+      <v-list density="compact" min-width="200" class="pa-2">
+        <v-list-item
+          v-for="cat in category"
+          :key="cat"
+          @click="handleCategorySelect(cat)"
+          :title="cat"
+          class="rounded-lg"
+          active-color="primary"
+        ></v-list-item>
+      </v-list>
+    </v-menu>
 
-            <v-text-field class="mx-14" density="compact" variant="solo" label="Search" append-inner-icon="mdi-magnify"
-                single-line hide-details>
-            </v-text-field>
+    <!-- Modern Search Bar -->
+    <v-spacer></v-spacer>
+    <v-text-field
+      v-model="searchQuery"
+      prepend-inner-icon="mdi-magnify"
+      placeholder="Search for anything"
+      density="compact"
+      variant="outlined"
+      class="mx-4 search-bar"
+      hide-details
+      rounded="lg"
+      bg-color="grey-lighten-4"
+      @keyup.enter="handleSearch"
+    ></v-text-field>
+    <v-spacer></v-spacer>
 
-            <!-- <v-btn v-if="!user || user.user_role === 'Student'" class="mx-5 bg-green-lighten-5">Teach on Pathshala</v-btn> -->
-            <v-btn v-if="user && user.user_role === 'Tutor'" class="mx-5 bg-green-lighten-3" @click="handleAddCourse">Add
-                Course</v-btn>
+    <!-- Right Side Actions -->
+    <div v-if="user" class="d-flex align-center mr-4">
+      <v-btn v-if="user.user_role === 'Tutor'" variant="text" class="mr-2 text-primary font-weight-bold" @click="handleAddCourse">
+        Instructor
+      </v-btn>
+      
+      <v-btn icon variant="text" class="text-grey-darken-2">
+        <v-badge :content="cartCount" color="red" offset-x="2" offset-y="2" v-if="cartCount > 0">
+          <router-link to="/user/cart" class="text-inherit"><v-icon>mdi-cart-outline</v-icon></router-link>
+        </v-badge>
+        <router-link v-else to="/user/cart" class="text-inherit"><v-icon>mdi-cart-outline</v-icon></router-link>
+      </v-btn>
 
-            <div v-if="user" class="d-flex">
-                <v-btn icon><router-link to="/user/cart"><v-icon class="text-green"
-                            size="large">mdi-cart</v-icon></router-link>
+      <v-btn icon variant="text" class="text-grey-darken-2">
+        <router-link to="/user/wishlist" class="text-inherit"><v-icon>mdi-heart-outline</v-icon></router-link>
+      </v-btn>
 
-                </v-btn>
-                <v-btn icon><router-link to="/user/wishlist">
+      <v-menu transition="scale-transition">
+        <template v-slot:activator="{ props }">
+          <v-avatar color="primary" class="ml-4 cursor-pointer" v-bind="props">
+            <span class="text-white text-uppercase">{{ user.full_name?.charAt(0) }}</span>
+          </v-avatar>
+        </template>
+        <v-list class="mt-2 pa-2 rounded-lg" min-width="200">
+          <v-list-item class="mb-2">
+            <v-list-item-title class="font-weight-bold">{{ user.full_name }}</v-list-item-title>
+            <v-list-item-subtitle>{{ user.email }}</v-list-item-subtitle>
+          </v-list-item>
+          <v-divider class="mb-2"></v-divider>
+          <v-list-item @click="$router.push('/user/profile')" prepend-icon="mdi-account-outline">Profile</v-list-item>
+          <v-list-item @click="handleLogoutClick" prepend-icon="mdi-logout" class="text-red">Logout</v-list-item>
+        </v-list>
+      </v-menu>
+    </div>
 
-                        <v-icon class="text-red">mdi-heart</v-icon>
-                    </router-link>
-                </v-btn>
-
-            </div>
-
-            <v-btn v-if="user" flat class="bg-green-lighten-3 mx-5" @click="handleLogoutClick">Log out</v-btn>
-            <v-btn v-if="!user" flat class="bg-green-lighten-3 mx-5"><router-link to="/user/sign-in">Log
-                    in</router-link></v-btn>
-            <v-btn v-if="!user" flat class="bg-green-lighten-2"><router-link to="/user/sign-up" class="white text">Sign
-                    up</router-link></v-btn>
-            <!-- {{ select }} -->
-        </v-app-bar>
-    </v-flex>
+    <!-- Login/Signup for Guest -->
+    <div v-else class="mr-4">
+      <v-btn variant="outlined" color="primary" class="mr-2 rounded-lg" @click="$router.push('/user/sign-in')">Log in</v-btn>
+      <v-btn color="primary" class="rounded-lg shadow-sm" @click="$router.push('/user/sign-up')">Sign up</v-btn>
+    </div>
+  </v-app-bar>
 </template>
 
 <script>
-import axios from 'axios'
 import { mapGetters } from 'vuex'
 
 export default {
-    data() {
-        return {
-            selectValue: '',
-        }
+  data() {
+    return {
+      searchQuery: '',
+      cartCount: 0 // In a real app, this would come from store
+    }
+  },
+  computed: {
+    ...mapGetters(['user', 'category'])
+  },
+  methods: {
+    async handleLogoutClick() {
+      localStorage.removeItem('token')
+      await this.$store.dispatch('fetchingUser')
+      this.$router.push('/')
     },
-
-    methods: {
-        async handleLogoutClick() {
-            localStorage.removeItem('token')
-            this.$store.dispatch('fetchingUser')
-            this.$router.push('/')
-        },
-        handleAddCourse() {
-            if (this.user.user_role === 'Tutor') {
-                this.$router.push('/user/tutor/add-course')
-            }
-        },
-
-        async handleCategorySelect(select) {
-            const response=await axios.get(`/courses/category/${select}`);
-            this.$router.push(`/courses/category`)
-            console.log(response)
-        }
-
+    handleAddCourse() {
+      this.$router.push('/user/tutor/add-course')
     },
-    computed: {
-        ...mapGetters(['user', 'category']),
-        select() {
-            this.handleCategorySelect(this.selectValue)
-            return true;
-        }
+    handleCategorySelect(category) {
+      this.$router.push({ path: '/courses/category', query: { category } })
     },
+    handleSearch() {
+      if (this.searchQuery.trim()) {
+        this.$router.push({ path: '/courses/search', query: { q: this.searchQuery } })
+      }
+    }
+  }
 }
 </script>
 
 <style scoped>
+.search-bar {
+  max-width: 600px;
+}
+
+.search-bar :deep(.v-field__outline) {
+  --v-field-border-opacity: 0.1;
+}
+
 .v-btn {
-    text-transform: none;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
-.v-btn a {
-    text-decoration: none;
+.text-inherit {
+  color: inherit;
+  text-decoration: none;
 }
 
-.select {
-    max-width: 180px;
-    /* max-height: 60px; */
-    /* font-size: 11px; */
-}
-
-::v-deep .v-img__img {
-    position: relative;
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>
 

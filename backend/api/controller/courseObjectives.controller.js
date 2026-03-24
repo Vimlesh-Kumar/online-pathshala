@@ -1,78 +1,59 @@
-const objectiveServices = require('../services/courseObjectives.service')
+import * as objectiveServices from '../services/courseObjectives.service.js';
 
-module.exports = {
-    courseObjectives: (req, res) => {
-        // console.log(req.body);
-        // console.log(req.body.course_id);
-        // objectivesArray=req.body.objectives;
-        // console.log(objectivesArray)
-
-        var objectives = req.body.objectives
-
-        var allObjectives = [];
-        (objectives).forEach(element => {
-            element.course_id = req.body.course_id
-            allObjectives.push(Object.values(element));
+export const courseObjectives = async (req, res) => {
+    try {
+        const objectives = req.body.objectives;
+        const allObjectives = objectives.map(element => {
+            return [element.objective, req.body.course_id];
         });
 
-        console.log(allObjectives)
-        objectiveServices.addingObjectivesInDB(allObjectives, (err, result) => {
-            if (err) {
-                return res.status(404).json({
-                    message: "Problem in Objectives inserting."
-                })
-            }
-            return res.status(200).json({
-                objectives: result,
-                message: "Objective Inserted!"
-            })
-        })
-
-    },
-
-    getObjectives: (req, res) => {
-        // console.log(req.params)
-        const course_id = req.params.id
-        objectiveServices.gettingObjectivesFromDB(course_id, (error, result) => {
-            if (error) {
-                return res.status(404).json({
-                    message: "Problem in finding Objectives."
-                })
-            }
-            return res.status(200).json({
-                objectives: result,
-                message: "Objectives"
-            })
-        })
-    },
-
-    updateObjective: (req, res) => {
-        // console.log(req.body)
-        objectiveServices.updateObjectiveInDB(req.body, (error, result) => {
-            if (error) {
-                return res.status(404).json({
-                    message: "Problem in updating Objectives."
-                })
-            }
-            return res.status(200).json({
-                updatedObjective: result,
-                message: "Objective Updated Successfully!!"
-            })
-        })
-    },
-
-    deleteObjective: (req, res) => {
-        console.log(req.params)
-        objectiveServices.deleteObj(req.params.id, (error, result) => {
-            if (error) {
-                return res.status(404).json({
-                    message: "Problem in deleting Objective."
-                })
-            }
-            return res.status(200).json({
-                deletedObjective: result,
-                message: "Objective deleted Successfully!!"
-            })
-        })
+        const result = await objectiveServices.addingObjectivesInDB(allObjectives);
+        return res.status(200).json({
+            objectives: result,
+            message: "Objective Inserted!"
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(404).json({ message: "Problem in Objectives inserting." });
     }
-}
+};
+
+export const getObjectives = async (req, res) => {
+    try {
+        const course_id = req.params.id;
+        const result = await objectiveServices.gettingObjectivesFromDB(course_id);
+        return res.status(200).json({
+            objectives: result,
+            message: "Objectives fetched."
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(404).json({ message: "Problem in finding Objectives." });
+    }
+};
+
+export const updateObjective = async (req, res) => {
+    try {
+        const result = await objectiveServices.updateObjectiveInDB(req.body);
+        return res.status(200).json({
+            updatedObjective: result,
+            message: "Objective Updated Successfully!!"
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(404).json({ message: "Problem in updating Objectives." });
+    }
+};
+
+export const deleteObjective = async (req, res) => {
+    try {
+        const result = await objectiveServices.deleteObj(req.params.id);
+        return res.status(200).json({
+            deletedObjective: result,
+            message: "Objective deleted Successfully!!"
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(404).json({ message: "Problem in deleting Objective." });
+    }
+};

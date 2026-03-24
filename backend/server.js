@@ -1,30 +1,32 @@
-const express = require('express')
-require("dotenv").config();
-const app = express()
-const userRouter = require('./api/routes/user.router')
-const cors = require('cors');
-const courseRouter = require('./api/routes/course.router')
-const enrollmentRouter = require('./api/routes/enrollment.router')
-const objectivesRouter = require('./api/routes/courseObjectives.router')
-const lecturesRouter = require('./api/routes/section&Lectures.router')
-const cartRouter=require('./api/routes/cart.router')
-const wishListRouter=require('./api/routes/wishlist.router')
+import express from 'express';
+import 'dotenv/config';
+import cors from 'cors';
+import bodyParser from 'body-parser';
 
-var bodyParser = require('body-parser');
+import userRouter from './api/routes/user.router.js';
+import courseRouter from './api/routes/course.router.js';
+import enrollmentRouter from './api/routes/enrollment.router.js';
+import objectivesRouter from './api/routes/courseObjectives.router.js';
+import lecturesRouter from './api/routes/section&Lectures.router.js';
+import cartRouter from './api/routes/cart.router.js';
+import wishListRouter from './api/routes/wishlist.router.js';
+
+const app = express();
+const PORT = process.env.APP_PORT || 5000;
+
 app.use(bodyParser.json({ limit: "500mb" }));
 app.use(bodyParser.urlencoded({ limit: "500mb", extended: true }));
-
-
 app.use(cors());
 app.use(express.json());
+
 app.use('/user', userRouter);
 app.use('/', courseRouter);
 app.use('/user/course', enrollmentRouter);
 app.use('/', objectivesRouter);
 app.use('/course/section', lecturesRouter);
-app.use('/',cartRouter)
-app.use('/',wishListRouter)
+app.use('/', cartRouter);
+app.use('/', wishListRouter);
 
-app.listen(process.env.APP_PORT, () => {
-    console.log('Server is running on PORT:', process.env.APP_PORT)
-})
+app.listen(PORT, () => {
+    console.log(`Server is running on PORT: ${PORT}`);
+});

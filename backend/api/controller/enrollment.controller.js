@@ -1,22 +1,17 @@
-const enrollmentServices = require('../services/enrollment.services')
+import * as enrollmentServices from '../services/enrollment.services.js';
 
-module.exports = {
-    // enrollment: async (req, res) => {
-    //     const body = req.body;
-    //     // console.log(body)
-    //     enrollmentServices.enrolling(body, (err, result) => {
-    //         if (err) {
-    //             console.log(err)
-    //             return res.status(500).json({
-    //                 message: "Unable to insert Enrollment details..."
-    //             })
-    //         }
-    //         return res.status(200).json({
-    //             data: result,
-    //             message: "Enrollment Success!!"
-
-    //         })
-    //     })
-
-    // }
-}
+export const enrollment = async (req, res) => {
+    try {
+        const body = req.body;
+        const result = await enrollmentServices.enrolling(body);
+        return res.status(200).json({
+            data: result,
+            message: "Enrollment Success!!"
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            message: "Unable to insert Enrollment details."
+        });
+    }
+};

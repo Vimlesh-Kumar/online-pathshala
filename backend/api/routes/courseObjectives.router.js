@@ -1,9 +1,11 @@
-const router = require('express').Router();
-const objectvesController = require('../controller/courseObjectives.controller')
-const auth = require('../../middlewares/token_validation')
+import express from 'express';
+const router = express.Router();
+import * as objectivesController from '../controller/courseObjectives.controller.js';
+import auth from '../../middlewares/token_validation.js';
 
-router.post('/course/objectives', auth.checkToken, objectvesController.courseObjectives)
-router.get('/course/objectives-display/:id',objectvesController.getObjectives);
-router.put('/course/objective',auth.checkToken,objectvesController.updateObjective);
-router.delete('/course/objective/:id',auth.checkToken,objectvesController.deleteObjective)
-module.exports = router;
+router.post('/course/objectives', auth.checkToken, objectivesController.courseObjectives);
+router.get('/course/objectives-display/:id', objectivesController.getObjectives);
+router.put('/course/objective', auth.checkToken, objectivesController.updateObjective);
+router.delete('/course/objective/:id', auth.checkToken, objectivesController.deleteObjective);
+
+export default router;
