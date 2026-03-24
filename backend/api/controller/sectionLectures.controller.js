@@ -1,4 +1,4 @@
-import * as sectionLecturesServices from "../services/section&Lectures.services.js";
+import * as sectionLecturesServices from "../services/sectionLectures.services.js";
 
 export const sectionLectures = async (req, res) => {
     try {

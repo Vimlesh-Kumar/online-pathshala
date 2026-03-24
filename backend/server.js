@@ -7,7 +7,7 @@ import userRouter from './api/routes/user.router.js';
 import courseRouter from './api/routes/course.router.js';
 import enrollmentRouter from './api/routes/enrollment.router.js';
 import objectivesRouter from './api/routes/courseObjectives.router.js';
-import lecturesRouter from './api/routes/section&Lectures.router.js';
+import lecturesRouter from './api/routes/sectionLectures.router.js';
 import cartRouter from './api/routes/cart.router.js';
 import wishListRouter from './api/routes/wishlist.router.js';
 

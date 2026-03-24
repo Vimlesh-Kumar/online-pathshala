@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import * as sectionLectureController from '../controller/section&Lectures.controller.js';
+import * as sectionLectureController from '../controller/sectionLectures.controller.js';
 import authuser from '../../middlewares/token_validation.js';
 import { google } from 'googleapis';
 import { Readable } from 'stream';
