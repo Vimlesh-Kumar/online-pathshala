@@ -1,9 +1,11 @@
 {
     "dev": {
-        "host": "localhost",
-        "user": "root",
-        "password": "argusadmin",
-        "database": "online_pathshala",
+        "socketPath": { "ENV": "DB_SOCKET_PATH" },
+        "host": { "ENV": "DB_HOST" },
+        "port": { "ENV": "DB_PORT" },
+        "user": { "ENV": "DB_USER" },
+        "password": { "ENV": "DB_PASSWORD" },
+        "database": { "ENV": "MYSQL_DATABASE" },
         "driver": "mysql",
         "multipleStatements": true
     },

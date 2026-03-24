@@ -8,10 +8,10 @@
 
         <v-container>
             <v-container class="bg-black" max-height="400">
-                <v-text class="font-weight-bold mx-1"
-                    style="font-size:40px; font-family: 'Times New Roman', Times, serif;">Expand your skillset with these
+                <div class="font-weight-bold mx-1"
+                    style="font-size:40px; font-family: 'Times New Roman', Times, serif; color: white;">Expand your skillset with these
                     courses
-                </v-text>
+                </div>
             </v-container>
             <!-- <h1 :style="{ fontFamily: 'Times New Roman' }">Expand your skillset with these courses</h1> -->
             <div>
