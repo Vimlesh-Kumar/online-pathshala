@@ -12,7 +12,7 @@ import cartRouter from './api/routes/cart.router.js';
 import wishListRouter from './api/routes/wishlist.router.js';
 
 const app = express();
-const PORT = process.env.APP_PORT || 5000;
+const PORT = process.env.PORT || process.env.APP_PORT || 5000;
 
 app.use(bodyParser.json({ limit: "500mb" }));
 app.use(bodyParser.urlencoded({ limit: "500mb", extended: true }));
@@ -27,6 +27,10 @@ app.use('/course/section', lecturesRouter);
 app.use('/', cartRouter);
 app.use('/', wishListRouter);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on PORT: ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on PORT: ${PORT}`);
+    });
+}
+
+export default app;

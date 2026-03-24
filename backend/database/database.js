@@ -9,7 +9,8 @@ const connectionConfig = {
     database: process.env.MYSQL_DATABASE,
     connectionLimit: 10,
     waitForConnections: true,
-    queueLimit: 0
+    queueLimit: 0,
+    ssl: process.env.DB_HOST !== 'localhost' ? { rejectUnauthorized: false } : undefined
 };
 
 if (process.env.DB_SOCKET_PATH) {
