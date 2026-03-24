@@ -35,6 +35,16 @@ export const coursesByCategory = async (category) => {
     return results;
 };
 
+// search courses by title or author
+export const searchCourses = async (query) => {
+    const q = `%${query}%`;
+    const [results] = await pool.query(
+        'SELECT * FROM courses WHERE title LIKE ? OR author LIKE ? OR category LIKE ?',
+        [q, q, q]
+    );
+    return results;
+};
+
 // user by courseID
 export const tutorByCourseId = async (id) => {
     const [results] = await pool.query(

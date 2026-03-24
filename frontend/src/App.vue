@@ -1,15 +1,20 @@
 <template>
   <v-app>
     <the-header></the-header>
-    <router-view />
+    <v-main>
+      <router-view />
+    </v-main>
+    <the-footer></the-footer>
   </v-app>
 </template>
 
 <script>
   import TheHeader from './layouts/TheHeader.vue'
+  import TheFooter from './layouts/TheFooter.vue'
   export default{
     components:{
-      TheHeader
+      TheHeader,
+      TheFooter
     }
   }
 </script>

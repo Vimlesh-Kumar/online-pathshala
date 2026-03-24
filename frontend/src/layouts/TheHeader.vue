@@ -32,54 +32,56 @@
       prepend-inner-icon="mdi-magnify"
       placeholder="Search for anything"
       density="compact"
-      variant="outlined"
+      variant="solo-filled"
       class="mx-4 search-bar"
       hide-details
       rounded="lg"
-      bg-color="grey-lighten-4"
+      flat
       @keyup.enter="handleSearch"
     ></v-text-field>
     <v-spacer></v-spacer>
 
     <!-- Right Side Actions -->
-    <div v-if="user" class="d-flex align-center mr-4">
-      <v-btn v-if="user.user_role === 'Tutor'" variant="text" class="mr-2 text-primary font-weight-bold" @click="handleAddCourse">
-        Instructor
-      </v-btn>
-      
-      <v-btn icon variant="text" class="text-grey-darken-2">
-        <v-badge :content="cartCount" color="red" offset-x="2" offset-y="2" v-if="cartCount > 0">
-          <router-link to="/user/cart" class="text-inherit"><v-icon>mdi-cart-outline</v-icon></router-link>
-        </v-badge>
-        <router-link v-else to="/user/cart" class="text-inherit"><v-icon>mdi-cart-outline</v-icon></router-link>
-      </v-btn>
+    <div class="d-flex align-center mr-4">
+      <div v-if="user" class="d-flex align-center">
+        <v-btn v-if="user.user_role === 'Tutor'" variant="text" class="mr-2 text-primary font-weight-bold" @click="handleAddCourse">
+          Instructor
+        </v-btn>
+        
+        <v-btn icon variant="text" class="text-grey-darken-2">
+          <v-badge :content="cartCount" color="red" offset-x="2" offset-y="2" v-if="cartCount > 0">
+            <router-link to="/user/cart" class="text-inherit"><v-icon>mdi-cart-outline</v-icon></router-link>
+          </v-badge>
+          <router-link v-else to="/user/cart" class="text-inherit"><v-icon>mdi-cart-outline</v-icon></router-link>
+        </v-btn>
 
-      <v-btn icon variant="text" class="text-grey-darken-2">
-        <router-link to="/user/wishlist" class="text-inherit"><v-icon>mdi-heart-outline</v-icon></router-link>
-      </v-btn>
+        <v-btn icon variant="text" class="text-grey-darken-2">
+          <router-link to="/user/wishlist" class="text-inherit"><v-icon>mdi-heart-outline</v-icon></router-link>
+        </v-btn>
 
-      <v-menu transition="scale-transition">
-        <template v-slot:activator="{ props }">
-          <v-avatar color="primary" class="ml-4 cursor-pointer" v-bind="props">
-            <span class="text-white text-uppercase">{{ user.full_name?.charAt(0) }}</span>
-          </v-avatar>
-        </template>
-        <v-list class="mt-2 pa-2 rounded-lg" min-width="200">
-          <v-list-item class="mb-2">
-            <v-list-item-title class="font-weight-bold">{{ user.full_name }}</v-list-item-title>
-            <v-list-item-subtitle>{{ user.email }}</v-list-item-subtitle>
-          </v-list-item>
-          <v-divider class="mb-2"></v-divider>
-          <v-list-item @click="$router.push('/user/profile')" prepend-icon="mdi-account-outline">Profile</v-list-item>
-          <v-list-item @click="handleLogoutClick" prepend-icon="mdi-logout" class="text-red">Logout</v-list-item>
-        </v-list>
-      </v-menu>
-    </div>
+        <v-menu transition="scale-transition">
+          <template v-slot:activator="{ props }">
+            <v-avatar color="primary" class="ml-4 cursor-pointer" v-bind="props">
+              <span class="text-white text-uppercase">{{ user.full_name?.charAt(0) }}</span>
+            </v-avatar>
+          </template>
+          <v-list class="mt-2 pa-2 rounded-lg" min-width="200">
+            <v-list-item class="mb-2">
+              <v-list-item-title class="font-weight-bold">{{ user.full_name }}</v-list-item-title>
+              <v-list-item-subtitle>{{ user.email }}</v-list-item-subtitle>
+            </v-list-item>
+            <v-divider class="mb-2"></v-divider>
+            <v-list-item @click="$router.push('/user/profile')" prepend-icon="mdi-account-outline">Profile</v-list-item>
+            <v-list-item @click="handleLogoutClick" prepend-icon="mdi-logout" class="text-red">Logout</v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
 
-    <!-- Login/Signup for Guest -->
-    <div v-else class="mr-4">
-      <v-btn variant="outlined" color="primary" class="mr-2 rounded-lg" @click="$router.push('/user/sign-in')">Log in</v-btn>
-      <v-btn color="primary" class="rounded-lg shadow-sm" @click="$router.push('/user/sign-up')">Sign up</v-btn>
+      <!-- Login/Signup for Guest -->
+      <div v-else class="d-flex align-center">
+        <v-btn variant="outlined" color="primary" class="mr-2 rounded-lg" @click="$router.push('/user/sign-in')">Log in</v-btn>
+        <v-btn color="primary" class="rounded-lg shadow-sm" @click="$router.push('/user/sign-up')">Sign up</v-btn>
+      </div>
     </div>
   </v-app-bar>
 </template>
@@ -91,11 +93,28 @@ export default {
   data() {
     return {
       searchQuery: '',
-      cartCount: 0 // In a real app, this would come from store
+      cartCount: 0,
+      searchTimeout: null
     }
   },
   computed: {
     ...mapGetters(['user', 'category'])
+  },
+  watch: {
+    searchQuery(newVal) {
+      if (this.searchTimeout) clearTimeout(this.searchTimeout)
+      this.searchTimeout = setTimeout(() => {
+        if (newVal.trim()) {
+          this.handleSearch()
+        }
+      }, 600)
+    },
+    '$route.query.q': {
+      immediate: true,
+      handler(newVal) {
+        if (newVal) this.searchQuery = newVal
+      }
+    }
   },
   methods: {
     async handleLogoutClick() {
@@ -107,13 +126,20 @@ export default {
       this.$router.push('/user/tutor/add-course')
     },
     handleCategorySelect(category) {
-      this.$router.push({ path: '/courses/category', query: { category } })
+      this.$store.dispatch('setSelectedCategory', category)
+      if (this.$route.path !== '/') {
+        this.$router.push('/')
+      }
     },
     handleSearch() {
-      if (this.searchQuery.trim()) {
-        this.$router.push({ path: '/courses/search', query: { q: this.searchQuery } })
+      this.$store.dispatch('setSearchQuery', this.searchQuery)
+      if (this.$route.path !== '/') {
+        this.$router.push('/')
       }
     }
+  },
+  beforeUnmount() {
+    if (this.searchTimeout) clearTimeout(this.searchTimeout)
   }
 }
 </script>

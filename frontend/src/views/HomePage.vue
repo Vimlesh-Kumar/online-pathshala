@@ -43,15 +43,17 @@
       </v-container>
     </v-sheet>
 
-    <!-- Courses Section -->
     <v-container class="py-12">
       <div class="d-flex align-center mb-8">
         <div>
-          <h2 class="text-h4 font-weight-bold text-grey-darken-4 mb-2">Popular Courses</h2>
+          <h2 class="text-h4 font-weight-bold text-grey-darken-4 mb-2">{{ displayTitle }}</h2>
           <div class="v-divider w-25 border-opacity-100 border-primary" style="height: 4px; border-radius: 2px;"></div>
         </div>
         <v-spacer></v-spacer>
-        <v-btn variant="text" color="primary" class="font-weight-bold" @click="$router.push('/courses')">
+        <v-btn v-if="selectedCategory || searchQuery" variant="outlined" color="primary" class="mr-4 rounded-lg" @click="clearFilters">
+          Clear Filters <v-icon end>mdi-close</v-icon>
+        </v-btn>
+        <v-btn variant="text" color="primary" class="font-weight-bold" @click="clearFilters">
           View all <v-icon end>mdi-arrow-right</v-icon>
         </v-btn>
       </div>
@@ -96,7 +98,18 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['allCourses'])
+    ...mapGetters(['allCourses', 'searchQuery', 'selectedCategory']),
+    displayTitle() {
+      if (this.selectedCategory) return `Courses in ${this.selectedCategory}`
+      if (this.searchQuery) return `Search results for "${this.searchQuery}"`
+      return 'Popular Courses'
+    }
+  },
+  methods: {
+    clearFilters() {
+      this.$store.dispatch('setSearchQuery', '')
+      this.$store.dispatch('setSelectedCategory', '')
+    }
   },
   created() {
     this.$store.dispatch('fetchingAllCourses')

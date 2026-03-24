@@ -9,5 +9,6 @@ router.get('/user/courses', auth.checkToken, courseController.allcourseByUserId)
 router.get('/courses', courseController.allCOURSES);
 router.get('/courses/category/:select', courseController.categoryCourse);
 router.get('/course/:id', courseController.courseByCourseId);
+router.get('/courses/search', courseController.searchAllCourses);
 
 export default router;

@@ -93,3 +93,20 @@ export const categoryCourse = async (req, res) => {
         });
     }
 };
+
+export const searchAllCourses = async (req, res) => {
+    try {
+        const query = req.query.q;
+        if (!query) {
+            return res.status(400).json({ message: "Search query is required." });
+        }
+        const courses = await courseServices.searchCourses(query);
+        return res.status(200).json({
+            courses: courses,
+            message: "Search results fetched."
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Error performing search." });
+    }
+};
