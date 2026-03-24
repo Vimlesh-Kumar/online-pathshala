@@ -18,10 +18,16 @@ export const courseByUserId = async (id) => {
     return results;
 };
 
-// Finding all courses from database
-export const allCourses = async () => {
-    const [results] = await pool.query(`select * from courses`);
-    return results;
+// Finding all courses from database with pagination and sorting
+export const allCourses = async (limit = 20, offset = 0, sortBy = 'Newest') => {
+    let orderBy = 'id DESC';
+    if (sortBy === 'Price: Low to High') orderBy = 'price ASC';
+    else if (sortBy === 'Price: High to Low') orderBy = 'price DESC';
+    else if (sortBy === 'Best Rating') orderBy = 'rating DESC';
+
+    const [courses] = await pool.query(`select * from courses ORDER BY ${orderBy} LIMIT ? OFFSET ?`, [limit, offset]);
+    const [total] = await pool.query(`SELECT COUNT(*) as count FROM courses`);
+    return { courses, total: total[0].count };
 };
 
 // course by course-id
@@ -30,19 +36,35 @@ export const courseById = async (id) => {
     return results[0];
 };
 
-export const coursesByCategory = async (category) => {
-    const [results] = await pool.query('SELECT * FROM courses where category=?', [category]);
-    return results;
+// Courses by category with pagination and sorting
+export const coursesByCategory = async (category, limit = 20, offset = 0, sortBy = 'Newest') => {
+    let orderBy = 'id DESC';
+    if (sortBy === 'Price: Low to High') orderBy = 'price ASC';
+    else if (sortBy === 'Price: High to Low') orderBy = 'price DESC';
+    else if (sortBy === 'Best Rating') orderBy = 'rating DESC';
+
+    const [courses] = await pool.query(`SELECT * FROM courses where category=? ORDER BY ${orderBy} LIMIT ? OFFSET ?`, [category, limit, offset]);
+    const [total] = await pool.query(`SELECT COUNT(*) as count FROM courses where category=?`, [category]);
+    return { courses, total: total[0].count };
 };
 
-// search courses by title or author
-export const searchCourses = async (query) => {
+// search courses by title or author with pagination and sorting
+export const searchCourses = async (query, limit = 20, offset = 0, sortBy = 'Newest') => {
     const q = `%${query}%`;
-    const [results] = await pool.query(
-        'SELECT * FROM courses WHERE title LIKE ? OR author LIKE ? OR category LIKE ?',
+    let orderBy = 'id DESC';
+    if (sortBy === 'Price: Low to High') orderBy = 'price ASC';
+    else if (sortBy === 'Price: High to Low') orderBy = 'price DESC';
+    else if (sortBy === 'Best Rating') orderBy = 'rating DESC';
+
+    const [courses] = await pool.query(
+        `SELECT * FROM courses WHERE title LIKE ? OR author LIKE ? OR category LIKE ? ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
+        [q, q, q, limit, offset]
+    );
+    const [total] = await pool.query(
+        'SELECT COUNT(*) as count FROM courses WHERE title LIKE ? OR author LIKE ? OR category LIKE ?',
         [q, q, q]
     );
-    return results;
+    return { courses, total: total[0].count };
 };
 
 // user by courseID

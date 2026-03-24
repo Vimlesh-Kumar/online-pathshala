@@ -1,20 +1,46 @@
 <template>
   <v-container class="mt-8">
-    <div class="d-flex align-center justify-space-between mb-8">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-2">{{ title }}</h1>
-        <div class="text-subtitle-1 text-grey">{{ resultsCount }} results found</div>
-      </div>
-      <v-select
-        v-model="sortBy"
-        :items="sortOptions"
-        label="Sort by"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="max-width-200"
-      ></v-select>
-    </div>
+    <v-row class="mb-6" align="center">
+      <v-col cols="12" md="6">
+        <v-text-field
+          v-model="localSearchQuery"
+          prepend-inner-icon="mdi-magnify"
+          label="Search courses..."
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          rounded="lg"
+          @keyup.enter="handleLocalSearch"
+          class="bg-white"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="3">
+        <v-select
+          v-model="localCategory"
+          :items="['All', ...category]"
+          label="Category"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          rounded="lg"
+          class="bg-white"
+          @update:model-value="handleCategoryChange"
+        ></v-select>
+      </v-col>
+      <v-col cols="12" md="3">
+        <v-select
+          v-model="sortBy"
+          :items="sortOptions"
+          label="Sort by"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          rounded="lg"
+          class="bg-white"
+          @update:model-value="handleSortChange"
+        ></v-select>
+      </v-col>
+    </v-row>
 
     <v-divider class="mb-8"></v-divider>
 
@@ -27,7 +53,20 @@
     </template>
 
     <template v-else-if="courses.length > 0">
-      <all-courses :all-courses="sortedCourses"></all-courses>
+      <all-courses :all-courses="courses"></all-courses>
+      
+      <!-- Pagination -->
+      <div class="d-flex justify-center mt-12 pb-8">
+        <v-pagination
+          v-model="page"
+          :length="totalPages"
+          :total-visible="7"
+          rounded="lg"
+          @update:model-value="fetchCourses"
+          color="primary"
+          elevation="1"
+        ></v-pagination>
+      </div>
     </template>
 
     <v-sheet v-else class="text-center py-16 px-4 rounded-xl" border>
@@ -42,6 +81,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import AllCourses from './AllCourses.vue'
 import axios from 'axios'
 
@@ -52,30 +92,37 @@ export default {
       courses: [],
       loading: true,
       sortBy: 'Newest',
-      sortOptions: ['Newest', 'Price: Low to High', 'Price: High to Low', 'Best Rating']
+      sortOptions: ['Newest', 'Price: Low to High', 'Price: High to Low', 'Best Rating'],
+      page: 1,
+      pageSize: 20,
+      total: 0,
+      localSearchQuery: '',
+      localCategory: 'All'
     }
   },
   computed: {
+    ...mapGetters(['category']),
     title() {
-      if (this.$route.query.category) return `Courses in ${this.$route.query.category}`
-      if (this.$route.query.q) return `Search results for "${this.$route.query.q}"`
+      if (this.localCategory !== 'All') return `Courses in ${this.localCategory}`
+      if (this.localSearchQuery) return `Search results for "${this.localSearchQuery}"`
       return 'All Courses'
     },
     resultsCount() {
-      return this.courses.length
+      return this.total
     },
-    sortedCourses() {
-      let sorted = [...this.courses]
-      if (this.sortBy === 'Price: Low to High') return sorted.sort((a, b) => a.price - b.price)
-      if (this.sortBy === 'Price: High to Low') return sorted.sort((a, b) => b.price - a.price)
-      if (this.sortBy === 'Best Rating') return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0))
-      return sorted // Default newest (assumes ID order for now)
+    totalPages() {
+      return Math.ceil(this.total / this.pageSize)
     }
   },
   watch: {
     '$route.query': {
       immediate: true,
-      handler: 'fetchCourses'
+      handler(newVal) {
+        this.localSearchQuery = newVal.q || ''
+        this.localCategory = newVal.category || 'All'
+        this.page = 1
+        this.fetchCourses()
+      }
     }
   },
   methods: {
@@ -83,19 +130,45 @@ export default {
       this.loading = true
       try {
         let url = '/courses'
-        if (this.$route.query.category) {
-          url = `/courses/category/${this.$route.query.category}`
-        } else if (this.$route.query.q) {
-          url = `/courses/search?q=${this.$route.query.q}`
+        let params = {
+          page: this.page,
+          limit: this.pageSize,
+          sortBy: this.sortBy
+        }
+
+        if (this.localCategory !== 'All') {
+          url = `/courses/category/${this.localCategory}`
+        } else if (this.localSearchQuery) {
+          url = `/courses/search`
+          params.q = this.localSearchQuery
         }
         
-        const response = await axios.get(url)
+        const response = await axios.get(url, { params })
         this.courses = response.data.courses || []
+        this.total = response.data.total || 0
       } catch (error) {
         console.error('Error fetching courses:', error)
         this.courses = []
+        this.total = 0
       } finally {
         this.loading = false
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    },
+    handleSortChange() {
+      this.page = 1
+      this.fetchCourses()
+    },
+    handleLocalSearch() {
+      this.$router.push({ query: { ...this.$route.query, q: this.localSearchQuery } })
+    },
+    handleCategoryChange() {
+      if (this.localCategory === 'All') {
+        const query = { ...this.$route.query }
+        delete query.category
+        this.$router.push({ query })
+      } else {
+        this.$router.push({ query: { ...this.$route.query, category: this.localCategory } })
       }
     }
   }

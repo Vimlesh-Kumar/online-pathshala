@@ -43,9 +43,17 @@ export const allcourseByUserId = async (req, res) => {
 
 export const allCOURSES = async (req, res) => {
     try {
-        const courses = await courseServices.allCourses();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const sortBy = req.query.sortBy || 'Newest';
+        const offset = (page - 1) * limit;
+        
+        const { courses, total } = await courseServices.allCourses(limit, offset, sortBy);
         return res.status(200).json({
             courses: courses,
+            total: total,
+            page: page,
+            limit: limit,
             message: "All courses fetched successfully."
         });
     } catch (err) {
@@ -81,9 +89,18 @@ export const courseByCourseId = async (req, res) => {
 
 export const categoryCourse = async (req, res) => {
     try {
-        const courses = await courseServices.coursesByCategory(req.params.select);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const sortBy = req.query.sortBy || 'Newest';
+        const offset = (page - 1) * limit;
+        const category = req.params.select;
+
+        const { courses, total } = await courseServices.coursesByCategory(category, limit, offset, sortBy);
         return res.status(200).json({
             courses: courses,
+            total: total,
+            page: page,
+            limit: limit,
             message: "Courses by category fetched."
         });
     } catch (err) {
@@ -100,9 +117,17 @@ export const searchAllCourses = async (req, res) => {
         if (!query) {
             return res.status(400).json({ message: "Search query is required." });
         }
-        const courses = await courseServices.searchCourses(query);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const sortBy = req.query.sortBy || 'Newest';
+        const offset = (page - 1) * limit;
+
+        const { courses, total } = await courseServices.searchCourses(query, limit, offset, sortBy);
         return res.status(200).json({
             courses: courses,
+            total: total,
+            page: page,
+            limit: limit,
             message: "Search results fetched."
         });
     } catch (err) {

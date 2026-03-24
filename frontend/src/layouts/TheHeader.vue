@@ -127,15 +127,11 @@ export default {
     },
     handleCategorySelect(category) {
       this.$store.dispatch('setSelectedCategory', category)
-      if (this.$route.path !== '/') {
-        this.$router.push('/')
-      }
+      this.$router.push({ path: '/courses/all', query: { category: category } })
     },
     handleSearch() {
       this.$store.dispatch('setSearchQuery', this.searchQuery)
-      if (this.$route.path !== '/') {
-        this.$router.push('/')
-      }
+      this.$router.push({ path: '/courses/all', query: { q: this.searchQuery } })
     }
   },
   beforeUnmount() {

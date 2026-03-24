@@ -53,12 +53,12 @@
         <v-btn v-if="selectedCategory || searchQuery" variant="outlined" color="primary" class="mr-4 rounded-lg" @click="clearFilters">
           Clear Filters <v-icon end>mdi-close</v-icon>
         </v-btn>
-        <v-btn variant="text" color="primary" class="font-weight-bold" @click="clearFilters">
+        <v-btn variant="text" color="primary" class="font-weight-bold" @click="$router.push('/courses/all')">
           View all <v-icon end>mdi-arrow-right</v-icon>
         </v-btn>
       </div>
 
-      <all-courses :allCourses="allCourses"></all-courses>
+      <all-courses :allCourses="allCourses.slice(0, 20)"></all-courses>
     </v-container>
 
     <!-- Features Section (Adding for Realistic feel) -->

@@ -20,6 +20,7 @@ const routes = [
   { path: '/course/display', component: () => import('@/components/course/CurriculumDisplayForStudent.vue') },
   { path: '/courses/category', component: () => import('@/components/course/CategoryCourses.vue') },
   { path: '/courses/search', component: () => import('@/components/course/CategoryCourses.vue') },
+  { path: '/courses/all', component: () => import('@/components/course/CategoryCourses.vue') },
   { path: '/user/cart', component: cart },
   { path: '/user/wishlist', component: wishlist }
 ]
