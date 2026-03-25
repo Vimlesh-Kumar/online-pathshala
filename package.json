@@ -17,5 +17,8 @@
   },
   "dependencies": {
     "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
