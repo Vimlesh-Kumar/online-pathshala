@@ -109,7 +109,8 @@ body {
   overflow: hidden;
 }
 
-.search-input :deep(.v-field) {
+.search-input .v-field {
   background: var(--search-bg);
   border-radius: 999px;
+  box-shadow: none;
 }
