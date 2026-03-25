@@ -1,88 +1,108 @@
 <template>
-  <v-app-bar flat class="border-b" color="white" elevation="0" height="72">
-    <!-- Logo -->
-    <router-link to="/" class="ml-4 d-flex align-center text-decoration-none">
-      <v-img src="../assets/logof.png" width="160" height="48" contain></v-img>
-    </router-link>
+  <v-app-bar
+    flat
+    height="84"
+    class="header-shell px-2 px-md-6"
+  >
+    <v-container class="py-0 fill-height">
+      <div class="header-panel d-flex align-center w-100 px-2 px-md-4">
+        <router-link to="/" class="brand-link d-flex align-center text-decoration-none">
+          <v-avatar rounded="xl" size="44" color="white" class="mr-3 brand-mark">
+            <v-img src="../assets/logo.png"></v-img>
+          </v-avatar>
+          <div>
+            <div class="brand-name">Online Pathshala</div>
+            <div class="brand-subtitle">Learn with structure</div>
+          </div>
+        </router-link>
 
-    <!-- Categories Dropdown (Modern) -->
-    <v-menu open-on-hover transition="slide-y-transition">
-      <template v-slot:activator="{ props }">
-        <v-btn v-bind="props" variant="text" class="ml-4 font-weight-medium text-grey-darken-3">
-          Categories
-          <v-icon end>mdi-chevron-down</v-icon>
-        </v-btn>
-      </template>
-      <v-list density="compact" min-width="200" class="pa-2">
-        <v-list-item
-          v-for="cat in category"
-          :key="cat"
-          @click="handleCategorySelect(cat)"
-          :title="cat"
-          class="rounded-lg"
-          active-color="primary"
-        ></v-list-item>
-      </v-list>
-    </v-menu>
-
-    <!-- Modern Search Bar -->
-    <v-spacer></v-spacer>
-    <v-text-field
-      v-model="searchQuery"
-      prepend-inner-icon="mdi-magnify"
-      placeholder="Search for anything"
-      density="compact"
-      variant="solo-filled"
-      class="mx-4 search-bar"
-      hide-details
-      rounded="lg"
-      flat
-      @keyup.enter="handleSearch"
-    ></v-text-field>
-    <v-spacer></v-spacer>
-
-    <!-- Right Side Actions -->
-    <div class="d-flex align-center mr-4">
-      <div v-if="user" class="d-flex align-center">
-        <v-btn v-if="user.user_role === 'Tutor'" variant="text" class="mr-2 text-primary font-weight-bold" @click="handleAddCourse">
-          Instructor
-        </v-btn>
-        
-        <v-btn icon variant="text" class="text-grey-darken-2">
-          <v-badge :content="cartCount" color="red" offset-x="2" offset-y="2" v-if="cartCount > 0">
-            <router-link to="/user/cart" class="text-inherit"><v-icon>mdi-cart-outline</v-icon></router-link>
-          </v-badge>
-          <router-link v-else to="/user/cart" class="text-inherit"><v-icon>mdi-cart-outline</v-icon></router-link>
-        </v-btn>
-
-        <v-btn icon variant="text" class="text-grey-darken-2">
-          <router-link to="/user/wishlist" class="text-inherit"><v-icon>mdi-heart-outline</v-icon></router-link>
-        </v-btn>
-
-        <v-menu transition="scale-transition">
-          <template v-slot:activator="{ props }">
-            <v-avatar color="primary" class="ml-4 cursor-pointer" v-bind="props">
-              <span class="text-white text-uppercase">{{ user.full_name?.charAt(0) }}</span>
-            </v-avatar>
+        <v-menu open-on-hover transition="slide-y-transition">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              variant="text"
+              class="ml-4 d-none d-md-inline-flex nav-button"
+            >
+              Categories
+              <v-icon end size="18">mdi-chevron-down</v-icon>
+            </v-btn>
           </template>
-          <v-list class="mt-2 pa-2 rounded-lg" min-width="200">
-            <v-list-item class="mb-2">
-              <v-list-item-title class="font-weight-bold">{{ user.full_name }}</v-list-item-title>
-              <v-list-item-subtitle>{{ user.email }}</v-list-item-subtitle>
-            </v-list-item>
-            <v-divider class="mb-2"></v-divider>
-            <v-list-item @click="$router.push('/user/profile')" prepend-icon="mdi-account-outline">Profile</v-list-item>
-            <v-list-item @click="handleLogoutClick" prepend-icon="mdi-logout" class="text-red">Logout</v-list-item>
+          <v-list class="rounded-xl pa-2">
+            <v-list-item
+              v-for="cat in category"
+              :key="cat"
+              rounded="lg"
+              :title="cat"
+              @click="handleCategorySelect(cat)"
+            />
           </v-list>
         </v-menu>
-      </div>
 
-      <!-- Login/Signup for Guest -->
-      <div v-else class="d-flex align-center">
-        <v-btn variant="outlined" color="primary" class="mr-2 rounded-lg" @click="$router.push('/user/sign-in')">Log in</v-btn>
-        <v-btn color="primary" class="rounded-lg shadow-sm" @click="$router.push('/user/sign-up')">Sign up</v-btn>
+        <v-spacer />
+
+        <v-text-field
+          v-model="searchQuery"
+          prepend-inner-icon="mdi-magnify"
+          placeholder="Search courses, topics, instructors"
+          variant="solo-filled"
+          flat
+          rounded="pill"
+          hide-details
+          density="comfortable"
+          class="search-input mx-2 mx-md-6"
+          @keyup.enter="handleSearch"
+        />
+
+        <div class="d-none d-lg-flex align-center mr-4">
+          <v-btn variant="text" class="nav-button" @click="$router.push('/courses/all')">Explore</v-btn>
+          <v-btn
+            v-if="user?.user_role === 'Tutor'"
+            variant="text"
+            class="nav-button"
+            @click="$router.push('/user/tutor/add-course')"
+          >
+            Teach
+          </v-btn>
+        </div>
+
+        <div v-if="user" class="d-flex align-center">
+          <v-btn icon variant="text" class="action-button" @click="$router.push('/user/cart')">
+            <v-badge :content="cartCount" color="primary" offset-x="4" offset-y="4" :model-value="cartCount > 0">
+              <v-icon>mdi-cart-outline</v-icon>
+            </v-badge>
+          </v-btn>
+
+          <v-btn icon variant="text" class="action-button ml-1" @click="$router.push('/user/wishlist')">
+            <v-icon>mdi-heart-outline</v-icon>
+          </v-btn>
+
+          <v-menu transition="scale-transition">
+            <template #activator="{ props }">
+              <v-avatar v-bind="props" size="42" class="ml-3 profile-badge">
+                <span>{{ user.full_name?.charAt(0) }}</span>
+              </v-avatar>
+            </template>
+
+            <v-card class="rounded-2xl profile-menu" min-width="240">
+              <v-card-text>
+                <div class="font-weight-bold text-subtitle-1">{{ user.full_name }}</div>
+                <div class="text-body-2 text-medium-emphasis">{{ user.email }}</div>
+              </v-card-text>
+              <v-divider />
+              <v-list class="py-2">
+                <v-list-item prepend-icon="mdi-view-dashboard-outline" title="My learning" @click="$router.push('/user')" />
+                <v-list-item prepend-icon="mdi-logout" title="Logout" @click="handleLogoutClick" />
+              </v-list>
+            </v-card>
+          </v-menu>
+        </div>
+
+        <div v-else class="d-flex align-center">
+          <v-btn variant="text" class="nav-button mr-2" @click="$router.push('/user/sign-in')">Log in</v-btn>
+          <v-btn color="primary" rounded="pill" class="px-5" @click="$router.push('/user/sign-up')">Sign up</v-btn>
+        </div>
       </div>
-    </div>
+    </v-container>
   </v-app-bar>
 </template>
 
@@ -93,27 +113,30 @@ export default {
   data() {
     return {
       searchQuery: '',
-      cartCount: 0,
       searchTimeout: null
     }
   },
   computed: {
-    ...mapGetters(['user', 'category'])
+    ...mapGetters(['user', 'category', 'cartItemCount']),
+    cartCount() {
+      return this.cartItemCount || 0
+    }
   },
   watch: {
-    searchQuery(newVal) {
-      if (this.searchTimeout) clearTimeout(this.searchTimeout)
-      this.searchTimeout = setTimeout(() => {
-        if (newVal.trim()) {
-          this.handleSearch()
-        }
-      }, 600)
-    },
     '$route.query.q': {
       immediate: true,
-      handler(newVal) {
-        if (newVal) this.searchQuery = newVal
+      handler(newValue) {
+        this.searchQuery = newValue || ''
       }
+    },
+    searchQuery(value) {
+      if (this.searchTimeout) clearTimeout(this.searchTimeout)
+
+      this.searchTimeout = setTimeout(() => {
+        if (value?.trim() && this.$route.path !== '/courses/all') {
+          this.handleSearch()
+        }
+      }, 500)
     }
   },
   methods: {
@@ -122,16 +145,14 @@ export default {
       await this.$store.dispatch('fetchingUser')
       this.$router.push('/')
     },
-    handleAddCourse() {
-      this.$router.push('/user/tutor/add-course')
-    },
     handleCategorySelect(category) {
       this.$store.dispatch('setSelectedCategory', category)
-      this.$router.push({ path: '/courses/all', query: { category: category } })
+      this.$router.push({ path: '/courses/all', query: { category } })
     },
     handleSearch() {
-      this.$store.dispatch('setSearchQuery', this.searchQuery)
-      this.$router.push({ path: '/courses/all', query: { q: this.searchQuery } })
+      const trimmed = this.searchQuery.trim()
+      this.$store.dispatch('setSearchQuery', trimmed)
+      this.$router.push({ path: '/courses/all', query: trimmed ? { q: trimmed } : {} })
     }
   },
   beforeUnmount() {
@@ -141,26 +162,58 @@ export default {
 </script>
 
 <style scoped>
-.search-bar {
-  max-width: 600px;
+.header-shell {
+  background: transparent !important;
 }
 
-.search-bar :deep(.v-field__outline) {
-  --v-field-border-opacity: 0.1;
+.header-panel {
+  height: 64px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(31, 139, 83, 0.15);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 16px 46px rgba(15, 81, 56, 0.12);
 }
 
-.v-btn {
-  text-transform: none;
-  letter-spacing: 0;
+.brand-link {
+  color: #0f5138;
 }
 
-.text-inherit {
-  color: inherit;
-  text-decoration: none;
+.brand-mark {
+  border: 1px solid rgba(31, 139, 83, 0.25);
 }
 
-.cursor-pointer {
+.brand-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #0b2d20;
+}
+
+.brand-subtitle {
+  color: #4b6a5c;
+  font-size: 0.75rem;
+}
+
+.search-input {
+  max-width: 520px;
+}
+
+.nav-button,
+.action-button {
+  color: #0f5138;
+  font-weight: 600;
+}
+
+.profile-badge {
+  background: linear-gradient(135deg, #1f8b53, #4aba8c);
+  color: white;
+  font-weight: 800;
+  text-transform: uppercase;
   cursor: pointer;
 }
-</style>
 
+.profile-menu {
+  border: 1px solid rgba(31, 41, 55, 0.08);
+}
+</style>

@@ -1,77 +1,192 @@
 import pool from '../../database/database.js';
 
-// Adding a course in database
+const COURSE_BASE_SELECT = `
+    SELECT
+        c.*,
+        COUNT(DISTINCT e.id) AS enrolled_students,
+        COUNT(DISTINCT w.id) AS wishlist_count
+    FROM courses c
+    LEFT JOIN enrollment e ON e.course_id = c.id
+    LEFT JOIN wishlist w ON w.course_id = c.id
+`;
+
+const SORT_BY_MAP = {
+    newest: 'c.id DESC',
+    price_asc: 'c.price ASC, c.id DESC',
+    price_desc: 'c.price DESC, c.id DESC',
+    rating_desc: 'c.rating DESC, c.id DESC'
+};
+
+/**
+ * Build a safe ORDER BY clause from normalized sort keys.
+ */
+const getOrderByClause = (sortBy = 'newest') => SORT_BY_MAP[sortBy] || SORT_BY_MAP.newest;
+
+/**
+ * Build WHERE clause parts for the course listing filters.
+ */
+const buildCourseFilters = ({ category, minPrice, maxPrice, minRating, search }) => {
+    const conditions = [];
+    const values = [];
+
+    if (category) {
+        conditions.push('c.category = ?');
+        values.push(category);
+    }
+
+    if (Number.isFinite(minPrice)) {
+        conditions.push('c.price >= ?');
+        values.push(minPrice);
+    }
+
+    if (Number.isFinite(maxPrice)) {
+        conditions.push('c.price <= ?');
+        values.push(maxPrice);
+    }
+
+    if (Number.isFinite(minRating)) {
+        conditions.push('c.rating >= ?');
+        values.push(minRating);
+    }
+
+    if (search) {
+        conditions.push('(c.title LIKE ? OR c.author LIKE ? OR c.category LIKE ? OR c.subtitle LIKE ?)');
+        const searchValue = `%${search}%`;
+        values.push(searchValue, searchValue, searchValue, searchValue);
+    }
+
+    return {
+        whereClause: conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '',
+        values
+    };
+};
+
+/**
+ * Insert a course and return the database write result.
+ */
 export const addCourseInDB = async (data) => {
     const [result] = await pool.query(
-        `insert into courses(author,category,price,subtitle,thumb_url,title) values(?,?,?,?,?,?)`,
-        [data.author, data.category, data.price, data.subtitle, data.thumb_url, data.title]
+        `INSERT INTO courses(author, category, price, subtitle, thumb_url, title, rating) VALUES(?,?,?,?,?,?,?)`,
+        [data.author, data.category, data.price, data.subtitle, data.thumb_url, data.title, data.rating ?? 0]
     );
     return result;
 };
 
-// All courses by user's id
+/**
+ * Get all courses enrolled by a specific user.
+ */
 export const courseByUserId = async (id) => {
     const [results] = await pool.query(
-        `select courses.* from courses inner join enrollment on courses.id=enrollment.course_id inner join users on users.id=enrollment.user_id where users.id=?`,
+        `SELECT c.*
+         FROM courses c
+         INNER JOIN enrollment e ON c.id = e.course_id
+         WHERE e.user_id = ?
+         ORDER BY e.created_at DESC`,
         [id]
     );
     return results;
 };
 
-// Finding all courses from database with pagination and sorting
-export const allCourses = async (limit = 20, offset = 0, sortBy = 'Newest') => {
-    let orderBy = 'id DESC';
-    if (sortBy === 'Price: Low to High') orderBy = 'price ASC';
-    else if (sortBy === 'Price: High to Low') orderBy = 'price DESC';
-    else if (sortBy === 'Best Rating') orderBy = 'rating DESC';
+/**
+ * List courses using Udemy-style filters, sorting and pagination.
+ */
+export const allCourses = async (filters = {}) => {
+    const {
+        limit = 20,
+        offset = 0,
+        sortBy = 'newest'
+    } = filters;
 
-    const [courses] = await pool.query(`select * from courses ORDER BY ${orderBy} LIMIT ? OFFSET ?`, [limit, offset]);
-    const [total] = await pool.query(`SELECT COUNT(*) as count FROM courses`);
-    return { courses, total: total[0].count };
-};
-
-// course by course-id
-export const courseById = async (id) => {
-    const [results] = await pool.query(`select * from courses where id=?`, [id]);
-    return results[0];
-};
-
-// Courses by category with pagination and sorting
-export const coursesByCategory = async (category, limit = 20, offset = 0, sortBy = 'Newest') => {
-    let orderBy = 'id DESC';
-    if (sortBy === 'Price: Low to High') orderBy = 'price ASC';
-    else if (sortBy === 'Price: High to Low') orderBy = 'price DESC';
-    else if (sortBy === 'Best Rating') orderBy = 'rating DESC';
-
-    const [courses] = await pool.query(`SELECT * FROM courses where category=? ORDER BY ${orderBy} LIMIT ? OFFSET ?`, [category, limit, offset]);
-    const [total] = await pool.query(`SELECT COUNT(*) as count FROM courses where category=?`, [category]);
-    return { courses, total: total[0].count };
-};
-
-// search courses by title or author with pagination and sorting
-export const searchCourses = async (query, limit = 20, offset = 0, sortBy = 'Newest') => {
-    const q = `%${query}%`;
-    let orderBy = 'id DESC';
-    if (sortBy === 'Price: Low to High') orderBy = 'price ASC';
-    else if (sortBy === 'Price: High to Low') orderBy = 'price DESC';
-    else if (sortBy === 'Best Rating') orderBy = 'rating DESC';
+    const { whereClause, values } = buildCourseFilters(filters);
+    const orderBy = getOrderByClause(sortBy);
 
     const [courses] = await pool.query(
-        `SELECT * FROM courses WHERE title LIKE ? OR author LIKE ? OR category LIKE ? ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
-        [q, q, q, limit, offset]
+        `${COURSE_BASE_SELECT}
+         ${whereClause}
+         GROUP BY c.id
+         ORDER BY ${orderBy}
+         LIMIT ? OFFSET ?`,
+        [...values, limit, offset]
     );
+
     const [total] = await pool.query(
-        'SELECT COUNT(*) as count FROM courses WHERE title LIKE ? OR author LIKE ? OR category LIKE ?',
-        [q, q, q]
+        `SELECT COUNT(*) AS count
+         FROM courses c
+         ${whereClause}`,
+        values
     );
+
     return { courses, total: total[0].count };
 };
 
-// user by courseID
-export const tutorByCourseId = async (id) => {
+/**
+ * Get a single course by identifier.
+ */
+export const courseById = async (id) => {
     const [results] = await pool.query(
-        `select users.id from users inner join enrollment on users.id=enrollment.user_id where enrollment.course_id=? and users.user_role='Tutor'`,
+        `${COURSE_BASE_SELECT}
+         WHERE c.id = ?
+         GROUP BY c.id`,
         [id]
     );
     return results[0];
+};
+
+/**
+ * List courses by category using the shared discovery filters.
+ */
+export const coursesByCategory = async (category, filters = {}) => (
+    allCourses({ ...filters, category })
+);
+
+/**
+ * Search courses by keyword using the shared discovery filters.
+ */
+export const searchCourses = async (query, filters = {}) => (
+    allCourses({ ...filters, search: query })
+);
+
+/**
+ * Find the tutor attached to a course.
+ */
+export const tutorByCourseId = async (id) => {
+    const [results] = await pool.query(
+        `SELECT u.id, u.full_name, u.email
+         FROM users u
+         INNER JOIN enrollment e ON u.id = e.user_id
+         WHERE e.course_id = ? AND u.user_role = 'Tutor'
+         LIMIT 1`,
+        [id]
+    );
+    return results[0] || null;
+};
+
+/**
+ * Get top courses for the home page based on rating, enrollments and wishlist activity.
+ */
+export const getFeaturedCourses = async (limit = 6) => {
+    const [results] = await pool.query(
+        `${COURSE_BASE_SELECT}
+         GROUP BY c.id
+         ORDER BY c.rating DESC, enrolled_students DESC, wishlist_count DESC, c.id DESC
+         LIMIT ?`,
+        [limit]
+    );
+    return results;
+};
+
+/**
+ * Find related courses using category matching and excluding the current course.
+ */
+export const getRelatedCourses = async (courseId, limit = 4) => {
+    const [results] = await pool.query(
+        `${COURSE_BASE_SELECT}
+         WHERE c.category = (SELECT category FROM courses WHERE id = ?)
+           AND c.id <> ?
+         GROUP BY c.id
+         ORDER BY c.rating DESC, enrolled_students DESC, c.id DESC
+         LIMIT ?`,
+        [courseId, courseId, limit]
+    );
+    return results;
 };

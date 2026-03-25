@@ -1,48 +1,101 @@
 import * as cartServices from '../services/cart.service.js';
+import { sendError, sendSuccess } from '../utils/apiResponse.js';
+import { getCourseIdFromBody } from '../utils/request.js';
 
+/**
+ * Add a course to the authenticated user's cart.
+ */
 export const addTocart = async (req, res) => {
     try {
+        const courseId = getCourseIdFromBody(req.body);
+        if (!courseId) {
+            return sendError(res, {
+                statusCode: 400,
+                message: 'A valid course_id is required.'
+            });
+        }
+
         const data = {
-            course_id: req.body.course_id,
+            course_id: courseId,
             user_id: req.user.id
         };
+
+        const existingItem = await cartServices.findCartItem(data);
+        if (existingItem) {
+            return sendError(res, {
+                statusCode: 409,
+                message: 'Course already exists in cart.'
+            });
+        }
+
         const result = await cartServices.addCartDetailsInDB(data);
-        return res.status(200).json({
-            courses: result,
-            message: "Added to Cart"
+        return sendSuccess(res, {
+            statusCode: 201,
+            message: 'Added to cart.',
+            data: result
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Error adding to cart." });
+        return sendError(res, {
+            statusCode: 500,
+            message: 'Error adding to cart.'
+        });
     }
 };
 
+/**
+ * Fetch all cart courses and include summary totals for the frontend.
+ */
 export const coursesInUserCart = async (req, res) => {
     try {
-        const result = await cartServices.userCartCourse(req.user.id);
-        return res.status(200).json({
-            courses: result,
-            message: "Cart courses fetched."
+        const [courses, summary] = await Promise.all([
+            cartServices.userCartCourse(req.user.id),
+            cartServices.getCartSummary(req.user.id)
+        ]);
+
+        return sendSuccess(res, {
+            message: 'Cart courses fetched successfully.',
+            data: {
+                courses,
+                summary
+            }
         });
     } catch (error) {
         console.error(error);
-        return res.status(404).json({ message: "Error fetching cart." });
+        return sendError(res, {
+            statusCode: 500,
+            message: 'Error fetching cart.'
+        });
     }
 };
 
+/**
+ * Remove a course from the authenticated user's cart.
+ */
 export const removeFromCart = async (req, res) => {
     try {
-        const data = {
+        const courseId = getCourseIdFromBody(req.body);
+        if (!courseId) {
+            return sendError(res, {
+                statusCode: 400,
+                message: 'A valid course_id is required.'
+            });
+        }
+
+        const result = await cartServices.removeCartCourseById({
             user_id: req.user.id,
-            course_id: req.body.course_id
-        };
-        const result = await cartServices.removeCartCourseById(data);
-        return res.status(200).json({
-            courses: result,
-            message: "Removed from cart."
+            course_id: courseId
+        });
+
+        return sendSuccess(res, {
+            message: 'Removed from cart.',
+            data: result
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Error removing from cart." });
+        return sendError(res, {
+            statusCode: 500,
+            message: 'Error removing from cart.'
+        });
     }
 };

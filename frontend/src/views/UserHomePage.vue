@@ -1,47 +1,58 @@
 <template>
-    <v-main>
-        <!-- <v-container v-if="user === null">
-            <v-card class="mx-auto px-6 py-8 text-center" max-width="344">
-                <v-card-title>Hello, You are not logged in!</v-card-title>
-                <v-card-text>Please login <router-link to="/user/sign-in">Log in</router-link></v-card-text>
-            </v-card>
-        </v-container> -->
-        <!-- <v-container v-if="user && userCourses.length === 0">
-            <v-card class="mx-auto px-6 py-8 text-center" max-width="800">
-                <v-card-title style="font-size: 30px;">Hello {{ user.full_name }}</v-card-title>
-                <v-card-text>{{ user.user_role }}</v-card-text>
-                <v-card-subtitle v-if="user.user_role === 'Student'">Let's start learning, {{ user.full_name
-                }}</v-card-subtitle>
-                <v-card-subtitle v-else-if="user.user_role === 'Tutor'">Please add a course, {{ user.full_name
-                }}</v-card-subtitle>
+  <v-container class="app-section">
+    <section class="page-intro pa-6 pa-md-10 mb-10" v-if="user">
+      <div class="eyebrow mb-4">{{ user.user_role === 'Student' ? 'My Learning' : 'Tutor Dashboard' }}</div>
+      <h1 class="app-section-title mb-3">
+        {{ user.user_role === 'Student' ? `Welcome back, ${user.full_name}` : `Manage your courses, ${user.full_name}` }}
+      </h1>
+      <p class="app-section-copy mb-0">
+        {{ user.user_role === 'Student'
+          ? 'Pick up where you left off, revisit saved courses, and keep your learning queue clean.'
+          : 'Review your published catalog and jump back into course creation without leaving the main workflow.' }}
+      </p>
+    </section>
 
-            </v-card>
-            <all-courses :allCourses="allCourses"></all-courses>
-        </v-container> -->
-        <!-- {{userCourses}} -->
+    <section v-if="user">
+      <div class="d-flex flex-column flex-md-row align-md-end justify-space-between mb-6">
+        <div>
+          <div class="eyebrow mb-3">{{ user.user_role === 'Student' ? 'Enrolled Courses' : 'Your Courses' }}</div>
+          <h2 class="app-section-title">
+            {{ userCourses.length ? 'Your current library' : 'Nothing here yet' }}
+          </h2>
+        </div>
+        <v-btn
+          v-if="user.user_role === 'Tutor'"
+          color="primary"
+          rounded="pill"
+          class="mt-4 mt-md-0"
+          @click="$router.push('/user/tutor/add-course')"
+        >
+          Add new course
+        </v-btn>
+      </div>
 
-        <v-container v-if="user">
-            <div class="bg-black" max-height="4">
-                <p class="font-weight-bold mx-10" style="font-size:40px; font-family: 'Times New Roman', Times, serif;">My{{
-                    user.user_role === 'Student' ? " learnings" : " Courses" }}</p>
-            </div>
-            <div v-if="userCourses.length !== 0">
-                <all-courses :allCourses="userCourses"></all-courses>
-            </div>
-            <div v-else>
-                <v-sheet class="border true">
-                    <v-card class="ma-5" height="100">
-                        <v-card-title>Oops! It looks like you haven't {{ user.user_role==='Student'? 'enrolled in' : 'added' }} any courses yet.</v-card-title>
-                    </v-card>
-                </v-sheet>
-            </div>
-            <div class="mt-10">
+      <all-courses v-if="userCourses.length" :all-courses="userCourses" />
 
-                <h1 :style="{ fontFamily: 'Times New Roman' }">Expand your skillset with these courses</h1>
-                <all-courses :allCourses="allCourses"></all-courses>
-            </div>
-        </v-container>
-    </v-main>
+      <v-card v-else class="glass-panel section-card pa-8 text-center" flat>
+        <v-icon size="52" color="primary" class="mb-4">mdi-book-open-page-variant-outline</v-icon>
+        <h3 class="text-h5 font-weight-bold mb-3">
+          {{ user.user_role === 'Student' ? 'You have not enrolled in any course yet.' : 'You have not created any course yet.' }}
+        </h3>
+        <p class="app-section-copy mb-6">
+          {{ user.user_role === 'Student'
+            ? 'Start with featured courses and build your learning path.'
+            : 'Create your first course to begin publishing learning content.' }}
+        </p>
+        <v-btn color="primary" rounded="pill" @click="$router.push('/courses/all')">Explore courses</v-btn>
+      </v-card>
+    </section>
+
+    <section class="mt-12">
+      <div class="eyebrow mb-3">Discover More</div>
+      <h2 class="app-section-title mb-6">Expand your skillset</h2>
+      <all-courses :all-courses="allCourses.slice(0, 8)" />
+    </section>
+  </v-container>
 </template>
 
 <script>
@@ -49,27 +60,14 @@ import { mapGetters } from 'vuex';
 import AllCourses from '../components/course/AllCourses.vue';
 
 export default {
-    data() {
-        return {
-
-        }
-    },
-    components: {
-        AllCourses
-    },
-    computed: {
-        ...mapGetters(['user', 'enrollmentDetails', 'allCourses', 'userCourses'])
-    },
-    async created() {
-        // user details
-        await this.$store.dispatch('fetchingUser')
-
-        // User's Courses
-        await this.$store.dispatch('fetchingUserCourses')
-
-        // All courses reloading
-        await this.$store.dispatch('fetchingAllCourses')
-        // console.log(this.userCourses)
-    },
+  components: { AllCourses },
+  computed: {
+    ...mapGetters(['user', 'allCourses', 'userCourses'])
+  },
+  async created() {
+    await this.$store.dispatch('fetchingUser')
+    await this.$store.dispatch('fetchingUserCourses')
+    await this.$store.dispatch('fetchingFeaturedCourses')
+  },
 }
 </script>

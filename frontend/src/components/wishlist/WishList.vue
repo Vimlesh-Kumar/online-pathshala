@@ -1,56 +1,62 @@
 <template>
-    <v-btn icon class="mx-4">
-        <v-icon v-if="!wishlistCoursesId.includes(course_id)" @click="addToWishlist(course_id)"
-            color="red">mdi-heart-outline</v-icon>
-        <v-icon v-else @click="removeFromWishlist(course_id)" color="red">mdi-heart</v-icon>
-    </v-btn>
+  <v-btn icon variant="text" class="wishlist-button">
+    <v-icon
+      v-if="!wishlistCoursesId.includes(course_id)"
+      color="error"
+      @click="addToWishlist(course_id)"
+    >
+      mdi-heart-outline
+    </v-icon>
+    <v-icon
+      v-else
+      color="error"
+      @click="removeFromWishlist(course_id)"
+    >
+      mdi-heart
+    </v-icon>
+  </v-btn>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+
 export default {
+  props: ['course_id', 'user'],
+  computed: {
+    ...mapState(['wishlistCourses']),
+    wishlistCoursesId() {
+      return this.wishlistCourses ? this.wishlistCourses.map((w) => w.id) : []
+    }
+  },
+  methods: {
+    /**
+     * Save a course to the user's wishlist.
+     */
+    async addToWishlist(course_id) {
+      if (!this.user) {
+        this.$router.push('/user/sign-in')
+        return
+      }
 
-    props: ['course_id', 'user',],
-
-    computed: {
-        ...mapState(['wishlistCourses']),
-
-        wishlistCoursesId() {
-            if (this.wishlistCourses) {
-                return this.wishlistCourses.map((w) => w.id)
-            }
-            return []
-        }
+      if (!this.wishlistCoursesId.includes(course_id)) {
+        await this.$store.dispatch('addToWishlist', course_id)
+        await this.$store.dispatch('getWishlistCourses')
+      }
     },
 
-    methods: {
-
-        /***
-         * Handle Add to wihslist button
-         * taking course id as a parameter
-         */
-        async addToWishlist(course_id) {
-            if (this.user) {
-                if (!this.wishlistCoursesId.includes(course_id)) {
-                    await this.$store.dispatch('addToWishlist', course_id)
-                    await this.$store.dispatch('getWishlistCourses')
-                }
-                else
-                    this.showWishlistOutlined = false
-            }
-            else {
-                this.$router.push('/user/sign-in')
-            }
-        },
-
-        /***
-         * Handle remove course from wishlist icon & 
-         * taking course_id(Number) as a parameter
-         */
-        async removeFromWishlist(course_id) {
-            await this.$store.dispatch('removeFromWishlist', course_id)
-            await this.$store.dispatch('getWishlistCourses')
-        }
+    /**
+     * Remove a course from the user's wishlist.
+     */
+    async removeFromWishlist(course_id) {
+      await this.$store.dispatch('removeFromWishlist', course_id)
+      await this.$store.dispatch('getWishlistCourses')
     }
+  }
 }
 </script>
+
+<style scoped>
+.wishlist-button {
+  color: #b42318;
+}
+</style>

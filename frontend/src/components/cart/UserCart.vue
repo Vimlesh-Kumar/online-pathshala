@@ -1,121 +1,106 @@
 <template>
-    <v-main>
-        <v-container>
-            <h1 class="mt-2">Shopping Cart</h1>
-            <!-- {{ total }} -->
-            <!-- <div> -->
-            <v-row>
-                <v-col cols="8">
-                    <v-list lines="three">
-                        <h3>{{ coursesInCart.length }} Courses in Cart</h3>
-                        <v-divider></v-divider>
-                        <v-list-item v-for="(item, index) in coursesInCart" :key="index">
-                            <div class="d-flex mb-5">
-                                <div class="align-center">
-                                    <img :src="item.thumb_url" height="75">
+  <v-container class="app-section">
+    <section class="page-intro pa-6 pa-md-10 mb-8">
+      <div class="eyebrow mb-4">Shopping Cart</div>
+      <h1 class="app-section-title mb-3">Review your selected courses</h1>
+      <p class="app-section-copy mb-0">Keep your shortlist organized before checkout or move courses into the wishlist.</p>
+    </section>
 
-                                </div>
-                                <div class="mx-5 me-auto">
-                                    <v-list-item-title>{{ item.title }}</v-list-item-title>
-                                    <v-list-item-subtitle>{{ item.author }}</v-list-item-subtitle>
-                                    <span>
-                                        <span class="text-amber-accent-4 me-2 align-baseline font-weight-bold">
-                                            {{ item.rating }}
-                                        </span>
-                                        <span class=" ">
+    <v-row>
+      <v-col cols="12" md="8">
+        <v-card class="glass-panel section-card pa-4 pa-md-6" flat>
+          <div class="d-flex align-center justify-space-between mb-6">
+            <h2 class="text-h5 font-weight-bold">Cart items</h2>
+            <span class="text-body-2 text-medium-emphasis">{{ coursesInCart.length }} courses</span>
+          </div>
 
+          <div v-if="coursesInCart.length" class="cart-list">
+            <v-card v-for="item in coursesInCart" :key="item.id" class="cart-item section-card pa-4" flat>
+              <div class="d-flex flex-column flex-md-row ga-4">
+                <v-img :src="item.thumb_url" width="220" height="132" cover class="rounded-xl flex-shrink-0" />
+                <div class="flex-grow-1">
+                  <div class="d-flex flex-column flex-md-row justify-space-between ga-4">
+                    <div>
+                      <h3 class="text-h6 font-weight-bold mb-2">{{ item.title }}</h3>
+                      <p class="text-body-2 text-medium-emphasis mb-2">{{ item.author }}</p>
+                      <div class="d-flex align-center">
+                        <v-rating :model-value="item.rating" color="warning" density="compact" half-increments readonly size="small" />
+                        <span class="ml-2 font-weight-bold">{{ item.rating }}</span>
+                      </div>
+                    </div>
+                    <div class="text-md-right">
+                      <div class="text-h5 font-weight-black mb-3">₹{{ item.price }}</div>
+                      <div class="d-flex flex-wrap justify-md-end ga-2">
+                        <wish-list :course_id="item.id" :user="user" />
+                        <v-btn variant="outlined" rounded="pill" color="error" @click="removeFromCart(item.id)">Remove</v-btn>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </v-card>
+          </div>
 
+          <v-card v-else class="section-card pa-8 text-center" flat>
+            <v-icon size="60" color="primary" class="mb-4">mdi-cart-off</v-icon>
+            <h3 class="text-h5 font-weight-bold mb-3">Your cart is empty.</h3>
+            <p class="app-section-copy mb-6">Browse the catalog and add courses to continue.</p>
+            <v-btn color="primary" rounded="pill" @click="$router.push('/courses/all')">Browse courses</v-btn>
+          </v-card>
+        </v-card>
+      </v-col>
 
-                                            <v-rating :model-value="item.rating" color="amber" density="compact"
-                                                class="align-baseline" half-increments readonly size="small"></v-rating>
-
-                                        </span>
-                                    </span>
-                                </div>
-                                <div>
-                                    <div class="d-flex">
-                                        <h3 class="ms-auto">₹{{ item.price }}</h3>
-
-                                    </div>
-                                    <div class="ms-auto">
-                                        <wish-list :course_id="item.course_id" :user="user"
-                                            :wishlistCourses="wishlistCourses" :coursesInCart="coursesInCart"></wish-list>
-                                        <v-btn icon>
-                                            <v-icon @click="removeFromCart(item.course_id)" color="red">mdi-delete</v-icon>
-                                        </v-btn>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                            <v-divider></v-divider>
-                        </v-list-item>
-                    </v-list>
-                </v-col>
-                <v-col cols="4" class="ms-">
-                    <h3>Total:</h3>
-                    <!-- <v-card> -->
-                        <!-- <v-card-subtitle>
-                            Total:
-                        </v-card-subtitle> -->
-                        <v-card-title class="font-weight-bold">₹{{ total }}</v-card-title>
-                    <!-- </v-card> -->
-                </v-col>
-            </v-row>
-            <!-- </div> -->
-        </v-container>
-    </v-main>
+      <v-col cols="12" md="4">
+        <v-card class="section-card summary-card pa-6" flat>
+          <div class="eyebrow mb-4">Order Summary</div>
+          <div class="d-flex justify-space-between mb-3">
+            <span>Items</span>
+            <strong>{{ cartSummary.itemCount }}</strong>
+          </div>
+          <div class="d-flex justify-space-between mb-6">
+            <span>Total</span>
+            <strong class="text-h5">₹{{ Number(cartSummary.totalAmount || 0).toFixed(2) }}</strong>
+          </div>
+          <v-btn color="primary" rounded="pill" block size="large">Proceed to checkout</v-btn>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
 import axios from 'axios';
-import { mapGetters, mapState } from 'vuex';
+import { mapGetters } from 'vuex';
 import WishList from '../wishlist/WishList.vue'
 
 export default {
-    data() {
-        return {
-            // cartItems: []
-        }
+  components: { WishList },
+  created() {
+    this.$store.dispatch('fetchingUser');
+    this.$store.dispatch('getCartCourses');
+    this.$store.dispatch('getWishlistCourses');
+  },
+  computed: {
+    ...mapGetters(['coursesInCart', 'user', 'cartSummary'])
+  },
+  methods: {
+    async removeFromCart(courseId) {
+      await axios.post('/user/cart-remove', { course_id: courseId })
+      await this.$store.dispatch('getCartCourses')
     },
-
-    components: {
-        WishList
-    },
-    created() {
-        this.$store.dispatch('fetchingUser');
-        this.$store.dispatch('getCartCourses');
-        this.$store.dispatch('getWishlistCourses');
-    },
-
-    computed: {
-        ...mapGetters(['coursesInCart', 'user',]),
-        ...mapState(['wishlistCourses']),
-        total() {
-            console.log(this.coursesInCart)
-            var sum = 0;
-            for (let course of this.coursesInCart) {
-                console.log(course)
-                sum = sum + course.price
-            }
-
-            console.log(sum)
-            return sum;
-        }
-    },
-
-    methods: {
-        /***
-         * remove course from cart
-         * courseId-Id of course that want to remove
-         */
-        async removeFromCart(courseId) {
-            // console.log(courseId)
-            const response = await axios.post('/user/cart-remove', { course_id: courseId })
-            console.log(response)
-            await this.$store.dispatch('getCartCourses')
-        },
-
-    }
+  }
 }
 </script>
+
+<style scoped>
+.cart-list {
+  display: grid;
+  gap: 18px;
+}
+
+.cart-item,
+.summary-card {
+  background: rgba(255, 253, 248, 0.94);
+  border: 1px solid rgba(31, 41, 55, 0.08);
+}
+</style>

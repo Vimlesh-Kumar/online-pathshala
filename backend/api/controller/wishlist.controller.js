@@ -1,48 +1,94 @@
 import * as wishlistServices from '../services/wishList.service.js';
+import { sendError, sendSuccess } from '../utils/apiResponse.js';
+import { getCourseIdFromBody } from '../utils/request.js';
 
+/**
+ * Add a course to the authenticated user's wishlist.
+ */
 export const addToWishlist = async (req, res) => {
     try {
+        const courseId = getCourseIdFromBody(req.body);
+        if (!courseId) {
+            return sendError(res, {
+                statusCode: 400,
+                message: 'A valid course_id is required.'
+            });
+        }
+
         const data = {
-            course_id: req.body.course_id,
+            course_id: courseId,
             user_id: req.user.id
         };
+
+        const existingItem = await wishlistServices.findWishlistItem(data);
+        if (existingItem) {
+            return sendError(res, {
+                statusCode: 409,
+                message: 'Course already exists in wishlist.'
+            });
+        }
+
         const result = await wishlistServices.addToWishList(data);
-        return res.status(200).json({
-            courses: result,
-            message: "Added to Wishlist"
+        return sendSuccess(res, {
+            statusCode: 201,
+            message: 'Added to wishlist.',
+            data: result
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Error adding to wishlist." });
+        return sendError(res, {
+            statusCode: 500,
+            message: 'Error adding to wishlist.'
+        });
     }
 };
 
+/**
+ * Remove a course from the authenticated user's wishlist.
+ */
 export const removeFromWishlist = async (req, res) => {
     try {
-        const data = {
-            course_id: req.body.course_id,
+        const courseId = getCourseIdFromBody(req.body);
+        if (!courseId) {
+            return sendError(res, {
+                statusCode: 400,
+                message: 'A valid course_id is required.'
+            });
+        }
+
+        const result = await wishlistServices.removewishlistCourseFromDB({
+            course_id: courseId,
             user_id: req.user.id
-        };
-        const result = await wishlistServices.removewishlistCourseFromDB(data);
-        return res.status(200).json({
-            courses: result,
-            message: "Removed from Wishlist"
+        });
+
+        return sendSuccess(res, {
+            message: 'Removed from wishlist.',
+            data: result
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Error removing from wishlist." });
+        return sendError(res, {
+            statusCode: 500,
+            message: 'Error removing from wishlist.'
+        });
     }
 };
 
+/**
+ * Fetch all courses saved in the authenticated user's wishlist.
+ */
 export const coursesInWishlist = async (req, res) => {
     try {
         const result = await wishlistServices.allCoursesOfUserInWishlist(req.user.id);
-        return res.status(200).json({
-            courses: result,
-            message: "User's all Wishlist courses fetched."
+        return sendSuccess(res, {
+            message: "User's wishlist fetched successfully.",
+            data: result
         });
     } catch (error) {
         console.error(error);
-        return res.status(404).json({ message: "Error fetching wishlist." });
+        return sendError(res, {
+            statusCode: 500,
+            message: 'Error fetching wishlist.'
+        });
     }
 };

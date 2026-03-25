@@ -2,79 +2,114 @@ import * as userService from '../services/user.services.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
+import { sendError, sendSuccess } from '../utils/apiResponse.js';
 
 const SECRET_KEY = process.env.JWT_SECRET || "MYSECRETKEYFORJWT";
 
-// User Registration
+/**
+ * Register a new user and save a hashed password.
+ */
 export const signup = async (req, res) => {
     try {
         const body = req.body;
-        // Hash Password
-        body.password = await bcrypt.hash(body.password, 10);
 
-        // Sending data to user service
+        if (!body?.full_name || !body?.email || !body?.password || !body?.user_role) {
+            return sendError(res, {
+                statusCode: 400,
+                message: 'full_name, email, password and user_role are required.'
+            });
+        }
+
+        body.password = await bcrypt.hash(body.password, 10);
         const results = await userService.create(body);
-        return res.status(200).json({
+
+        return sendSuccess(res, {
+            statusCode: 201,
+            message: 'User registered successfully.',
             data: results
         });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({
+        return sendError(res, {
+            statusCode: 500,
             message: "Database connection error or user already exists."
         });
     }
 };
 
-// User Sign-in
+/**
+ * Authenticate a user and return a signed JWT.
+ */
 export const signin = async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        if (!email || !password) {
+            return sendError(res, {
+                statusCode: 400,
+                message: 'email and password are required.'
+            });
+        }
+
         const user = await userService.getUserByEmail(email);
 
         if (!user) {
-            return res.status(404).json({
+            return sendError(res, {
+                statusCode: 404,
                 message: "User not found."
             });
         }
 
         const passwordCheck = await bcrypt.compare(password, user.password);
         if (passwordCheck) {
-            user.password = undefined; // Hide password
+            user.password = undefined;
             const token = jwt.sign({ id: user.id, email: user.email, role: user.user_role }, SECRET_KEY, { expiresIn: "1h" });
-            return res.status(200).json({
-                user: user,
+
+            return sendSuccess(res, {
                 message: "Login successful.",
-                token: token
-            });
-        } else {
-            return res.status(401).json({
-                message: "Invalid credentials."
+                data: {
+                    user,
+                    token
+                }
             });
         }
+
+        return sendError(res, {
+            statusCode: 401,
+            message: "Invalid credentials."
+        });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({
+        return sendError(res, {
+            statusCode: 500,
             message: "Server error during signin."
         });
     }
 };
 
+/**
+ * Fetch the currently authenticated user's profile.
+ */
 export const userById = async (req, res) => {
     try {
         const user = await userService.getUserById(req.user.id);
         if (!user) {
-            return res.status(404).json({
+            return sendError(res, {
+                statusCode: 404,
                 message: 'User not found.'
             });
         }
+
         user.password = undefined;
-        return res.status(200).json({
+
+        return sendSuccess(res, {
             message: "User found.",
-            user: user
+            data: user
         });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({
+        return sendError(res, {
+            statusCode: 500,
             message: "Server error fetching user details."
         });
     }
