@@ -1,6 +1,9 @@
 # Nixpacks configuration for Online Pathshala Monorepo
 # This tells Railway exactly how to build and start your backend service
 
+[phases.setup]
+nixPkgs = ["...", "nodejs-24_x"]
+
 [phases.install]
 cmds = ["npm install"]
 
