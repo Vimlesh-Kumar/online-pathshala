@@ -114,8 +114,10 @@
           <v-pagination
             v-model="page"
             :length="totalPages || 1"
+            :total-visible="totalVisiblePages"
             rounded="circle"
             color="primary"
+            density="comfortable"
             @update:model-value="fetchCourses"
           />
         </div>
@@ -166,6 +168,12 @@ export default {
     },
     totalPages() {
       return Math.ceil(this.total / this.pageSize)
+    },
+    // Cap how many page numbers v-pagination renders — without this it
+    // renders one button per page (800+ with the 10,000-course catalog),
+    // overflowing the layout. Vuetify collapses the rest into "…" for us.
+    totalVisiblePages() {
+      return this.$vuetify.display.mobile ? 5 : 7
     },
     activeFilterCount() {
       let n = 0
