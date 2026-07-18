@@ -31,3 +31,5 @@ services:
         sync: false
       - key: CORS_ORIGIN
         sync: false
+      - key: GROQ_API_KEY
+        sync: false
