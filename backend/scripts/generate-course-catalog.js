@@ -12,6 +12,12 @@
  * set of learning objectives, so every course plays and tracks progress
  * exactly like a hand-authored one.
  *
+ * Every course also gets its OWN unique thumbnail (via Picsum's free,
+ * keyless placeholder image API, seeded per course) and a genuinely
+ * distinct title/description — see the ANGLES comment below for how
+ * duplicate-sounding titles (e.g. many near-identical "Excel" courses)
+ * are avoided.
+ *
  * Usage:  npm run catalog:generate   (from backend/)
  *
  * Idempotent — if the catalog already has TARGET_TOTAL or more courses,
@@ -57,7 +63,19 @@ const OBJECTIVES_BY_CATEGORY = {
     Office: ['Work noticeably faster day-to-day', 'Apply professional formatting standards', 'Automate repetitive parts of the job']
 };
 
-const LEVELS = ['', 'Beginner', 'Intermediate', 'Advanced', 'Complete'];
+// Generic angle modifiers combined with each base skill (e.g. "Microsoft
+// Excel" + "for Data Analysis") BEFORE the title template wraps it. This is
+// the key fix for near-duplicate titles: skills(~20) × angles(16) × templates(7)
+// gives thousands of distinct combinations per category — comfortably more
+// than the ~1,110 courses needed per category — so the same base topic
+// (e.g. "Excel") reads as clearly different courses instead of repeating
+// the same phrasing with only a level word swapped.
+const ANGLES = [
+    'for Beginners', 'for Absolute Beginners', 'for Professionals', 'for Career Changers',
+    'for Freelancers', 'in 30 Days', 'with Hands-On Projects', 'the Practical Way',
+    'for Everyone', 'Step by Step', 'for the Real World', 'Zero to Hero',
+    'for Busy People', 'with Real-World Examples', 'Made Simple', 'for 2026'
+];
 
 const TITLE_TEMPLATES = [
     (topic) => `${topic} Bootcamp`,
@@ -87,64 +105,75 @@ const INSTRUCTOR_NAMES = [
 const priceForIndex = (index) => (299 + ((index * 137) % 46) * 100).toFixed(2);
 const ratingForIndex = (index) => (3.5 + ((index * 7) % 15) / 10).toFixed(2);
 
+/** URL-safe slug used to seed a unique placeholder thumbnail per course. */
+const slugify = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+/**
+ * A distinct thumbnail per course via Picsum's free, keyless placeholder
+ * image service — `seed` makes the chosen photo deterministic (same course
+ * always gets the same image), so every one of the 10,000 courses gets its
+ * own visual instead of all sharing one category-wide thumbnail.
+ */
+const thumbnailForCourse = (category, index, title) => {
+    const seed = slugify(category + '-' + index + '-' + title);
+    return `https://picsum.photos/seed/${seed}/640/360`;
+};
+
 /**
  * Build one procedurally-generated course row for a category at a given
- * sequence index. Combining topic × template × level × instructor keeps the
- * output varied without needing a real dataset or an LLM call per row.
+ * sequence index. The base skill, angle modifier, and title template are
+ * each cycled on a DIFFERENT stride (see ANGLES comment above), so the huge
+ * combinatorial space keeps titles/descriptions genuinely distinct instead
+ * of the same topic repeating with only a level word swapped.
  */
-const buildCourseRow = (category, index, thumbUrl) => {
-    const topics = TOPICS_BY_CATEGORY[category];
-    const topic = topics[index % topics.length];
-    const template = TITLE_TEMPLATES[index % TITLE_TEMPLATES.length];
-    const level = LEVELS[Math.floor(index / topics.length) % LEVELS.length];
+const buildCourseRow = (category, index) => {
+    const skills = TOPICS_BY_CATEGORY[category];
+    const skill = skills[index % skills.length];
+    const angle = ANGLES[Math.floor(index / skills.length) % ANGLES.length];
+    const template = TITLE_TEMPLATES[Math.floor(index / (skills.length * ANGLES.length)) % TITLE_TEMPLATES.length];
     const subtitleFn = SUBTITLE_TEMPLATES[index % SUBTITLE_TEMPLATES.length];
     const instructor = INSTRUCTOR_NAMES[index % INSTRUCTOR_NAMES.length];
 
-    const rendered = template(topic);
-    // Avoid awkward doubling like "Advanced Master X" — only prefix a level
-    // when the template itself doesn't already imply one.
-    const alreadyImpliesLevel = /^(Master|The Complete)/.test(rendered);
-    const title = level && !alreadyImpliesLevel ? `${level} ${rendered}` : rendered;
+    const topic = `${skill} ${angle}`;
+    const title = template(topic);
 
     return [
-        instructor,                              // author
-        category,                                // category
-        priceForIndex(index),                    // price
-        subtitleFn(topic, category),              // subtitle
-        thumbUrl,                                 // thumb_url
-        title,                                    // title
-        ratingForIndex(index)                     // rating
+        instructor,                                        // author
+        category,                                          // category
+        priceForIndex(index),                              // price
+        subtitleFn(topic, category),                        // subtitle
+        thumbnailForCourse(category, index, title),         // thumb_url
+        title,                                              // title
+        ratingForIndex(index)                               // rating
     ];
 };
 
 /**
- * Look up one already-working thumbnail + YouTube video id per category by
- * reading the courses/lessons that are already seeded — this guarantees
- * every generated course reuses media that's already proven to load in
- * this app, instead of guessing at new URLs/video ids.
+ * Look up one already-working YouTube video id per category by reading the
+ * lessons that are already seeded — this guarantees every generated course's
+ * lessons reuse a video that's already proven to load in this app, instead
+ * of guessing at a new video id. (Thumbnails are handled separately — see
+ * thumbnailForCourse — since every course now gets its own unique image.)
  */
-const getCategoryMedia = async () => {
+const getCategoryVideoKeys = async () => {
     const [rows] = await pool.query(
-        `SELECT c.category, MIN(c.thumb_url) AS thumb_url, MIN(l.video_key) AS video_key
+        `SELECT c.category, MIN(l.video_key) AS video_key
          FROM courses c
          JOIN lesson l ON l.course_id = c.id
          GROUP BY c.category`
     );
-    const media = {};
+    const videoKeys = {};
     for (const row of rows) {
-        media[row.category] = { thumbUrl: row.thumb_url, videoKey: row.video_key };
+        videoKeys[row.category] = row.video_key;
     }
-    return media;
+    return videoKeys;
 };
 
-// Used only for categories with no seeded course/lesson to borrow media
+// Used only for categories with no seeded course/lesson to borrow a video
 // from (e.g. Business, Design) — a real, freely-embeddable public YouTube
-// tutorial and a generic course-card thumbnail, so those categories still
-// get fully playable generated courses instead of being skipped.
-const FALLBACK_MEDIA = {
-    thumbUrl: 'https://i3.ytimg.com/vi/XKHEtdqhLK8/maxresdefault.jpg',
-    videoKey: 'XKHEtdqhLK8'
-};
+// tutorial, so those categories still get fully playable generated courses
+// instead of being skipped.
+const FALLBACK_VIDEO_KEY = 'XKHEtdqhLK8';
 
 const LESSON_TEMPLATE = [
     { section: 'Getting Started', name: 'Introduction & Overview', duration: '08:24' },
@@ -190,20 +219,20 @@ async function run() {
     const perCategory = Math.ceil(toGenerate / CATEGORIES.length);
     console.log(`Generating ~${toGenerate} courses (${perCategory} per category) to reach ${TARGET_TOTAL}...`);
 
-    const media = await getCategoryMedia();
+    const videoKeys = await getCategoryVideoKeys();
     let totalInserted = 0;
 
     for (const category of CATEGORIES) {
-        const categoryMedia = media[category] || FALLBACK_MEDIA;
-        if (!media[category]) {
-            console.warn(`  "${category}" has no seeded course/lesson — using fallback media instead.`);
+        const videoKey = videoKeys[category] || FALLBACK_VIDEO_KEY;
+        if (!videoKeys[category]) {
+            console.warn(`  "${category}" has no seeded course/lesson — using a fallback video instead.`);
         }
 
         for (let start = 0; start < perCategory; start += INSERT_BATCH_SIZE) {
             const batchCount = Math.min(INSERT_BATCH_SIZE, perCategory - start);
             const rows = Array.from(
                 { length: batchCount },
-                (_, i) => buildCourseRow(category, start + i, categoryMedia.thumbUrl)
+                (_, i) => buildCourseRow(category, start + i)
             );
 
             const [result] = await pool.query(
@@ -211,7 +240,7 @@ async function run() {
                 [rows]
             );
 
-            await insertLessonsAndObjectives(category, result.insertId, batchCount, categoryMedia.videoKey);
+            await insertLessonsAndObjectives(category, result.insertId, batchCount, videoKey);
 
             totalInserted += batchCount;
             console.log(`  ${category}: ${start + batchCount}/${perCategory} generated (${totalInserted} total so far)`);
