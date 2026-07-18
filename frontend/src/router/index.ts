@@ -14,6 +14,7 @@ const routes = [
     // children: [{ path: 'wishlist', component:  wishlist}]
   },
   { path: '/user/tutor/add-course', component: () => import('@/components/course/AddCourse.vue') },
+  { path: '/user/tutor/dashboard', component: () => import('@/components/instructor/InstructorDashboard.vue') },
   { path: '/course/:id', component: () => import('@/components/course/CourseDetails.vue') },
   { path: '/learn/:id', component: () => import('@/components/course/CoursePlayer.vue') },
   { path: '/course/:id/objectives', component: () => import('@/components/course/CourseObjectives.vue') },

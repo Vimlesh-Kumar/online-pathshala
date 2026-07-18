@@ -164,6 +164,36 @@ const store = createStore({
         async fetchOrders(_context) {
             const response = await axios.get('/user/orders')
             return response.data.data || []
+        },
+        // ── Engagement ──
+        async fetchReviews(_context, courseId) {
+            const response = await axios.get(`/course/${courseId}/reviews`)
+            return response.data.data
+        },
+        async postReview(_context, { courseId, rating, content }) {
+            await axios.post(`/course/${courseId}/reviews`, { rating, content })
+        },
+        async fetchQna(_context, courseId) {
+            const response = await axios.get(`/course/${courseId}/qna`)
+            return response.data.data || []
+        },
+        async postQuestion(_context, { courseId, content }) {
+            await axios.post(`/course/${courseId}/questions`, { content })
+        },
+        async postAnswer(_context, { questionId, content }) {
+            await axios.post(`/questions/${questionId}/answers`, { content })
+        },
+        async fetchQuiz(_context, courseId) {
+            const response = await axios.get(`/course/${courseId}/quiz`)
+            return response.data.data || []
+        },
+        async submitQuiz(_context, { courseId, answers }) {
+            const response = await axios.post(`/course/${courseId}/quiz/submit`, { answers })
+            return response.data.data
+        },
+        async fetchTutorStats(_context) {
+            const response = await axios.get('/user/tutor/stats')
+            return response.data.data
         }
     },
 

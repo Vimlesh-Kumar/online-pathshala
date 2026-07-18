@@ -106,6 +106,10 @@
           </v-row>
         </v-card>
 
+        <course-reviews :course-id="courseId" />
+
+        <course-qna :course-id="courseId" />
+
         <v-card class="glass-panel section-card pa-6" flat>
           <div class="eyebrow mb-4">Related courses</div>
           <all-courses :all-courses="relatedCourses" />
@@ -120,9 +124,11 @@ import axios from 'axios'
 import { mapGetters } from 'vuex';
 import WishList from '../wishlist/WishList.vue';
 import AllCourses from './AllCourses.vue';
+import CourseReviews from './CourseReviews.vue';
+import CourseQna from './CourseQna.vue';
 
 export default {
-  components: { WishList, AllCourses },
+  components: { WishList, AllCourses, CourseReviews, CourseQna },
   computed: {
     ...mapGetters(['user', 'courseObjectives', 'coursesInCart', 'userCourses']),
     cartCourses() {

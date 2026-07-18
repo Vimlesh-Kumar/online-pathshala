@@ -20,15 +20,12 @@
             {{ userCourses.length ? 'Your current library' : 'Nothing here yet' }}
           </h2>
         </div>
-        <v-btn
-          v-if="user.user_role === 'Tutor'"
-          color="primary"
-          rounded="pill"
-          class="mt-4 mt-md-0"
-          @click="$router.push('/user/tutor/add-course')"
-        >
-          Add new course
-        </v-btn>
+        <div v-if="user.user_role === 'Tutor'" class="d-flex ga-3 mt-4 mt-md-0">
+          <v-btn variant="tonal" rounded="pill" @click="$router.push('/user/tutor/dashboard')">
+            <v-icon start>mdi-chart-box-outline</v-icon> Dashboard
+          </v-btn>
+          <v-btn class="btn-gradient" @click="$router.push('/user/tutor/add-course')">Add new course</v-btn>
+        </div>
       </div>
 
       <v-row v-if="userCourses.length">

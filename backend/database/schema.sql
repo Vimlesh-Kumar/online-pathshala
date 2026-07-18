@@ -96,3 +96,37 @@ CREATE TABLE IF NOT EXISTS course_objectives (
     course_id INT NOT NULL,
     FOREIGN KEY (course_id) REFERENCES courses(id)
 );
+
+-- ── Engagement: Q&A ──
+CREATE TABLE IF NOT EXISTS qna_questions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    course_id INT NOT NULL,
+    user_id INT NOT NULL,
+    content VARCHAR(1000) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (course_id) REFERENCES courses(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS qna_answers (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    question_id INT NOT NULL,
+    user_id INT NOT NULL,
+    content VARCHAR(1000) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (question_id) REFERENCES qna_questions(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- ── Engagement: quizzes ──
+CREATE TABLE IF NOT EXISTS quiz_questions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    course_id INT NOT NULL,
+    question VARCHAR(500) NOT NULL,
+    option_a VARCHAR(255) NOT NULL,
+    option_b VARCHAR(255) NOT NULL,
+    option_c VARCHAR(255),
+    option_d VARCHAR(255),
+    correct_option CHAR(1) NOT NULL,
+    FOREIGN KEY (course_id) REFERENCES courses(id)
+);

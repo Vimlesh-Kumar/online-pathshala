@@ -110,3 +110,43 @@ INSERT IGNORE INTO lesson (id, duration, course_id, lesson_name, video_key, sect
   (28, '08:44', 10019, 'Introduction & Overview',       'Vl0H-qTclOg', 'Getting Started'),
   (29, '17:11', 10019, 'Core Concepts',                 'Vl0H-qTclOg', 'Core Content'),
   (30, '13:05', 10019, 'Project & Next Steps',          'Vl0H-qTclOg', 'Core Content');
+
+-- Completion quiz — 3 questions per course (same template, course-scoped ids).
+INSERT IGNORE INTO quiz_questions (id, course_id, question, option_a, option_b, option_c, option_d, correct_option) VALUES
+  (1,  10010, 'What is the most effective way to learn a new skill?', 'Watch passively', 'Practice consistently', 'Skip the basics', 'Memorize everything', 'B'),
+  (2,  10010, 'Before building a real project, you should first…', 'Understand the fundamentals', 'Copy others'' code', 'Avoid planning', 'Give up early', 'A'),
+  (3,  10010, 'How do you complete a course on Pathshala?', 'Watch one lesson', 'Complete all lessons and pass the quiz', 'Add it to the cart', 'Log out', 'B'),
+  (4,  10011, 'What is the most effective way to learn a new skill?', 'Watch passively', 'Practice consistently', 'Skip the basics', 'Memorize everything', 'B'),
+  (5,  10011, 'Before building a real project, you should first…', 'Understand the fundamentals', 'Copy others'' code', 'Avoid planning', 'Give up early', 'A'),
+  (6,  10011, 'How do you complete a course on Pathshala?', 'Watch one lesson', 'Complete all lessons and pass the quiz', 'Add it to the cart', 'Log out', 'B'),
+  (7,  10012, 'What is the most effective way to learn a new skill?', 'Watch passively', 'Practice consistently', 'Skip the basics', 'Memorize everything', 'B'),
+  (8,  10012, 'Before building a real project, you should first…', 'Understand the fundamentals', 'Copy others'' code', 'Avoid planning', 'Give up early', 'A'),
+  (9,  10012, 'How do you complete a course on Pathshala?', 'Watch one lesson', 'Complete all lessons and pass the quiz', 'Add it to the cart', 'Log out', 'B'),
+  (10, 10013, 'What is the most effective way to learn a new skill?', 'Watch passively', 'Practice consistently', 'Skip the basics', 'Memorize everything', 'B'),
+  (11, 10013, 'Before building a real project, you should first…', 'Understand the fundamentals', 'Copy others'' code', 'Avoid planning', 'Give up early', 'A'),
+  (12, 10013, 'How do you complete a course on Pathshala?', 'Watch one lesson', 'Complete all lessons and pass the quiz', 'Add it to the cart', 'Log out', 'B'),
+  (13, 10014, 'What is the most effective way to learn a new skill?', 'Watch passively', 'Practice consistently', 'Skip the basics', 'Memorize everything', 'B'),
+  (14, 10014, 'Before building a real project, you should first…', 'Understand the fundamentals', 'Copy others'' code', 'Avoid planning', 'Give up early', 'A'),
+  (15, 10014, 'How do you complete a course on Pathshala?', 'Watch one lesson', 'Complete all lessons and pass the quiz', 'Add it to the cart', 'Log out', 'B'),
+  (16, 10015, 'What is the most effective way to learn a new skill?', 'Watch passively', 'Practice consistently', 'Skip the basics', 'Memorize everything', 'B'),
+  (17, 10015, 'Before building a real project, you should first…', 'Understand the fundamentals', 'Copy others'' code', 'Avoid planning', 'Give up early', 'A'),
+  (18, 10015, 'How do you complete a course on Pathshala?', 'Watch one lesson', 'Complete all lessons and pass the quiz', 'Add it to the cart', 'Log out', 'B'),
+  (19, 10016, 'What is the most effective way to learn a new skill?', 'Watch passively', 'Practice consistently', 'Skip the basics', 'Memorize everything', 'B'),
+  (20, 10016, 'Before building a real project, you should first…', 'Understand the fundamentals', 'Copy others'' code', 'Avoid planning', 'Give up early', 'A'),
+  (21, 10016, 'How do you complete a course on Pathshala?', 'Watch one lesson', 'Complete all lessons and pass the quiz', 'Add it to the cart', 'Log out', 'B'),
+  (22, 10017, 'What is the most effective way to learn a new skill?', 'Watch passively', 'Practice consistently', 'Skip the basics', 'Memorize everything', 'B'),
+  (23, 10017, 'Before building a real project, you should first…', 'Understand the fundamentals', 'Copy others'' code', 'Avoid planning', 'Give up early', 'A'),
+  (24, 10017, 'How do you complete a course on Pathshala?', 'Watch one lesson', 'Complete all lessons and pass the quiz', 'Add it to the cart', 'Log out', 'B'),
+  (25, 10018, 'What is the most effective way to learn a new skill?', 'Watch passively', 'Practice consistently', 'Skip the basics', 'Memorize everything', 'B'),
+  (26, 10018, 'Before building a real project, you should first…', 'Understand the fundamentals', 'Copy others'' code', 'Avoid planning', 'Give up early', 'A'),
+  (27, 10018, 'How do you complete a course on Pathshala?', 'Watch one lesson', 'Complete all lessons and pass the quiz', 'Add it to the cart', 'Log out', 'B'),
+  (28, 10019, 'What is the most effective way to learn a new skill?', 'Watch passively', 'Practice consistently', 'Skip the basics', 'Memorize everything', 'B'),
+  (29, 10019, 'Before building a real project, you should first…', 'Understand the fundamentals', 'Copy others'' code', 'Avoid planning', 'Give up early', 'A'),
+  (30, 10019, 'How do you complete a course on Pathshala?', 'Watch one lesson', 'Complete all lessons and pass the quiz', 'Add it to the cart', 'Log out', 'B');
+
+-- Make the demo Tutor the instructor of a few courses (for the instructor dashboard).
+INSERT INTO enrollment (is_completed, progress, course_id, user_id)
+SELECT false, 0, c.id, u.id
+FROM courses c CROSS JOIN users u
+WHERE u.email = 'tutor@test.com' AND c.id IN (10010, 10011, 10012)
+  AND NOT EXISTS (SELECT 1 FROM enrollment e WHERE e.course_id = c.id AND e.user_id = u.id);

@@ -61,11 +61,13 @@
             </v-card-text>
           </v-card>
 
-          <v-alert v-if="isCompleted" type="success" variant="tonal" class="section-card" prominent>
-            <div class="d-flex align-center justify-space-between flex-wrap ga-3">
-              <span>🎉 You've completed this course! Certificates arrive in the next update.</span>
-            </div>
-          </v-alert>
+          <div v-if="isCompleted" class="d-flex flex-column ga-6">
+            <v-alert type="success" variant="tonal" class="section-card" prominent>
+              🎉 All lessons complete! Pass the final quiz (70%+) to earn your certificate.
+            </v-alert>
+            <course-quiz :course-id="course.id" @passed="quizPassed = true" />
+            <course-certificate v-if="quizPassed" :name="userName" :course="course.title" />
+          </div>
         </v-col>
 
         <!-- Curriculum sidebar -->
@@ -109,9 +111,12 @@
 
 <script>
 import axios from 'axios'
+import CourseQuiz from './CourseQuiz.vue'
+import CourseCertificate from './CourseCertificate.vue'
 
 export default {
   name: 'CoursePlayer',
+  components: { CourseQuiz, CourseCertificate },
   data() {
     return {
       loading: true,
@@ -122,9 +127,13 @@ export default {
       progressPct: 0,
       isCompleted: false,
       currentLessonId: null,
+      quizPassed: false,
     }
   },
   computed: {
+    userName() {
+      return this.$store.getters.user?.full_name || 'Student'
+    },
     sections() {
       const groups = []
       for (const lesson of this.lessons) {
@@ -158,6 +167,7 @@ export default {
   },
   async created() {
     const courseId = Number(this.$route.params.id)
+    this.$store.dispatch('fetchingUser')
     try {
       const [courseRes, lessons] = await Promise.all([
         axios.get(`/course/${courseId}`),
