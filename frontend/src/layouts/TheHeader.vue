@@ -101,6 +101,7 @@
               <v-divider />
               <v-list class="py-2">
                 <v-list-item prepend-icon="mdi-view-dashboard-outline" title="My learning" @click="$router.push('/user')" />
+                <v-list-item prepend-icon="mdi-receipt-text-outline" title="My orders" @click="$router.push('/user/orders')" />
                 <v-list-item prepend-icon="mdi-logout" title="Logout" @click="handleLogoutClick" />
               </v-list>
             </v-card>
@@ -139,6 +140,12 @@ export default {
     return {
       searchQuery: '',
       searchTimeout: null
+    }
+  },
+  created() {
+    // Keep the header's auth state correct on any direct page load / refresh.
+    if (!this.user && localStorage.getItem('token')) {
+      this.$store.dispatch('fetchingUser')
     }
   },
   computed: {

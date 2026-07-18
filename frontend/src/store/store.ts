@@ -151,6 +151,19 @@ const store = createStore({
         async markLessonComplete(_context, { courseId, lessonId }) {
             const response = await axios.post('/user/course/progress', { course_id: courseId, lesson_id: lessonId })
             return response.data.data
+        },
+        // ── Commerce ──
+        async validateCoupon(_context, code) {
+            const response = await axios.post('/user/coupon/validate', { code })
+            return response.data.data
+        },
+        async checkout(_context, coupon) {
+            const response = await axios.post('/user/checkout', { coupon })
+            return response.data.data
+        },
+        async fetchOrders(_context) {
+            const response = await axios.get('/user/orders')
+            return response.data.data || []
         }
     },
 

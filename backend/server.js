@@ -10,6 +10,7 @@ import objectivesRouter from './api/routes/courseObjectives.router.js';
 import lecturesRouter from './api/routes/sectionLectures.router.js';
 import cartRouter from './api/routes/cart.router.js';
 import wishListRouter from './api/routes/wishlist.router.js';
+import orderRouter from './api/routes/order.router.js';
 
 const app = express();
 const PORT = process.env.PORT || process.env.APP_PORT || 5000;
@@ -30,6 +31,7 @@ app.use('/', objectivesRouter);
 app.use('/course/section', lecturesRouter);
 app.use('/', cartRouter);
 app.use('/', wishListRouter);
+app.use('/', orderRouter);
 
 app.listen(PORT, () => {
     console.log(`🚀 Server is running on PORT: ${PORT}`);

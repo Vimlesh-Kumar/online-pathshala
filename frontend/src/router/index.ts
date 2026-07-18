@@ -23,7 +23,8 @@ const routes = [
   { path: '/courses/search', component: () => import('@/components/course/CategoryCourses.vue') },
   { path: '/courses/all', component: () => import('@/components/course/CategoryCourses.vue') },
   { path: '/user/cart', component: cart },
-  { path: '/user/wishlist', component: wishlist }
+  { path: '/user/wishlist', component: wishlist },
+  { path: '/user/orders', component: () => import('@/components/orders/Orders.vue') }
 ]
 
 const router = createRouter({
