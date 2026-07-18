@@ -9,7 +9,10 @@ export async function loadFonts () {
 
   webFontLoader.load({
     google: {
-      families: ['Roboto:100,300,400,500,700,900&display=swap'],
+      families: [
+        'Inter:wght@400;500;600;700&display=swap',
+        'Plus+Jakarta+Sans:wght@600;700;800&display=swap',
+      ],
     },
   })
 }

@@ -10,7 +10,7 @@
           </p>
           <div class="d-flex flex-wrap ga-3">
             <v-btn variant="outlined" rounded="pill" class="footer-action" @click="$router.push('/courses/all')">Browse courses</v-btn>
-            <v-btn color="primary" rounded="pill" class="px-5" @click="$router.push('/user/tutor/add-course')">Teach on Pathshala</v-btn>
+            <v-btn class="btn-gradient px-5" @click="$router.push('/user/tutor/add-course')">Teach on Pathshala</v-btn>
           </div>
         </v-col>
 
@@ -67,35 +67,38 @@ export default {
 <style scoped>
 .footer-shell {
   background: transparent;
-  color: #0b2d20;
+  color: var(--text-main);
 }
 
 .footer-panel {
-  border-radius: 36px;
-  background: #ffffff;
-  color: #0b2d20;
-  border: 1px solid rgba(31, 139, 83, 0.18);
-  box-shadow: 0 24px 60px rgba(15, 81, 56, 0.14);
+  border-radius: var(--r-xl);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--text-main);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
 }
 
 .footer-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: clamp(1.8rem, 3vw, 2.6rem);
   line-height: 1.05;
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: #0b2d20;
+  color: var(--text-strong);
 }
 
 .footer-copy,
 .footer-meta {
-  color: #4b6a5c;
+  color: var(--text-soft);
 }
 
 .footer-heading {
   margin-bottom: 16px;
   font-weight: 800;
   font-size: 1rem;
-  color: #0f5138;
+  color: var(--text-strong);
 }
 
 .footer-links {
@@ -105,7 +108,7 @@ export default {
 }
 
 .footer-link {
-  color: #0f4d2d;
+  color: var(--text-soft);
   text-align: left;
   background: transparent;
   border: 0;
@@ -116,17 +119,17 @@ export default {
 
 .footer-link:hover,
 .footer-chip:hover {
-  color: #1f8b53;
+  color: var(--brand-2);
 }
 
 .footer-chip {
-  color: #0f5138;
-  border-color: rgba(31, 139, 83, 0.35);
+  color: var(--text-main);
+  border-color: var(--glass-border);
   font-weight: 600;
 }
 
 .footer-action {
-  color: #1f8b53;
-  border-color: rgba(31, 139, 83, 0.35);
+  color: var(--brand-2);
+  border-color: var(--glass-border);
 }
 </style>

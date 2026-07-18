@@ -48,15 +48,15 @@
                                     hide-details="auto"></v-text-field>
                             </v-col>
                             <v-col cols="2" v-if="index === objectives.length - 1">
-                                <v-btn color="success" @click="addObjective">+</v-btn>
+                                <v-btn color="primary" @click="addObjective">+</v-btn>
                             </v-col>
                         </v-row>
                         <v-row>
                             <v-col cols="12" class="text-center">
-                                <v-btn color="success mx-5" @click="submitObjectives" type="submit">
+                                <v-btn color="primary" class="mx-5" @click="submitObjectives" type="submit">
                                     Save Objectives
                                 </v-btn>
-                                <v-btn class="bg-green mx-5" @click="redirectToCurriculum">Add Curriculum</v-btn>
+                                <v-btn class="btn-gradient mx-5" @click="redirectToCurriculum">Add Curriculum</v-btn>
                             </v-col>
                         </v-row>
                     </v-container>

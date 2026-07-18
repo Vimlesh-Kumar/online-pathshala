@@ -8,7 +8,7 @@
                 <v-select variant="solo" label="Category" v-model="category" :items="categories" required></v-select>
                 <v-text-field variant="solo" label="Price" v-model="price" type="number" required></v-text-field>
                 <v-text-field variant="solo" label="Course Thumbnail URL" v-model="url" type="url" required></v-text-field>
-                <v-btn block color="success" size="large" type="submit" required>ADD COURSE</v-btn>
+                <v-btn block class="btn-gradient" size="large" type="submit" required>ADD COURSE</v-btn>
             </v-form>
         </v-card>
     </div>

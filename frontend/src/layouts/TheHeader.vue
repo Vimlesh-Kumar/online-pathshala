@@ -7,12 +7,12 @@
     <v-container class="py-0 fill-height">
       <div class="header-panel d-flex align-center w-100 px-2 px-md-4">
         <router-link to="/" class="brand-link d-flex align-center text-decoration-none">
-          <v-avatar rounded="xl" size="44" color="white" class="mr-3 brand-mark">
-            <v-img src="../assets/logo.png"></v-img>
+          <v-avatar rounded="lg" size="44" class="mr-3 brand-mark">
+            <v-icon color="white" size="26">mdi-school</v-icon>
           </v-avatar>
           <div>
-            <div class="brand-name">Online Pathshala</div>
-            <div class="brand-subtitle">Learn with structure</div>
+            <div class="brand-name gradient-text">Online Pathshala</div>
+            <div class="brand-subtitle">Learn anything, beautifully</div>
           </div>
         </router-link>
 
@@ -65,6 +65,16 @@
           </v-btn>
         </div>
 
+        <v-btn
+          icon
+          variant="text"
+          class="action-button mr-1"
+          :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+          @click="toggleTheme"
+        >
+          <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+        </v-btn>
+
         <div v-if="user" class="d-flex align-center">
           <v-btn icon variant="text" class="action-button" @click="$router.push('/user/cart')">
             <v-badge :content="cartCount" color="primary" offset-x="4" offset-y="4" :model-value="cartCount > 0">
@@ -99,7 +109,7 @@
 
         <div v-else class="d-flex align-center">
           <v-btn variant="text" class="nav-button mr-2" @click="$router.push('/user/sign-in')">Log in</v-btn>
-          <v-btn color="primary" rounded="pill" class="px-5" @click="$router.push('/user/sign-up')">Sign up</v-btn>
+          <v-btn class="btn-gradient px-6" @click="$router.push('/user/sign-up')">Sign up</v-btn>
         </div>
       </div>
     </v-container>
@@ -108,8 +118,23 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { computed } from 'vue'
+import { useTheme } from 'vuetify'
 
 export default {
+  setup() {
+    const theme = useTheme()
+    const stored = localStorage.getItem('theme')
+    if (stored === 'light' || stored === 'dark') theme.change(stored)
+
+    const isDark = computed(() => theme.current.value.dark)
+    function toggleTheme() {
+      const next = theme.current.value.dark ? 'light' : 'dark'
+      theme.change(next)
+      localStorage.setItem('theme', next)
+    }
+    return { isDark, toggleTheme }
+  },
   data() {
     return {
       searchQuery: '',
@@ -168,31 +193,33 @@ export default {
 
 .header-panel {
   height: 64px;
-  border-radius: 999px;
-  background: #ffffff;
-  border: 1px solid rgba(31, 139, 83, 0.15);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 16px 46px rgba(15, 81, 56, 0.12);
+  border-radius: var(--r-pill);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-md);
 }
 
 .brand-link {
-  color: #0f5138;
+  color: var(--text-strong);
 }
 
 .brand-mark {
-  border: 1px solid rgba(31, 139, 83, 0.25);
+  background: var(--grad-primary);
+  box-shadow: var(--shadow-glow);
 }
 
 .brand-name {
-  font-size: 1.1rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.12rem;
   font-weight: 800;
   line-height: 1.1;
-  color: #0b2d20;
 }
 
 .brand-subtitle {
-  color: #4b6a5c;
-  font-size: 0.75rem;
+  color: var(--text-soft);
+  font-size: 0.74rem;
 }
 
 .search-input {
@@ -201,19 +228,20 @@ export default {
 
 .nav-button,
 .action-button {
-  color: #0f5138;
+  color: var(--text-main);
   font-weight: 600;
 }
 
 .profile-badge {
-  background: linear-gradient(135deg, #1f8b53, #4aba8c);
+  background: var(--grad-primary);
   color: white;
   font-weight: 800;
   text-transform: uppercase;
   cursor: pointer;
+  box-shadow: var(--shadow-glow);
 }
 
 .profile-menu {
-  border: 1px solid rgba(31, 41, 55, 0.08);
+  border: 1px solid var(--glass-border);
 }
 </style>

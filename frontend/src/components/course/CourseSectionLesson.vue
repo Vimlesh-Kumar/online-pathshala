@@ -23,10 +23,10 @@
 
 
                             <v-progress-linear v-if="uploadProgress !== null" :value="uploadProgress" height="25"
-                                v-model="uploadProgress" color="green">
+                                v-model="uploadProgress" color="primary">
                                 <strong class="text-white">{{ Math.ceil(uploadProgress) }}%</strong>
                             </v-progress-linear>
-                            <div v-if="uploadStatus !== ''" class="text-green font-weight-medium ms-7">{{
+                            <div v-if="uploadStatus !== ''" class="text-primary font-weight-medium ms-7">{{
                                 uploadStatus }}</div>
 
 
@@ -34,7 +34,7 @@
 
                     </v-form>
                 </div>
-                <v-btn class="bg-green-lighten-3 mb-8" @click="saveAndAddNewLecture"
+                <v-btn class="btn-gradient mb-8" @click="saveAndAddNewLecture"
                     v-if="index === lessons.length - 1"><span class="mdi mdi-plus-thick"></span>Next Lecture</v-btn>
             </v-card>
 
