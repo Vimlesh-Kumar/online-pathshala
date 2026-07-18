@@ -51,7 +51,14 @@
           density="comfortable"
           class="search-input mx-2 mx-md-6"
           @keyup.enter="handleSearch"
-        />
+        >
+          <template #append-inner>
+            <v-chip
+              size="small" variant="outlined" class="kbd-hint d-none d-md-inline-flex"
+              @click.stop="openCommandPalette"
+            >⌘K</v-chip>
+          </template>
+        </v-text-field>
 
         <div class="d-none d-lg-flex align-center mr-4">
           <v-btn variant="text" class="nav-button" @click="$router.push('/courses/all')">Explore</v-btn>
@@ -186,6 +193,9 @@ export default {
       const trimmed = this.searchQuery.trim()
       this.$store.dispatch('setSearchQuery', trimmed)
       this.$router.push({ path: '/courses/all', query: trimmed ? { q: trimmed } : {} })
+    },
+    openCommandPalette() {
+      window.dispatchEvent(new CustomEvent('open-command-palette'))
     }
   },
   beforeUnmount() {
@@ -232,6 +242,13 @@ export default {
 
 .search-input {
   max-width: 520px;
+}
+
+.kbd-hint {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--text-soft);
+  opacity: 0.85;
 }
 
 .nav-button,

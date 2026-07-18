@@ -1,5 +1,6 @@
 <template>
-  <v-card class="course-card glass-panel section-card hover-lift h-100" flat @click="goToCourse">
+  <div class="course-card-wrap" @mouseenter="scheduleShow" @mouseleave="cancelShow">
+  <v-card class="course-card glass-panel section-card hover-lift h-100" :class="{ 'is-previewing': showPreview }" flat @click="goToCourse">
     <div class="course-media">
       <v-img cover height="188" :src="course.thumb_url" class="course-img">
         <div class="media-overlay"></div>
@@ -55,6 +56,25 @@
       </div>
     </v-card-text>
   </v-card>
+
+  <transition name="hover-preview-pop">
+    <div v-if="showPreview" class="hover-preview glass-panel section-card pa-5" @click="goToCourse">
+      <h4 class="preview-title line-clamp-2 mb-2">{{ course.title }}</h4>
+      <div class="d-flex align-center mb-3">
+        <span class="rating-value mr-2">{{ Number(course.rating || 4.5).toFixed(1) }}</span>
+        <v-rating :model-value="Number(course.rating || 4.5)" color="warning" density="compact" half-increments readonly size="14" />
+        <span class="ml-2 text-caption text-medium-emphasis">{{ course.enrolled_students || 0 }} learners</span>
+      </div>
+      <p class="preview-subtitle line-clamp-3 mb-4">{{ course.subtitle }}</p>
+      <ul class="includes-list mb-4">
+        <li><v-icon size="16" color="primary">mdi-video-outline</v-icon> Full lifetime access</li>
+        <li><v-icon size="16" color="primary">mdi-certificate-outline</v-icon> Certificate of completion</li>
+        <li><v-icon size="16" color="primary">mdi-cellphone-play</v-icon> Desktop and mobile</li>
+      </ul>
+      <v-btn block class="btn-gradient" @click.stop="goToCourse">View course</v-btn>
+    </div>
+  </transition>
+  </div>
 </template>
 
 <script>
@@ -65,6 +85,9 @@ export default {
     wished: { type: Boolean, default: false },
   },
   emits: ['toggle-wishlist'],
+  data() {
+    return { showPreview: false, previewTimer: null }
+  },
   computed: {
     isBestseller() {
       return Number(this.course.rating || 0) >= 4.5
@@ -74,6 +97,9 @@ export default {
       return n.toLocaleString('en-IN', { maximumFractionDigits: 0 })
     },
   },
+  beforeUnmount() {
+    if (this.previewTimer) clearTimeout(this.previewTimer)
+  },
   methods: {
     goToCourse() {
       this.$store.dispatch('getACourse', this.course)
@@ -82,15 +108,82 @@ export default {
     toggleWishlist() {
       this.$emit('toggle-wishlist', this.course)
     },
+    scheduleShow() {
+      if (this.previewTimer) clearTimeout(this.previewTimer)
+      this.previewTimer = setTimeout(() => { this.showPreview = true }, 350)
+    },
+    cancelShow() {
+      if (this.previewTimer) clearTimeout(this.previewTimer)
+      this.showPreview = false
+    },
   },
 }
 </script>
 
 <style scoped>
+.course-card-wrap {
+  position: relative;
+  height: 100%;
+}
+
 .course-card {
   cursor: pointer;
   overflow: hidden;
   border-radius: var(--r-lg);
+}
+.course-card.is-previewing {
+  visibility: hidden;
+}
+
+.hover-preview {
+  position: absolute;
+  top: -12px;
+  left: -10px;
+  right: -10px;
+  min-height: calc(100% + 24px);
+  z-index: 40;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+}
+
+.preview-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-strong);
+}
+
+.preview-subtitle {
+  color: var(--text-soft);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.includes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: var(--text-main);
+}
+.includes-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hover-preview-pop-enter-active, .hover-preview-pop-leave-active { transition: opacity 0.18s ease, transform 0.18s ease; }
+.hover-preview-pop-enter-from, .hover-preview-pop-leave-to { opacity: 0; transform: translateY(6px) scale(0.98); }
+
+@media (hover: none) {
+  .hover-preview { display: none; }
+}
+@media (max-width: 960px) {
+  .hover-preview { display: none; }
 }
 
 .course-media {

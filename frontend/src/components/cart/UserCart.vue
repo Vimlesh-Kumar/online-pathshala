@@ -123,6 +123,7 @@
 import axios from 'axios';
 import { mapGetters } from 'vuex';
 import WishList from '../wishlist/WishList.vue'
+import { toast } from '@/plugins/toast'
 
 export default {
   components: { WishList },
@@ -155,6 +156,7 @@ export default {
     async removeFromCart(courseId) {
       await axios.post('/user/cart-remove', { course_id: courseId })
       await this.$store.dispatch('getCartCourses')
+      toast.info('Removed from cart.')
       if (this.couponResult) this.applyCoupon() // re-price
     },
     async applyCoupon() {
@@ -163,6 +165,7 @@ export default {
       this.couponError = ''
       try {
         this.couponResult = await this.$store.dispatch('validateCoupon', this.coupon)
+        toast.success(this.couponResult?.label || 'Coupon applied!')
       } catch (e) {
         this.couponResult = null
         this.couponError = e?.response?.data?.message || 'Invalid coupon code.'
@@ -179,6 +182,7 @@ export default {
         await this.$store.dispatch('fetchingUserCourses')
       } catch (e) {
         this.couponError = e?.response?.data?.message || 'Checkout failed.'
+        toast.error(this.couponError)
       } finally {
         this.checkingOut = false
       }

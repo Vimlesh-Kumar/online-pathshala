@@ -83,7 +83,7 @@
       </section>
 
       <!-- ── Featured courses ───────────────────────── -->
-      <section class="mt-10">
+      <section class="mt-10" v-reveal>
         <div class="d-flex flex-column flex-md-row align-md-end justify-space-between mb-7">
           <div>
             <div class="eyebrow mb-3">🔥 Featured Courses</div>
@@ -95,14 +95,14 @@
           </v-btn>
         </div>
 
-        <all-courses :all-courses="allCourses.slice(0, 8)" />
+        <all-courses :all-courses="allCourses.slice(0, 8)" :loading="loadingCourses" />
       </section>
 
       <!-- ── Feature band ───────────────────────────── -->
       <section class="mt-14">
         <v-row>
-          <v-col v-for="feature in features" :key="feature.title" cols="12" md="4">
-            <v-card class="glass-panel section-card h-100 pa-7 hover-lift" flat>
+          <v-col v-for="(feature, i) in features" :key="feature.title" cols="12" md="4">
+            <v-card v-reveal="i * 90" class="glass-panel section-card h-100 pa-7 hover-lift" flat>
               <div class="feature-icon mb-5">
                 <v-icon size="28" color="white">{{ feature.icon }}</v-icon>
               </div>
@@ -114,7 +114,7 @@
       </section>
 
       <!-- ── CTA band ───────────────────────────────── -->
-      <section class="mt-14">
+      <section class="mt-14" v-reveal>
         <v-card class="cta-band pa-8 pa-md-12" flat>
           <v-row align="center">
             <v-col cols="12" md="8">
@@ -141,6 +141,7 @@ export default {
   components: { AllCourses },
   data() {
     return {
+      loadingCourses: true,
       stats: [
         { value: '10k+', label: 'Active learners' },
         { value: '100+', label: 'Structured lessons' },
@@ -156,10 +157,11 @@ export default {
   computed: {
     ...mapGetters(['allCourses', 'category'])
   },
-  created() {
-    this.$store.dispatch('fetchingFeaturedCourses')
+  async created() {
     this.$store.dispatch('fetchingUser')
     this.$store.dispatch('getCartCourses')
+    await this.$store.dispatch('fetchingFeaturedCourses')
+    this.loadingCourses = false
   },
   methods: {
     goToCategory(cat) {

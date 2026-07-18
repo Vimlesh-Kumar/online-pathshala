@@ -15,7 +15,7 @@
           <h1 class="player-title">{{ course.title }}</h1>
         </div>
         <div class="progress-chip glass-panel">
-          <span class="progress-pct gradient-text">{{ progressPct }}%</span>
+          <progress-ring :value="progressPct" :size="52" :stroke-width="6" label-size="13px" />
           <span class="progress-sub">{{ completedCount }}/{{ totalCount }} lessons</span>
         </div>
       </div>
@@ -65,7 +65,7 @@
             <v-alert type="success" variant="tonal" class="section-card" prominent>
               🎉 All lessons complete! Pass the final quiz (70%+) to earn your certificate.
             </v-alert>
-            <course-quiz :course-id="course.id" @passed="quizPassed = true" />
+            <course-quiz :course-id="course.id" @passed="onQuizPassed" />
             <course-certificate v-if="quizPassed" :name="userName" :course="course.title" />
           </div>
         </v-col>
@@ -113,10 +113,12 @@
 import axios from 'axios'
 import CourseQuiz from './CourseQuiz.vue'
 import CourseCertificate from './CourseCertificate.vue'
+import ProgressRing from '../support/ProgressRing.vue'
+import { fireConfetti } from '@/utils/confetti'
 
 export default {
   name: 'CoursePlayer',
-  components: { CourseQuiz, CourseCertificate },
+  components: { CourseQuiz, CourseCertificate, ProgressRing },
   data() {
     return {
       loading: true,
@@ -191,6 +193,10 @@ export default {
     }
   },
   methods: {
+    onQuizPassed() {
+      this.quizPassed = true
+      fireConfetti()
+    },
     applyProgress(progress) {
       if (!progress) return
       this.completedIds = progress.completedLessonIds || []

@@ -105,11 +105,7 @@
       </div>
 
       <template v-if="loading">
-        <v-row>
-          <v-col v-for="n in 8" :key="n" cols="12" sm="6" lg="4" xl="3">
-            <v-skeleton-loader type="card" class="rounded-xl" />
-          </v-col>
-        </v-row>
+        <all-courses :all-courses="[]" :loading="true" />
       </template>
 
       <template v-else-if="courses.length > 0">

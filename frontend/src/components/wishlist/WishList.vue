@@ -19,6 +19,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import { toast } from '@/plugins/toast'
 
 export default {
   props: ['course_id', 'user'],
@@ -41,6 +42,7 @@ export default {
       if (!this.wishlistCoursesId.includes(course_id)) {
         await this.$store.dispatch('addToWishlist', course_id)
         await this.$store.dispatch('getWishlistCourses')
+        toast.success('Added to wishlist.')
       }
     },
 
@@ -50,6 +52,7 @@ export default {
     async removeFromWishlist(course_id) {
       await this.$store.dispatch('removeFromWishlist', course_id)
       await this.$store.dispatch('getWishlistCourses')
+      toast.info('Removed from wishlist.')
     }
   }
 }

@@ -34,6 +34,9 @@
             <div class="learn-media">
               <v-img :src="c.thumb_url" height="150" cover />
               <span v-if="Number(c.progress) >= 100" class="done-badge">✓ Completed</span>
+              <div v-else class="ring-badge glass-panel">
+                <progress-ring :value="Number(c.progress) || 0" :size="44" :stroke-width="5" label-size="11px" />
+              </div>
             </div>
             <v-card-text class="pa-5">
               <div class="eyebrow mb-2">{{ c.category }}</div>
@@ -70,20 +73,20 @@
       </v-card>
     </section>
 
-    <section class="mt-12" v-if="user">
+    <section class="mt-12" v-if="user" v-reveal>
       <div class="eyebrow mb-3">✨ Picked For You</div>
       <h2 class="app-section-title mb-2">{{ recommendedTitle }}</h2>
       <p class="app-section-copy mb-6">{{ recommendedSubtitle }}</p>
-      <all-courses v-if="recommended.length" :all-courses="recommended" />
+      <all-courses v-if="loadingRecommended || recommended.length" :all-courses="recommended" :loading="loadingRecommended" />
       <v-card v-else class="glass-panel section-card pa-6 text-center" flat>
         <p class="app-section-copy mb-0">No new recommendations right now — you've covered your favorite categories!</p>
       </v-card>
     </section>
 
-    <section class="mt-12">
+    <section class="mt-12" v-reveal>
       <div class="eyebrow mb-3">Discover More</div>
       <h2 class="app-section-title mb-6">Expand your skillset</h2>
-      <all-courses :all-courses="allCourses.slice(0, 8)" />
+      <all-courses :all-courses="allCourses.slice(0, 8)" :loading="!allCourses.length" />
     </section>
   </v-container>
 </template>
@@ -91,11 +94,12 @@
 <script>
 import { mapGetters } from 'vuex';
 import AllCourses from '../components/course/AllCourses.vue';
+import ProgressRing from '../components/support/ProgressRing.vue';
 
 export default {
-  components: { AllCourses },
+  components: { AllCourses, ProgressRing },
   data() {
-    return { recommended: [], recommendReason: 'popular', recommendBasedOn: [] }
+    return { recommended: [], recommendReason: 'popular', recommendBasedOn: [], loadingRecommended: true }
   },
   computed: {
     ...mapGetters(['user', 'allCourses', 'userCourses']),
@@ -119,6 +123,7 @@ export default {
       this.recommendReason = rec.reason
       this.recommendBasedOn = rec.basedOn || []
     }
+    this.loadingRecommended = false
   },
 }
 </script>
@@ -137,6 +142,14 @@ export default {
   color: #fff;
   font-size: 0.72rem;
   font-weight: 800;
+  box-shadow: var(--shadow-sm);
+}
+.ring-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border-radius: 50%;
+  padding: 3px;
   box-shadow: var(--shadow-sm);
 }
 .learn-title {

@@ -1,5 +1,13 @@
 <template>
-  <v-container class="app-section" v-if="singleCourse">
+  <v-container class="app-section" v-if="!singleCourse">
+    <section class="page-intro pa-6 pa-md-10 mb-8">
+      <div class="skeleton mb-4" style="height: 14px; width: 120px;"></div>
+      <div class="skeleton mb-3" style="height: 40px; width: 70%;"></div>
+      <div class="skeleton" style="height: 18px; width: 50%;"></div>
+    </section>
+  </v-container>
+
+  <v-container class="app-section" v-else>
     <section class="page-intro pa-6 pa-md-10 mb-8">
       <v-row>
         <v-col cols="12" md="7">
@@ -79,8 +87,6 @@
                 </template>
               </template>
 
-              <v-alert v-if="showMessage" type="success" variant="tonal" class="mb-4">{{ message }}</v-alert>
-
               <div class="detail-list">
                 <div><v-icon size="18" class="mr-2">mdi-video-outline</v-icon>Full lifetime access</div>
                 <div><v-icon size="18" class="mr-2">mdi-certificate-outline</v-icon>Certificate of completion</div>
@@ -141,6 +147,7 @@ import WishList from '../wishlist/WishList.vue';
 import AllCourses from './AllCourses.vue';
 import CourseReviews from './CourseReviews.vue';
 import CourseQna from './CourseQna.vue';
+import { toast } from '@/plugins/toast'
 
 export default {
   components: { WishList, AllCourses, CourseReviews, CourseQna },
@@ -161,8 +168,6 @@ export default {
       singleCourse: null,
       courseAuthor: null,
       courseId: null,
-      message: '',
-      showMessage: false,
       relatedCourses: [],
       courseQuestion: '',
       courseAnswer: '',
@@ -197,6 +202,7 @@ export default {
         return
       }
       await this.$store.dispatch('enrollInCourse', id)
+      toast.success("You're enrolled — happy learning!")
       this.$router.push(`/learn/${id}`)
     },
     async askCourse() {
@@ -220,9 +226,8 @@ export default {
 
       if (!this.cartCourses.includes(id)) {
         await axios.post('/user/cart', { course_id: id })
-        this.message = 'Course added to cart.'
         await this.$store.dispatch('getCartCourses')
-        this.showMessage = true
+        toast.success('Course added to cart.')
       }
     },
   }
