@@ -1,6 +1,44 @@
 import pool from '../../database/database.js';
+import * as groq from './groq.service.js';
+import { FAQ_ENTRIES, findAnswer as findFaqAnswer } from './faq.data.js';
+
+// Grounding text for the general support chatbot: the whole FAQ set, sent as
+// context so Groq answers using facts about THIS app instead of guessing.
+const FAQ_CONTEXT = FAQ_ENTRIES.map((e) => `Q: ${e.question}\nA: ${e.answer}`).join('\n\n');
 
 const STOPWORDS = new Set(['a', 'an', 'the', 'is', 'are', 'do', 'does', 'how', 'what', 'i', 'to', 'for', 'of', 'in', 'on', 'my', 'can', 'get', 'this', 'course', 'about']);
+
+// Shared system framing so every Groq call stays scoped to this app and
+// answers in the same voice — kept short to leave room for grounding context.
+const APP_SYSTEM_PROMPT = 'You are the support assistant for Online Pathshala, a free online course marketplace. ' +
+    'Answer briefly (2-3 sentences max), in a friendly and direct tone, using ONLY the context provided. ' +
+    "If the context doesn't cover the question, say so honestly instead of guessing.";
+
+/**
+ * Ask Groq a grounded question and fall back to a provided rule-based
+ * answer if Groq is unconfigured or the call fails for any reason
+ * (missing key, rate limit, network error, timeout). This is the one
+ * seam every AI-support feature routes through, so the "always free,
+ * always available" guarantee only needs to be implemented once.
+ *
+ * @param {string} systemContext - grounding facts appended to the base system prompt
+ * @param {string} userMessage - the learner's question, verbatim
+ * @param {() => (T | Promise<T>)} fallbackFn - rule-based result to use if Groq is unavailable
+ * @returns {Promise<T>}
+ */
+const askGroqOrFallback = async (systemContext, userMessage, fallbackFn) => {
+    if (!groq.isConfigured()) return fallbackFn();
+    try {
+        const answer = await groq.chatComplete([
+            { role: 'system', content: `${APP_SYSTEM_PROMPT}\n\nContext:\n${systemContext}` },
+            { role: 'user', content: userMessage }
+        ]);
+        return answer;
+    } catch (err) {
+        console.warn('[aiSupport] Groq call failed, falling back to rule-based answer:', err.message);
+        return fallbackFn();
+    }
+};
 
 const tokenize = (text) => String(text || '')
     .toLowerCase()
@@ -18,29 +56,34 @@ const overlapScore = (queryTokens, text) => {
 };
 
 /**
- * Answer a question about one specific course by searching its own content
- * (subtitle, learning objectives, lesson names/sections) for the best match.
- * Free, keyword-based — no external model call.
+ * General app-support chatbot answer. Tries Groq (grounded on the FAQ set)
+ * first for a real conversational answer, then falls back to the free
+ * keyword-matching FAQ engine if Groq is unconfigured or fails.
+ *
+ * @param {string} message - the learner's free-text question
+ * @returns {Promise<{answer: string, matched: object|null, suggestions: Array}>}
  */
-export const answerCourseQuestion = async (courseId, question) => {
-    const [[course]] = await pool.query(
-        'SELECT title, subtitle, category, author FROM courses WHERE id = ?',
-        [courseId]
-    );
-    if (!course) return { answer: 'Course not found.', source: null };
+export const answerGeneralSupportQuestion = async (message) => {
+    const ruleBasedResult = findFaqAnswer(message);
 
-    const [objectives] = await pool.query(
-        'SELECT objective FROM course_objectives WHERE course_id = ?',
-        [courseId]
-    );
-    const [lessons] = await pool.query(
-        'SELECT lesson_name, section_name, duration FROM lesson WHERE course_id = ?',
-        [courseId]
-    );
+    const groqAnswer = await askGroqOrFallback(FAQ_CONTEXT, message, () => null);
+    if (groqAnswer) {
+        // Keep the rule-based `matched`/`suggestions` metadata (used by the UI
+        // for follow-up chips) even when the prose answer comes from Groq.
+        return { answer: groqAnswer, matched: ruleBasedResult.matched, suggestions: ruleBasedResult.suggestions };
+    }
+    return ruleBasedResult;
+};
 
+/**
+ * Rule-based fallback for course-specific questions: scores the course's own
+ * subtitle/objectives/lesson names against the question by keyword overlap.
+ * Used directly when Groq is unconfigured, and as the fallback if Groq fails.
+ */
+const answerCourseQuestionRuleBased = (course, objectives, lessons, question) => {
     const queryTokens = tokenize(question);
     if (!queryTokens.length) {
-        return { answer: `${course.title} is taught by ${course.author}. Ask me something specific about what it covers!`, source: null };
+        return `${course.title} is taught by ${course.author}. Ask me something specific about what it covers!`;
     }
 
     const candidates = [
@@ -59,10 +102,7 @@ export const answerCourseQuestion = async (courseId, question) => {
 
     const top = scored[0];
     if (!top || top.score === 0) {
-        return {
-            answer: `I couldn't find that in ${course.title}'s content. Try the Q&A section below to ask the instructor directly.`,
-            source: null
-        };
+        return `I couldn't find that in ${course.title}'s content. Try the Q&A section below to ask the instructor directly.`;
     }
 
     const prefix = top.source === 'lesson'
@@ -71,7 +111,51 @@ export const answerCourseQuestion = async (courseId, question) => {
             ? 'Yes — this course teaches you to: '
             : 'From the course description: ';
 
-    return { answer: `${prefix}${top.label}`, source: top.source };
+    return `${prefix}${top.label}`;
+};
+
+const formatObjectiveLine = (o) => `- ${o.objective}`;
+const formatLessonLine = (l) => `- ${l.section_name}: ${l.lesson_name} (${l.duration})`;
+
+/**
+ * Answer a question about one specific course, grounded in its own content
+ * (subtitle, learning objectives, lesson names/sections). Uses Groq for a
+ * real conversational answer when configured, otherwise scores the course's
+ * content against the question by keyword overlap — either way the answer
+ * only ever draws on this course's actual content, never invented facts.
+ */
+export const answerCourseQuestion = async (courseId, question) => {
+    const [[course]] = await pool.query(
+        'SELECT title, subtitle, category, author FROM courses WHERE id = ?',
+        [courseId]
+    );
+    if (!course) return { answer: 'Course not found.', source: null };
+
+    const [objectives] = await pool.query(
+        'SELECT objective FROM course_objectives WHERE course_id = ?',
+        [courseId]
+    );
+    const [lessons] = await pool.query(
+        'SELECT lesson_name, section_name, duration FROM lesson WHERE course_id = ?',
+        [courseId]
+    );
+
+    const courseContext = [
+        `Course title: ${course.title}`,
+        `Category: ${course.category}`,
+        `Instructor: ${course.author}`,
+        `Description: ${course.subtitle || '(none)'}`,
+        objectives.length ? `Learning objectives:\n${objectives.map(formatObjectiveLine).join('\n')}` : '',
+        lessons.length ? `Lessons:\n${lessons.map(formatLessonLine).join('\n')}` : ''
+    ].filter(Boolean).join('\n\n');
+
+    const answer = await askGroqOrFallback(
+        courseContext,
+        question,
+        () => answerCourseQuestionRuleBased(course, objectives, lessons, question)
+    );
+
+    return { answer };
 };
 
 /**
@@ -105,15 +189,46 @@ const SUBTITLE_TEMPLATES = [
     (topic) => `Everything you need to get started with ${topic} — no prior experience required.`
 ];
 
-export const suggestCourseCopy = (title, category) => {
-    const topic = (title || 'this topic').trim();
+const suggestCourseCopyRuleBased = (topic, category) => {
     const skills = CATEGORY_SKILLS[category] || CATEGORY_SKILLS.Development;
-
     const titles = TITLE_TEMPLATES.map((fn) => fn(topic));
     const subtitles = SUBTITLE_TEMPLATES.map((fn) => fn(topic, category || 'this field'));
     const objectives = skills.map((skill) => `Be able to apply ${skill}`);
-
     return { titles, subtitles, objectives };
+};
+
+/**
+ * Writing suggestions for tutors creating a course: 5 titles, 3 subtitles,
+ * and 4 learning objectives. Uses Groq for genuinely creative copy when
+ * configured (requesting strict JSON back), otherwise falls back to the
+ * deterministic category-phrase templates below.
+ */
+export const suggestCourseCopy = async (title, category) => {
+    const topic = (title || 'this topic').trim();
+
+    if (groq.isConfigured()) {
+        try {
+            const raw = await groq.chatComplete([
+                {
+                    role: 'system',
+                    content: 'You write marketing copy for online course listings. ' +
+                        'Reply with ONLY a JSON object of the exact shape ' +
+                        '{"titles": string[5], "subtitles": string[3], "objectives": string[4]} — no other text.'
+                },
+                { role: 'user', content: `Working title: "${topic}". Category: ${category || 'General'}.` }
+            ], { json: true, temperature: 0.8 });
+
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed.titles) && Array.isArray(parsed.subtitles) && Array.isArray(parsed.objectives)) {
+                return parsed;
+            }
+            throw new Error('Malformed suggestion shape from Groq.');
+        } catch (err) {
+            console.warn('[aiSupport] Groq copy suggestion failed, falling back to templates:', err.message);
+        }
+    }
+
+    return suggestCourseCopyRuleBased(topic, category);
 };
 
 /**

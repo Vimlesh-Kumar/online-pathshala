@@ -20,7 +20,8 @@
         </div>
 
         <div class="palette-results">
-          <div v-if="!results.length" class="palette-empty">No matches — try a different keyword.</div>
+          <div v-if="searching && !courseResults.length" class="palette-empty">Searching…</div>
+          <div v-else-if="!results.length" class="palette-empty">No matches — try a different keyword.</div>
 
           <template v-else>
             <div v-if="pageResults.length" class="palette-group-label">Pages</div>
@@ -53,7 +54,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import axios from 'axios'
 
 const STATIC_PAGES = [
   { label: 'Home', path: '/', icon: 'mdi-home-outline' },
@@ -69,23 +70,23 @@ const STATIC_PAGES = [
 export default {
   name: 'CommandPalette',
   data() {
-    return { open: false, query: '', active: 0, loadedCourses: false }
+    return {
+      open: false,
+      query: '',
+      active: 0,
+      // Server-side course search results — with a 10,000-course catalog we
+      // can't just filter a client-side list, so this is fetched on demand.
+      courseResults: [],
+      searching: false,
+      searchTimer: null
+    }
   },
   computed: {
-    ...mapGetters(['allCourses']),
     pageResults() {
       const q = this.query.trim().toLowerCase()
       const pages = STATIC_PAGES.map((p) => ({ type: 'page', label: p.label, path: p.path, icon: p.icon }))
       if (!q) return pages.slice(0, 5)
       return pages.filter((p) => p.label.toLowerCase().includes(q))
-    },
-    courseResults() {
-      const q = this.query.trim().toLowerCase()
-      if (!q) return []
-      return (this.allCourses || [])
-        .filter((c) => c.title?.toLowerCase().includes(q) || c.category?.toLowerCase().includes(q))
-        .slice(0, 8)
-        .map((c) => ({ type: 'course', label: c.title, path: `/course/${c.id}`, category: c.category }))
     },
     results() {
       return [...this.pageResults, ...this.courseResults]
@@ -98,25 +99,48 @@ export default {
   beforeUnmount() {
     window.removeEventListener('keydown', this.onGlobalKey)
     window.removeEventListener('open-command-palette', this.openFromEvent)
+    if (this.searchTimer) clearTimeout(this.searchTimer)
   },
   watch: {
     query() {
       this.active = 0
+      this.scheduleCourseSearch()
     },
     open(val) {
       if (val) {
         this.active = 0
-        if (!this.loadedCourses) {
-          this.loadedCourses = true
-          this.$store.dispatch('fetchingAllCourses')
-        }
         this.$nextTick(() => this.$refs.input?.focus())
+      } else if (this.searchTimer) {
+        clearTimeout(this.searchTimer)
       }
     }
   },
   methods: {
     openFromEvent() {
       this.open = true
+    },
+    /** Debounce course search calls so typing doesn't fire a request per keystroke. */
+    scheduleCourseSearch() {
+      if (this.searchTimer) clearTimeout(this.searchTimer)
+      const q = this.query.trim()
+      if (!q) {
+        this.courseResults = []
+        return
+      }
+      this.searchTimer = setTimeout(() => this.runCourseSearch(q), 250)
+    },
+    async runCourseSearch(q) {
+      this.searching = true
+      try {
+        const response = await axios.get('/courses/search', { params: { q, limit: 8 } })
+        this.courseResults = (response.data.data || []).map((c) => ({
+          type: 'course', label: c.title, path: `/course/${c.id}`, category: c.category
+        }))
+      } catch {
+        this.courseResults = []
+      } finally {
+        this.searching = false
+      }
     },
     onGlobalKey(e) {
       const isMeta = e.metaKey || e.ctrlKey

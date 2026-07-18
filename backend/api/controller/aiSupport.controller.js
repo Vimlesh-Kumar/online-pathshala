@@ -1,9 +1,12 @@
-import { findAnswer, getAllFaqs } from '../services/faq.data.js';
+import { getAllFaqs } from '../services/faq.data.js';
 import * as aiSupport from '../services/aiSupport.service.js';
 import { sendError, sendSuccess } from '../utils/apiResponse.js';
 
 /**
- * Free, rule-based support chatbot — keyword matching over a static FAQ set.
+ * Support chatbot for general app questions. Uses Groq (free tier) for a
+ * real conversational answer when GROQ_API_KEY is configured, and always
+ * falls back to the free keyword-matching FAQ engine otherwise — so this
+ * endpoint never goes down and never costs anything to run.
  */
 export const askSupport = async (req, res) => {
     try {
@@ -11,7 +14,7 @@ export const askSupport = async (req, res) => {
         if (!message) {
             return sendError(res, { statusCode: 400, message: 'A message is required.' });
         }
-        const result = findAnswer(message);
+        const result = await aiSupport.answerGeneralSupportQuestion(message);
         return sendSuccess(res, { message: 'Answered.', data: result });
     } catch (err) {
         console.error(err);
@@ -56,7 +59,7 @@ export const suggestCourseCopy = async (req, res) => {
         if (!title) {
             return sendError(res, { statusCode: 400, message: 'A working title is required to generate suggestions.' });
         }
-        const result = aiSupport.suggestCourseCopy(title, category);
+        const result = await aiSupport.suggestCourseCopy(title, category);
         return sendSuccess(res, { message: 'Suggestions generated.', data: result });
     } catch (err) {
         console.error(err);

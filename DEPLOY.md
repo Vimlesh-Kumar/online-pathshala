@@ -48,6 +48,13 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
    You should see: `✅ Schema applied.` / `✅ Seed data applied.`
 
+4. *(Optional)* Scale the catalog up to ~10,000 browsable courses (procedurally
+   generated, reusing real working video lessons per category — free, no dataset needed):
+
+   ```bash
+   npm run catalog:generate    # safe to re-run; skips once the catalog already has 10,000+
+   ```
+
 ---
 
 ## 2. Backend — Render
@@ -69,6 +76,7 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
    | `DB_CA_CERT` | paste the full contents of `ca.pem` |
    | `JWT_SECRET` | the random string you generated |
    | `CORS_ORIGIN` | your Vercel URL (add after step 3) |
+   | `GROQ_API_KEY` | *(optional)* free key from [console.groq.com/keys](https://console.groq.com/keys) — powers real AI support; omit and it falls back to the free rule-based engine |
 
 **Option B — Manual:** New → Web Service → repo → set **Root Directory** = `backend`,
 **Build** = `npm install`, **Start** = `npm start`, then add the same env vars.
