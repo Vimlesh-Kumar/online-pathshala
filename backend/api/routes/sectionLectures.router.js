@@ -4,19 +4,46 @@ import * as sectionLectureController from '../controller/sectionLectures.control
 import authuser from '../../middlewares/token_validation.js';
 import { sendError, sendSuccess } from '../utils/apiResponse.js';
 import { google } from 'googleapis';
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
+import { existsSync } from 'node:fs';
 
-const google_API_Folder_ID = '1-vZD_0PPbk9JJd3k99-sAa8vA8QZ8L6w';
+const GDRIVE_FOLDER_ID = process.env.GDRIVE_FOLDER_ID || '1-vZD_0PPbk9JJd3k99-sAa8vA8QZ8L6w';
+const DRIVE_SCOPES = ['https://www.googleapis.com/auth/drive'];
 
-const auth = new google.auth.GoogleAuth({
-    keyFile: './googlekey.json',
-    scopes: ['https://www.googleapis.com/auth/drive']
-});
+/**
+ * Build the Google Drive client lazily so the server boots even when no
+ * credentials are configured. Credentials can come from either:
+ *   - GOOGLE_CREDENTIALS env var (full service-account JSON string), or
+ *   - a local ./googlekey.json file (dev only — never commit it).
+ * Returns null when neither is present.
+ */
+let driveClient;
+function getDrive() {
+    if (driveClient !== undefined) return driveClient;
 
-const drive = google.drive({ version: 'v3', auth });
+    let authOptions = null;
+    if (process.env.GOOGLE_CREDENTIALS) {
+        authOptions = { credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS), scopes: DRIVE_SCOPES };
+    } else if (existsSync('./googlekey.json')) {
+        authOptions = { keyFile: './googlekey.json', scopes: DRIVE_SCOPES };
+    }
+
+    driveClient = authOptions
+        ? google.drive({ version: 'v3', auth: new google.auth.GoogleAuth(authOptions) })
+        : null;
+    return driveClient;
+}
 
 router.post('/lectures/upload', authuser.checkToken, async (req, res) => {
     try {
+        const drive = getDrive();
+        if (!drive) {
+            return sendError(res, {
+                statusCode: 503,
+                message: 'Video upload is not configured. Set GOOGLE_CREDENTIALS to enable it.'
+            });
+        }
+
         if (!req.body?.content) {
             return sendError(res, {
                 statusCode: 400,
@@ -30,7 +57,7 @@ router.post('/lectures/upload', authuser.checkToken, async (req, res) => {
         };
         const fileMetaData = {
             'name': req.body.name || 'vim.mp4',
-            'parents': [google_API_Folder_ID]
+            'parents': [GDRIVE_FOLDER_ID]
         };
         const response = await drive.files.create({
             resource: fileMetaData,

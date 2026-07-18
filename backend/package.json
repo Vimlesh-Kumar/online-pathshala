@@ -5,11 +5,12 @@
   "type": "module",
   "main": "server.js",
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=20"
   },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "db:setup": "node scripts/db-bootstrap.js",
     "db-up-dev": "db-migrate up --config ./database/config/dev.json -e dev",
     "db-down-dev": "db-migrate down --config ./database/config/dev.json -e dev",
     "db-up-prod": "db-migrate up --config ./database/config/dev.json -e prod",

@@ -56,26 +56,39 @@ cd online-pathshala
 ```bash
 cd backend
 npm install
-# Configure your .env file based on .env.example
-npm dev
+cp .env.example .env      # then fill in your values
+npm run db:setup          # creates all tables + seeds demo courses & users
+npm run dev
 ```
 
 ### 3. Frontend Setup
 ```bash
 cd frontend
 npm install
-# Configure your .env file
+cp .env.example .env      # VITE_API_URL=http://localhost:8000/ for local
 npm start
 ```
 
+### Demo accounts (seeded by `db:setup`)
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@test.com` | `Test@1234` |
+| Student | `student@test.com` | `Test@1234` |
+| Tutor | `tutor@test.com` | `Test@1234` |
+
 ---
 
-## 🚢 DEPLOYMENT RECOMMENDATIONS
+## 🚢 DEPLOYMENT — 100% Free
 
-For an "Always-On" experience (no sleep delay), we recommend:
-1. **Frontend**: Vercel (Free)
-2. **Backend**: Vercel Serverless Functions or Railway (Free trial)
-3. **Database**: Aiven (Free MySQL)
+Full step-by-step guide: **[DEPLOY.md](DEPLOY.md)**
+
+| Piece | Service | Cost |
+|-------|---------|------|
+| Frontend (Vue SPA) | **Vercel** | Free |
+| Backend (Express API) | **Render** | Free |
+| Database | **Aiven for MySQL** | Free |
+
+Config files are included: `render.yaml` (backend) and `frontend/vercel.json` (frontend).
 
 ---
 

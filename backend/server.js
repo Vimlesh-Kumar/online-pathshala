@@ -16,8 +16,12 @@ const PORT = process.env.PORT || process.env.APP_PORT || 5000;
 
 app.use(bodyParser.json({ limit: "500mb" }));
 app.use(bodyParser.urlencoded({ limit: "500mb", extended: true }));
-app.use(cors());
+// Allow all origins by default; lock down to the frontend URL by setting CORS_ORIGIN.
+app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
 app.use(express.json());
+
+// Lightweight health check (no DB) — used by Render to confirm the service is up.
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
 app.use('/user', userRouter);
 app.use('/', courseRouter);
@@ -27,10 +31,8 @@ app.use('/course/section', lecturesRouter);
 app.use('/', cartRouter);
 app.use('/', wishListRouter);
 
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-    app.listen(PORT, () => {
-        console.log(`Server is running on PORT: ${PORT}`);
-    });
-}
+app.listen(PORT, () => {
+    console.log(`🚀 Server is running on PORT: ${PORT}`);
+});
 
 export default app;
