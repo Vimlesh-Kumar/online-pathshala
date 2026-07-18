@@ -194,6 +194,23 @@ const store = createStore({
         async fetchTutorStats(_context) {
             const response = await axios.get('/user/tutor/stats')
             return response.data.data
+        },
+        // ── AI support (free, rule-based) ──
+        async askSupport(_context, message) {
+            const response = await axios.post('/support/ask', { message })
+            return response.data.data
+        },
+        async askAboutCourse(_context, { courseId, question }) {
+            const response = await axios.post(`/course/${courseId}/ask`, { question })
+            return response.data.data
+        },
+        async suggestCourseCopy(_context, { title, category }) {
+            const response = await axios.post('/user/tutor/suggest-copy', { title, category })
+            return response.data.data
+        },
+        async fetchRecommendations(_context) {
+            const response = await axios.get('/user/recommendations')
+            return response.data.data
         }
     },
 

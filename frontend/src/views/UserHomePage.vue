@@ -70,6 +70,16 @@
       </v-card>
     </section>
 
+    <section class="mt-12" v-if="user">
+      <div class="eyebrow mb-3">✨ Picked For You</div>
+      <h2 class="app-section-title mb-2">{{ recommendedTitle }}</h2>
+      <p class="app-section-copy mb-6">{{ recommendedSubtitle }}</p>
+      <all-courses v-if="recommended.length" :all-courses="recommended" />
+      <v-card v-else class="glass-panel section-card pa-6 text-center" flat>
+        <p class="app-section-copy mb-0">No new recommendations right now — you've covered your favorite categories!</p>
+      </v-card>
+    </section>
+
     <section class="mt-12">
       <div class="eyebrow mb-3">Discover More</div>
       <h2 class="app-section-title mb-6">Expand your skillset</h2>
@@ -84,13 +94,31 @@ import AllCourses from '../components/course/AllCourses.vue';
 
 export default {
   components: { AllCourses },
+  data() {
+    return { recommended: [], recommendReason: 'popular', recommendBasedOn: [] }
+  },
   computed: {
-    ...mapGetters(['user', 'allCourses', 'userCourses'])
+    ...mapGetters(['user', 'allCourses', 'userCourses']),
+    recommendedTitle() {
+      return this.recommendReason === 'interests' ? 'Based on your interests' : 'Popular right now'
+    },
+    recommendedSubtitle() {
+      if (this.recommendReason === 'interests' && this.recommendBasedOn.length) {
+        return `Because you're into ${this.recommendBasedOn.join(', ')}.`
+      }
+      return 'Top-rated courses to help you get started.'
+    }
   },
   async created() {
     await this.$store.dispatch('fetchingUser')
     await this.$store.dispatch('fetchingUserCourses')
     await this.$store.dispatch('fetchingFeaturedCourses')
+    if (this.user) {
+      const rec = await this.$store.dispatch('fetchRecommendations')
+      this.recommended = rec.courses || []
+      this.recommendReason = rec.reason
+      this.recommendBasedOn = rec.basedOn || []
+    }
   },
 }
 </script>

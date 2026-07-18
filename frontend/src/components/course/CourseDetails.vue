@@ -106,6 +106,21 @@
           </v-row>
         </v-card>
 
+        <v-card class="glass-panel section-card pa-6 mb-8" flat>
+          <div class="d-flex align-center ga-2 mb-4">
+            <v-icon color="primary">mdi-message-question-outline</v-icon>
+            <div class="eyebrow mb-0">Ask about this course</div>
+          </div>
+          <div class="d-flex ga-3 mb-3">
+            <v-text-field
+              v-model="courseQuestion" placeholder="e.g. does this cover functions?" variant="outlined"
+              density="comfortable" hide-details @keyup.enter="askCourse"
+            />
+            <v-btn class="btn-gradient" :loading="askingCourse" @click="askCourse">Ask</v-btn>
+          </div>
+          <v-alert v-if="courseAnswer" type="info" variant="tonal" class="mb-0">{{ courseAnswer }}</v-alert>
+        </v-card>
+
         <course-reviews :course-id="courseId" />
 
         <course-qna :course-id="courseId" />
@@ -148,7 +163,10 @@ export default {
       courseId: null,
       message: '',
       showMessage: false,
-      relatedCourses: []
+      relatedCourses: [],
+      courseQuestion: '',
+      courseAnswer: '',
+      askingCourse: false
     }
   },
   async created() {
@@ -180,6 +198,19 @@ export default {
       }
       await this.$store.dispatch('enrollInCourse', id)
       this.$router.push(`/learn/${id}`)
+    },
+    async askCourse() {
+      if (!this.courseQuestion.trim()) return
+      this.askingCourse = true
+      try {
+        const result = await this.$store.dispatch('askAboutCourse', {
+          courseId: this.courseId,
+          question: this.courseQuestion
+        })
+        this.courseAnswer = result.answer
+      } finally {
+        this.askingCourse = false
+      }
     },
     async addToCart(id) {
       if (!this.user) {

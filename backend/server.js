@@ -12,6 +12,7 @@ import cartRouter from './api/routes/cart.router.js';
 import wishListRouter from './api/routes/wishlist.router.js';
 import orderRouter from './api/routes/order.router.js';
 import engagementRouter from './api/routes/engagement.router.js';
+import aiSupportRouter from './api/routes/aiSupport.router.js';
 
 const app = express();
 const PORT = process.env.PORT || process.env.APP_PORT || 5000;
@@ -34,6 +35,7 @@ app.use('/', cartRouter);
 app.use('/', wishListRouter);
 app.use('/', orderRouter);
 app.use('/', engagementRouter);
+app.use('/', aiSupportRouter);
 
 app.listen(PORT, () => {
     console.log(`🚀 Server is running on PORT: ${PORT}`);

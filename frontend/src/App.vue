@@ -5,16 +5,19 @@
       <router-view />
     </v-main>
     <the-footer></the-footer>
+    <support-chat></support-chat>
   </v-app>
 </template>
 
 <script>
   import TheHeader from './layouts/TheHeader.vue'
   import TheFooter from './layouts/TheFooter.vue'
+  import SupportChat from './components/support/SupportChat.vue'
   export default{
     components:{
       TheHeader,
-      TheFooter
+      TheFooter,
+      SupportChat
     }
   }
 </script>
