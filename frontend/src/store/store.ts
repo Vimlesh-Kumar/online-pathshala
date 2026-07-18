@@ -134,6 +134,23 @@ const store = createStore({
         },
         async removeFromWishlist(_context, id) {
             await axios.post('/user/wishlist/remove', { course_id: id })
+        },
+        // ── Learning experience ──
+        async enrollInCourse(_context, courseId) {
+            const response = await axios.post('/user/course/enroll', { course_id: courseId })
+            return response.data.data
+        },
+        async fetchCourseLessons(_context, courseId) {
+            const response = await axios.get(`/course/${courseId}/lessons`)
+            return response.data.data || []
+        },
+        async fetchCourseProgress(_context, courseId) {
+            const response = await axios.get(`/user/course/${courseId}/progress`)
+            return response.data.data
+        },
+        async markLessonComplete(_context, { courseId, lessonId }) {
+            const response = await axios.post('/user/course/progress', { course_id: courseId, lesson_id: lessonId })
+            return response.data.data
         }
     },
 

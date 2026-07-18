@@ -11,6 +11,7 @@ router.get('/courses/featured', courseController.featuredCourses);
 router.get('/courses/category/:select', courseController.categoryCourse);
 router.get('/course/:id', courseController.courseByCourseId);
 router.get('/course/:id/related', courseController.relatedCourses);
+router.get('/course/:id/lessons', courseController.courseLessons);
 router.get('/courses/search', courseController.searchAllCourses);
 
 export default router;

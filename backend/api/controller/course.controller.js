@@ -1,5 +1,6 @@
 import * as courseServices from '../services/course.service.js';
 import * as enrollmentServices from '../services/enrollment.services.js';
+import * as sectionLecturesServices from '../services/sectionLectures.services.js';
 import { createPaginationMeta, sendError, sendSuccess } from '../utils/apiResponse.js';
 import { normalizeCourseSort, parsePositiveInt } from '../utils/request.js';
 
@@ -248,6 +249,33 @@ export const relatedCourses = async (req, res) => {
         return sendError(res, {
             statusCode: 500,
             message: 'Error fetching related courses.'
+        });
+    }
+};
+
+/**
+ * Get the full lesson list (curriculum) for a course, ordered for the player.
+ */
+export const courseLessons = async (req, res) => {
+    try {
+        const courseId = Number.parseInt(req.params.id, 10);
+        if (!Number.isInteger(courseId) || courseId <= 0) {
+            return sendError(res, {
+                statusCode: 400,
+                message: 'A valid course id is required.'
+            });
+        }
+
+        const lessons = await sectionLecturesServices.allSectionsbycourseId(courseId);
+        return sendSuccess(res, {
+            message: 'Course lessons fetched successfully.',
+            data: lessons
+        });
+    } catch (err) {
+        console.error(err);
+        return sendError(res, {
+            statusCode: 500,
+            message: 'Error fetching course lessons.'
         });
     }
 };

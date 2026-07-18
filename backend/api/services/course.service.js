@@ -77,10 +77,16 @@ export const addCourseInDB = async (data) => {
  */
 export const courseByUserId = async (id) => {
     const [results] = await pool.query(
-        `SELECT c.*
+        `SELECT c.*,
+                e.id AS enrollment_id,
+                COALESCE(e.progress, 0) AS progress,
+                e.is_completed,
+                (SELECT COUNT(*) FROM lesson l WHERE l.course_id = c.id) AS total_lessons,
+                (SELECT COUNT(*) FROM enroll_progress ep WHERE ep.enrollment_id = e.id) AS completed_lessons
          FROM courses c
          INNER JOIN enrollment e ON c.id = e.course_id
          WHERE e.user_id = ?
+         GROUP BY e.id
          ORDER BY e.created_at DESC`,
         [id]
     );

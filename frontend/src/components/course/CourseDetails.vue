@@ -18,21 +18,19 @@
         </v-col>
 
         <v-col cols="12" md="5">
-          <v-card class="section-card detail-side-card" flat>
+          <v-card class="section-card detail-side-card glass-panel hover-lift" flat>
             <v-img :src="singleCourse.thumb_url" height="260" cover />
             <v-card-text class="pa-6">
               <div class="d-flex align-center justify-space-between mb-4">
-                <div class="text-h4 font-weight-black">₹{{ singleCourse.price }}</div>
+                <div class="text-h4 font-weight-black gradient-text">₹{{ formattedPrice }}</div>
                 <wish-list :course_id="singleCourse.id" :user="user" />
               </div>
 
               <v-btn
                 v-if="user?.user_role === 'Tutor' && user.id === courseAuthor?.id"
                 block
-                color="primary"
-                rounded="pill"
+                class="btn-gradient mb-3"
                 size="large"
-                class="mb-3"
                 @click="handleAddCourseLesson"
               >
                 Add course content
@@ -40,27 +38,45 @@
 
               <template v-else>
                 <v-btn
-                  v-if="!cartCourses.includes(singleCourse.id)"
+                  v-if="isEnrolled"
                   block
-                  color="primary"
-                  rounded="pill"
+                  class="btn-gradient mb-3"
                   size="large"
-                  class="mb-3"
-                  @click="addToCart(singleCourse.id)"
+                  @click="$router.push(`/learn/${singleCourse.id}`)"
                 >
-                  Add to cart
+                  <v-icon start>mdi-play-circle</v-icon> Go to course
                 </v-btn>
-                <v-btn
-                  v-else
-                  block
-                  variant="outlined"
-                  rounded="pill"
-                  size="large"
-                  class="mb-3"
-                  @click="$router.push('/user/cart')"
-                >
-                  Go to cart
-                </v-btn>
+
+                <template v-else>
+                  <v-btn
+                    block
+                    class="btn-gradient mb-3"
+                    size="large"
+                    @click="enrollAndLearn(singleCourse.id)"
+                  >
+                    Enroll for free
+                  </v-btn>
+                  <v-btn
+                    v-if="!cartCourses.includes(singleCourse.id)"
+                    block
+                    variant="tonal"
+                    size="large"
+                    class="mb-3"
+                    @click="addToCart(singleCourse.id)"
+                  >
+                    Add to cart
+                  </v-btn>
+                  <v-btn
+                    v-else
+                    block
+                    variant="outlined"
+                    size="large"
+                    class="mb-3"
+                    @click="$router.push('/user/cart')"
+                  >
+                    Go to cart
+                  </v-btn>
+                </template>
               </template>
 
               <v-alert v-if="showMessage" type="success" variant="tonal" class="mb-4">{{ message }}</v-alert>
@@ -108,9 +124,15 @@ import AllCourses from './AllCourses.vue';
 export default {
   components: { WishList, AllCourses },
   computed: {
-    ...mapGetters(['user', 'courseObjectives', 'coursesInCart']),
+    ...mapGetters(['user', 'courseObjectives', 'coursesInCart', 'userCourses']),
     cartCourses() {
       return this.coursesInCart.map((c) => c.id)
+    },
+    isEnrolled() {
+      return this.userCourses.some((c) => c.id === this.singleCourse?.id)
+    },
+    formattedPrice() {
+      return Number(this.singleCourse?.price || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })
     }
   },
   data() {
@@ -139,10 +161,19 @@ export default {
     this.$store.dispatch('fetchingUser');
     this.$store.dispatch('getCartCourses');
     this.$store.dispatch('getWishlistCourses');
+    this.$store.dispatch('fetchingUserCourses');
   },
   methods: {
     handleAddCourseLesson() {
       this.$router.push(`${this.$route.path}/objectives`)
+    },
+    async enrollAndLearn(id) {
+      if (!this.user) {
+        this.$router.push('/user/sign-in')
+        return
+      }
+      await this.$store.dispatch('enrollInCourse', id)
+      this.$router.push(`/learn/${id}`)
     },
     async addToCart(id) {
       if (!this.user) {
@@ -164,15 +195,13 @@ export default {
 <style scoped>
 .detail-side-card {
   overflow: hidden;
-  background: rgba(255, 253, 248, 0.94);
-  border: 1px solid rgba(31, 41, 55, 0.08);
-  box-shadow: 0 24px 48px rgba(20, 33, 61, 0.1);
+  border-radius: var(--r-lg);
 }
 
 .detail-list {
   display: grid;
   gap: 14px;
-  color: #4b5563;
+  color: var(--text-soft);
 }
 
 .objective-item {
@@ -180,6 +209,6 @@ export default {
   align-items: flex-start;
   gap: 6px;
   padding: 14px 0;
-  color: #374151;
+  color: var(--text-main);
 }
 </style>

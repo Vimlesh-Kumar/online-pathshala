@@ -31,7 +31,33 @@
         </v-btn>
       </div>
 
-      <all-courses v-if="userCourses.length" :all-courses="userCourses" />
+      <v-row v-if="userCourses.length">
+        <v-col v-for="c in userCourses" :key="c.id" cols="12" sm="6" lg="4">
+          <v-card class="glass-panel section-card overflow-hidden h-100 hover-lift" flat>
+            <div class="learn-media">
+              <v-img :src="c.thumb_url" height="150" cover />
+              <span v-if="Number(c.progress) >= 100" class="done-badge">✓ Completed</span>
+            </div>
+            <v-card-text class="pa-5">
+              <div class="eyebrow mb-2">{{ c.category }}</div>
+              <h3 class="learn-title line-clamp-2 mb-3">{{ c.title }}</h3>
+
+              <div class="d-flex align-center justify-space-between mb-1">
+                <span class="text-caption text-medium-emphasis">
+                  {{ c.completed_lessons || 0 }}/{{ c.total_lessons || 0 }} lessons
+                </span>
+                <span class="text-caption font-weight-bold">{{ Math.round(Number(c.progress) || 0) }}%</span>
+              </div>
+              <v-progress-linear :model-value="Number(c.progress) || 0" color="primary" height="7" rounded class="mb-4" />
+
+              <v-btn block class="btn-gradient" @click="$router.push(`/learn/${c.id}`)">
+                <v-icon start>mdi-play</v-icon>
+                {{ Number(c.progress) > 0 ? 'Continue learning' : 'Start learning' }}
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
 
       <v-card v-else class="glass-panel section-card pa-8 text-center" flat>
         <v-icon size="52" color="primary" class="mb-4">mdi-book-open-page-variant-outline</v-icon>
@@ -71,3 +97,29 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.learn-media {
+  position: relative;
+}
+.done-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  background: var(--grad-primary);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  box-shadow: var(--shadow-sm);
+}
+.learn-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-strong);
+  min-height: 2.6rem;
+}
+</style>
