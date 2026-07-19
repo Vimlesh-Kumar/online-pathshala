@@ -76,6 +76,9 @@ const pool = knex({
                 table.string('gender', 20).nullable();
             });
             console.log('✅ Users table altered successfully with profile columns.');
+        } else {
+            // Update column type if it already exists to VARCHAR(500)
+            await pool.raw('ALTER TABLE users MODIFY COLUMN avatar_url VARCHAR(500)');
         }
     } catch (err) {
         console.error('❌ Database connection or schema migration failed:', err.message);

@@ -3,8 +3,9 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import { sendError, sendSuccess } from '../../utils/apiResponse.js';
+import { put } from '@vercel/blob';
 
-const SECRET_KEY = process.env.JWT_SECRET || "MYSECRETKEYFORJWT";
+const SECRET_KEY = process.env.JWT_SECRET;
 
 /**
  * Register a new user and save a hashed password.
@@ -197,6 +198,48 @@ export const updatePassword = async (req, res) => {
         return sendError(res, {
             statusCode: 500,
             message: 'Server error updating password.'
+        });
+    }
+};
+
+/**
+ * Upload profile picture to Vercel Blob.
+ */
+export const uploadAvatar = async (req, res) => {
+    try {
+        const { image } = req.body;
+        if (!image) {
+            return sendError(res, {
+                statusCode: 400,
+                message: 'No image data provided.'
+            });
+        }
+
+        // Convert base64 data to Buffer
+        const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, 'base64');
+        const filename = `users/avatar-${Date.now()}.jpg`;
+
+        console.log('Uploading avatar to Vercel Blob...');
+        const blob = await put(filename, buffer, {
+            access: 'private',
+            token: process.env.BLOB_READ_WRITE_TOKEN
+        });
+
+        if (!blob || !blob.url) {
+            throw new Error('Vercel Blob upload failed to return a URL.');
+        }
+
+        console.log(`✅ Avatar uploaded successfully: ${blob.url}`);
+        return sendSuccess(res, {
+            message: 'Image uploaded successfully.',
+            data: { url: blob.url }
+        });
+    } catch (err) {
+        console.error('Avatar upload failed:', err);
+        return sendError(res, {
+            statusCode: 500,
+            message: 'Failed to upload image. Please try again.'
         });
     }
 };

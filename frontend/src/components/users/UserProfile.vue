@@ -44,7 +44,8 @@
               
               <!-- Avatar Section -->
               <div class="mb-8">
-                <div class="text-subtitle-1 font-weight-medium mb-3">Profile Picture</div>
+                <div class="text-subtitle-1 font-weight-medium mb-4">Choose Your Avatar</div>
+                
                 <div class="d-flex flex-column flex-sm-row align-center ga-6">
                   <!-- Current Avatar Preview -->
                   <div class="avatar-preview-container">
@@ -56,15 +57,15 @@
                   
                   <div class="flex-grow-1 w-100">
                     <p class="text-caption text-medium-emphasis mb-3">
-                      Choose one of our premium avatars, upload a photo, or paste an image URL.
+                      Choose from our premium colorful illustrations or upload a custom photo.
                     </p>
                     
                     <!-- Pre-selected Premium Avatars Grid -->
-                    <div class="d-flex flex-wrap ga-2 mb-4">
+                    <div class="avatar-grid mb-4">
                       <v-avatar 
                         v-for="(avatar, i) in premiumAvatars" 
                         :key="i"
-                        size="40" 
+                        size="46" 
                         class="cursor-pointer hover-lift avatar-option"
                         :class="{ 'avatar-selected': profileForm.avatar_url === avatar }"
                         @click="selectPremiumAvatar(avatar)"
@@ -73,25 +74,17 @@
                       </v-avatar>
                     </div>
 
-                    <div class="d-flex flex-column flex-sm-row ga-3">
+                    <div class="d-flex align-center">
                       <v-file-input
-                        label="Upload photo"
+                        label="Upload Custom Photo"
                         variant="outlined"
                         density="compact"
                         accept="image/*"
                         prepend-icon=""
                         prepend-inner-icon="mdi-camera-outline"
                         hide-details
-                        class="flex-grow-1"
+                        class="custom-avatar-file-input"
                         @change="handleAvatarUpload"
-                      />
-                      <v-text-field
-                        v-model="profileForm.avatar_url"
-                        label="Or paste Avatar URL"
-                        variant="outlined"
-                        density="compact"
-                        hide-details
-                        class="flex-grow-1 mt-2 mt-sm-0"
                       />
                     </div>
                   </div>
@@ -358,14 +351,18 @@ export default {
         confirmPassword: ''
       },
       premiumAvatars: [
-        'https://api.dicebear.com/7.x/lorelei/svg?seed=Oliver',
-        'https://api.dicebear.com/7.x/lorelei/svg?seed=Felix',
-        'https://api.dicebear.com/7.x/lorelei/svg?seed=Jack',
-        'https://api.dicebear.com/7.x/lorelei/svg?seed=Maya',
-        'https://api.dicebear.com/7.x/lorelei/svg?seed=Aria',
-        'https://api.dicebear.com/7.x/lorelei/svg?seed=Chloe',
-        'https://api.dicebear.com/7.x/lorelei/svg?seed=Leo',
-        'https://api.dicebear.com/7.x/lorelei/svg?seed=Zoe'
+        'https://api.dicebear.com/7.x/micah/svg?seed=Oliver',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Felix',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Jack',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Maya',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Aria',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Chloe',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Leo',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Zoe',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Max',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Lily',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Finn',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Milo'
       ]
     };
   },
@@ -421,11 +418,50 @@ export default {
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
-          this.profileForm.avatar_url = e.target.result;
-          toast.info('Image uploaded and processed.');
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxDim = 250;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > maxDim) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              }
+            } else {
+              if (height > maxDim) {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+              const compressed = canvas.toDataURL('image/jpeg', 0.8);
+              this.uploadAvatarToBackend(compressed);
+            }
+          };
+          img.src = e.target.result;
         }
       };
       reader.readAsDataURL(file);
+    },
+    async uploadAvatarToBackend(base64Image) {
+      toast.info('Uploading image...');
+      try {
+        const response = await axios.post('/user/upload-avatar', { image: base64Image });
+        const uploadedUrl = response.data.data.url;
+        this.profileForm.avatar_url = uploadedUrl;
+        toast.success('Image uploaded successfully!');
+      } catch (err) {
+        console.error(err);
+        toast.error('Failed to host image. Please try again.');
+      }
     },
     async saveProfile() {
       const { valid } = this.$refs.profileFormRef ? await this.$refs.profileFormRef.validate() : { valid: true };
@@ -510,20 +546,39 @@ export default {
   color: var(--brand-2);
 }
 
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  max-width: 380px;
+}
+
+@media (max-width: 480px) {
+  .avatar-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .avatar-option {
-  border: 2px solid transparent;
-  transition: all 0.2s ease;
+  border: 3px solid transparent;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: var(--surface-2);
 }
 
 .avatar-option:hover {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.15) rotate(4deg);
   border-color: var(--brand-2);
 }
 
 .avatar-selected {
-  border-color: var(--brand-2);
-  transform: scale(1.1);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--brand-2) !important;
+  transform: scale(1.15);
+  box-shadow: var(--shadow-md);
+  outline: 2px solid rgba(99, 102, 241, 0.3);
+}
+
+.custom-avatar-file-input {
+  max-width: 240px;
 }
 
 .text-strong {

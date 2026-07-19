@@ -4,6 +4,7 @@ import UserHomePage from '../views/UserHomePage.vue'
 import HomePage from '../views/HomePage.vue';
 import cart from '../components/cart/UserCart.vue';
 import wishlist from '../components/wishlist/WishListPage.vue'
+import { toast } from '../plugins/toast';
 
 const routes = [
   { path: '/', component: HomePage },
@@ -34,4 +35,16 @@ const router = createRouter({
   routes,
 })
 
-export default router
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token');
+  const requiresAuth = (to.path.startsWith('/user') && to.path !== '/user/sign-in' && to.path !== '/user/sign-up') || to.path.startsWith('/learn');
+  
+  if (requiresAuth && !token) {
+    toast.error('Please log in to access this page.');
+    next('/user/sign-in');
+  } else {
+    next();
+  }
+});
+
+export default router;
