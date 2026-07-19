@@ -52,13 +52,33 @@ const pool = knex({
     pool: { min: 2, max: 10 }
 });
 
-// Verify connectivity on boot so failures show up clearly in the deploy logs.
+// Verify connectivity on boot and perform automatic user table schema updates.
 (async () => {
     try {
         await pool.raw('SELECT 1');
         console.log(`✅ Connected to MySQL at ${DB_HOST}:${DB_PORT} (db: ${MYSQL_DATABASE}) using Knex`);
+
+        // Perform schema migration dynamically for users table if needed
+        const hasAvatarUrl = await pool.schema.hasColumn('users', 'avatar_url');
+        if (!hasAvatarUrl) {
+            console.log('Adding profile columns to users table...');
+            await pool.schema.alterTable('users', (table) => {
+                table.string('avatar_url', 500).nullable();
+                table.string('headline', 255).nullable();
+                table.text('bio').nullable();
+                table.string('website_url', 255).nullable();
+                table.string('twitter_url', 255).nullable();
+                table.string('linkedin_url', 255).nullable();
+                table.string('github_url', 255).nullable();
+                table.string('youtube_url', 255).nullable();
+                table.string('phone', 20).nullable();
+                table.string('address', 255).nullable();
+                table.string('gender', 20).nullable();
+            });
+            console.log('✅ Users table altered successfully with profile columns.');
+        }
     } catch (err) {
-        console.error('❌ Database connection failed:', err.message);
+        console.error('❌ Database connection or schema migration failed:', err.message);
     }
 })();
 

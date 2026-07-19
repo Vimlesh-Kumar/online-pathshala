@@ -8,3 +8,7 @@ export const getUserByEmail = async (email) => userRepository.getUserByEmail(ema
 
 // find user by id
 export const getUserById = async (id) => userRepository.getUserById(id);
+
+export const updateProfile = async (id, data) => userRepository.updateProfile(id, data);
+
+export const updatePassword = async (id, hashedPassword) => userRepository.updatePassword(id, hashedPassword);

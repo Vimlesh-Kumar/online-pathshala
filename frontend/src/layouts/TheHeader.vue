@@ -96,7 +96,8 @@
           <v-menu transition="scale-transition">
             <template #activator="{ props }">
               <v-avatar v-bind="props" size="42" class="ml-3 profile-badge">
-                <span>{{ user.full_name?.charAt(0) }}</span>
+                <v-img v-if="user.avatar_url" :src="user.avatar_url" cover />
+                <span v-else>{{ user.full_name?.charAt(0) }}</span>
               </v-avatar>
             </template>
 
@@ -109,6 +110,7 @@
               <v-list class="py-2">
                 <v-list-item prepend-icon="mdi-view-dashboard-outline" title="My learning" @click="$router.push('/user')" />
                 <v-list-item v-if="user.user_role === 'Tutor'" prepend-icon="mdi-chart-box-outline" title="Instructor dashboard" @click="$router.push('/user/tutor/dashboard')" />
+                <v-list-item prepend-icon="mdi-account-cog-outline" title="Profile settings" @click="$router.push('/user/profile')" />
                 <v-list-item prepend-icon="mdi-receipt-text-outline" title="My orders" @click="$router.push('/user/orders')" />
                 <v-list-item prepend-icon="mdi-logout" title="Logout" @click="handleLogoutClick" />
               </v-list>

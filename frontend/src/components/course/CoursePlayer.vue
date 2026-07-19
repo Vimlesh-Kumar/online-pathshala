@@ -121,7 +121,7 @@
     </v-card>
 
     <!-- Certificate Modal -->
-    <v-dialog v-model="certModal" max-width="800px" eager transition="dialog-bottom-transition">
+    <v-dialog v-if="course" v-model="certModal" max-width="800px" eager transition="dialog-bottom-transition">
       <v-card class="glass-panel text-center pa-4" flat style="overflow: hidden;">
         <div class="d-flex justify-end">
           <v-btn icon="mdi-close" variant="text" @click="certModal = false" />

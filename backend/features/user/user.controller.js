@@ -114,3 +114,89 @@ export const userById = async (req, res) => {
         });
     }
 };
+
+/**
+ * Update the user's profile details.
+ */
+export const updateProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const body = req.body;
+
+        if (!body.full_name || !body.email) {
+            return sendError(res, {
+                statusCode: 400,
+                message: 'Name and email are required.'
+            });
+        }
+
+        // Check if email is already taken by someone else
+        const existingUser = await userService.getUserByEmail(body.email);
+        if (existingUser && existingUser.id !== userId) {
+            return sendError(res, {
+                statusCode: 400,
+                message: 'This email is already in use by another account.'
+            });
+        }
+
+        const updatedUser = await userService.updateProfile(userId, body);
+        updatedUser.password = undefined;
+
+        return sendSuccess(res, {
+            message: 'Profile updated successfully.',
+            data: updatedUser
+        });
+    } catch (err) {
+        console.error(err);
+        return sendError(res, {
+            statusCode: 500,
+            message: 'Server error updating profile details.'
+        });
+    }
+};
+
+/**
+ * Update the user's password.
+ */
+export const updatePassword = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { oldPassword, newPassword } = req.body;
+
+        if (!oldPassword || !newPassword) {
+            return sendError(res, {
+                statusCode: 400,
+                message: 'Old password and new password are required.'
+            });
+        }
+
+        const user = await userService.getUserById(userId);
+        if (!user) {
+            return sendError(res, {
+                statusCode: 404,
+                message: 'User not found.'
+            });
+        }
+
+        const passwordCheck = await bcrypt.compare(oldPassword, user.password);
+        if (!passwordCheck) {
+            return sendError(res, {
+                statusCode: 400,
+                message: 'Invalid current password.'
+            });
+        }
+
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        await userService.updatePassword(userId, hashedNewPassword);
+
+        return sendSuccess(res, {
+            message: 'Password updated successfully.'
+        });
+    } catch (err) {
+        console.error(err);
+        return sendError(res, {
+            statusCode: 500,
+            message: 'Server error updating password.'
+        });
+    }
+};

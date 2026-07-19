@@ -7,7 +7,18 @@ CREATE TABLE IF NOT EXISTS users (
     full_name VARCHAR(100),
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(500) NOT NULL,
-    user_role ENUM('Student', 'Tutor', 'Admin') NOT NULL
+    user_role ENUM('Student', 'Tutor', 'Admin') NOT NULL,
+    avatar_url VARCHAR(500) DEFAULT NULL,
+    headline VARCHAR(255) DEFAULT NULL,
+    bio TEXT DEFAULT NULL,
+    website_url VARCHAR(255) DEFAULT NULL,
+    twitter_url VARCHAR(255) DEFAULT NULL,
+    linkedin_url VARCHAR(255) DEFAULT NULL,
+    github_url VARCHAR(255) DEFAULT NULL,
+    youtube_url VARCHAR(255) DEFAULT NULL,
+    phone VARCHAR(20) DEFAULT NULL,
+    address VARCHAR(255) DEFAULT NULL,
+    gender VARCHAR(20) DEFAULT NULL
 );
 
 CREATE TABLE IF NOT EXISTS courses (

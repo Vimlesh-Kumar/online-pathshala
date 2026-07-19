@@ -9,6 +9,7 @@ const routes = [
   { path: '/', component: HomePage },
   { path: '/user/sign-up', component: () => import('@/components/users/SignUp.vue') },
   { path: '/user/sign-in', component: () => import('@/components/users/LogIn.vue') },
+  { path: '/user/profile', component: () => import('@/components/users/UserProfile.vue') },
   {
     path: '/user', component: UserHomePage,
     // children: [{ path: 'wishlist', component:  wishlist}]
