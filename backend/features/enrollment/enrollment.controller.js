@@ -75,6 +75,7 @@ export const getCourseProgress = async (req, res) => {
 
         const completedLessonIds = await enrollmentServices.getCompletedLessonIds(enrollment.id);
         const totalLessons = await enrollmentServices.countCourseLessons(courseId);
+        const cert = await enrollmentServices.getCertificate(enrollment.id);
 
         return sendSuccess(res, {
             message: 'Progress fetched.',
@@ -84,7 +85,8 @@ export const getCourseProgress = async (req, res) => {
                 progress: Number(enrollment.progress) || 0,
                 isCompleted: !!enrollment.is_completed,
                 completedLessonIds,
-                totalLessons
+                totalLessons,
+                certificateKey: cert ? cert.certificate_key : null
             }
         });
     } catch (err) {
@@ -121,5 +123,32 @@ export const updateLessonProgress = async (req, res) => {
     } catch (err) {
         console.error(err);
         return sendError(res, { statusCode: 500, message: 'Unable to update progress.' });
+    }
+};
+
+/**
+ * Issue a certificate for the authenticated user in a course.
+ */
+export const issueCertificate = async (req, res) => {
+    try {
+        const courseId = Number.parseInt(req.params.id, 10);
+        const { certificateKey } = req.body;
+        if (!courseId || !certificateKey) {
+            return sendError(res, { statusCode: 400, message: 'course id and certificateKey are required.' });
+        }
+
+        const enrollment = await enrollmentServices.getEnrollment(courseId, req.user.id);
+        if (!enrollment) {
+            return sendError(res, { statusCode: 404, message: 'Enrollment not found.' });
+        }
+
+        const result = await enrollmentServices.issueCertificate(enrollment.id, certificateKey);
+        return sendSuccess(res, {
+            message: 'Certificate issued successfully.',
+            data: result
+        });
+    } catch (err) {
+        console.error(err);
+        return sendError(res, { statusCode: 500, message: 'Unable to issue certificate.' });
     }
 };

@@ -62,11 +62,15 @@
           </v-card>
 
           <div v-if="isCompleted" class="d-flex flex-column ga-6">
-            <v-alert type="success" variant="tonal" class="section-card" prominent>
-              🎉 All lessons complete! Pass the final quiz (70%+) to earn your certificate.
-            </v-alert>
-            <course-quiz :course-id="course.id" @passed="onQuizPassed" />
-            <course-certificate v-if="quizPassed" :name="userName" :course="course.title" />
+            <template v-if="!quizPassed">
+              <v-alert type="success" variant="tonal" class="section-card" prominent>
+                🎉 All lessons complete! Pass the final quiz (70%+) to earn your certificate.
+              </v-alert>
+              <course-quiz :course-id="course.id" @passed="onQuizPassed" />
+            </template>
+            <template v-else>
+              <course-certificate :name="userName" :course="course.title" :instructor="course.author" :prop-cert-id="certificateKey" />
+            </template>
           </div>
         </v-col>
 
@@ -130,6 +134,7 @@ export default {
       isCompleted: false,
       currentLessonId: null,
       quizPassed: false,
+      certificateKey: null
     }
   },
   computed: {
@@ -169,7 +174,7 @@ export default {
   },
   async created() {
     const courseId = Number(this.$route.params.id)
-    this.$store.dispatch('fetchingUser')
+    await this.$store.dispatch('fetchingUser')
     try {
       const [courseRes, lessons] = await Promise.all([
         axios.get(`/course/${courseId}`),
@@ -186,6 +191,12 @@ export default {
       // Resume: first incomplete lesson, else first lesson.
       const firstIncomplete = this.lessons.find((l) => !this.completedIds.includes(l.id))
       this.currentLessonId = (firstIncomplete || this.lessons[0])?.id ?? null
+
+      // Check if user has already completed/passed the quiz once (from DB progress payload)
+      if (progress && progress.certificateKey) {
+        this.quizPassed = true
+        this.certificateKey = progress.certificateKey
+      }
     } catch (e) {
       console.error(e)
     } finally {
@@ -193,8 +204,29 @@ export default {
     }
   },
   methods: {
-    onQuizPassed() {
+    async onQuizPassed() {
       this.quizPassed = true
+      
+      // Generate unique validation ID based on user name, course title and current date
+      const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+      const str = `${this.userName}-${this.course.title}-${dateStr}`
+      let hash = 0
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i)
+        hash |= 0
+      }
+      const hex = Math.abs(hash).toString(16).toUpperCase().padStart(8, '0')
+      const key = `OP-${hex.substring(0, 4)}-${hex.substring(4, 8)}`
+      this.certificateKey = key
+
+      try {
+        await this.$store.dispatch('issueCertificate', {
+          courseId: this.course.id,
+          certificateKey: key
+        })
+      } catch (err) {
+        console.error('Failed to save certificate to DB:', err)
+      }
       fireConfetti()
     },
     applyProgress(progress) {

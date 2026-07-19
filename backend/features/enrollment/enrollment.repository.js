@@ -55,3 +55,21 @@ export const updateProgress = async (enrollmentId, progress, isCompleted) => {
         .update({ progress, is_completed: isCompleted })
         .where({ id: enrollmentId });
 };
+
+export const getCertificate = async (enrollmentId) => {
+    const row = await pool('certificates')
+        .where({ enrollment_id: enrollmentId })
+        .first();
+    return row || null;
+};
+
+export const issueCertificate = async (enrollmentId, certificateKey) => {
+    const existing = await getCertificate(enrollmentId);
+    if (existing) return existing;
+
+    const [insertId] = await pool('certificates').insert({
+        enrollment_id: enrollmentId,
+        certificate_key: certificateKey
+    });
+    return { id: insertId, enrollment_id: enrollmentId, certificate_key: certificateKey };
+};

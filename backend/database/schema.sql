@@ -130,3 +130,11 @@ CREATE TABLE IF NOT EXISTS quiz_questions (
     correct_option CHAR(1) NOT NULL,
     FOREIGN KEY (course_id) REFERENCES courses(id)
 );
+
+CREATE TABLE IF NOT EXISTS certificates (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    enrollment_id INT NOT NULL UNIQUE,
+    certificate_key VARCHAR(50) NOT NULL UNIQUE,
+    granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (enrollment_id) REFERENCES enrollment(id)
+);

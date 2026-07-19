@@ -9,5 +9,6 @@ router.post('/course-enrollment', enrollmentController.enrollment);
 router.post('/enroll', auth.checkToken, enrollmentController.enrollFree);
 router.get('/:id/progress', auth.checkToken, enrollmentController.getCourseProgress);
 router.post('/progress', auth.checkToken, enrollmentController.updateLessonProgress);
+router.post('/:id/certificate', auth.checkToken, enrollmentController.issueCertificate);
 
 export default router;

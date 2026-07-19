@@ -152,6 +152,10 @@ const store = createStore({
             const response = await axios.post('/user/course/progress', { course_id: courseId, lesson_id: lessonId })
             return response.data.data
         },
+        async issueCertificate(_context, { courseId, certificateKey }) {
+            const response = await axios.post(`/user/course/${courseId}/certificate`, { certificateKey })
+            return response.data.data
+        },
         // ── Commerce ──
         async validateCoupon(_context, code) {
             const response = await axios.post('/user/coupon/validate', { code })

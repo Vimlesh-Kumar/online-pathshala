@@ -40,3 +40,7 @@ export const recalculateProgress = async (enrollmentId, courseId) => {
 
     return { progress, isCompleted, total, completed, completedIds };
 };
+
+export const getCertificate = async (enrollmentId) => enrollmentRepository.getCertificate(enrollmentId);
+
+export const issueCertificate = async (enrollmentId, certificateKey) => enrollmentRepository.issueCertificate(enrollmentId, certificateKey);
