@@ -69,7 +69,16 @@
               <course-quiz :course-id="course.id" @passed="onQuizPassed" />
             </template>
             <template v-else>
-              <course-certificate :name="userName" :course="course.title" :instructor="course.author" :prop-cert-id="certificateKey" />
+              <v-card class="glass-panel section-card pa-6 text-center position-relative overflow-hidden" flat>
+                <div class="eyebrow mb-2">🏆 COURSE COMPLETED</div>
+                <h3 class="text-h5 font-weight-bold mb-2">Congratulations, {{ userName }}!</h3>
+                <p class="text-body-2 text-medium-emphasis mb-5">You have earned your verified certificate of completion for this course.</p>
+                <div class="d-flex justify-center ga-3">
+                  <v-btn class="btn-gradient" @click="certModal = true">
+                    <v-icon start>mdi-certificate</v-icon> View Certificate
+                  </v-btn>
+                </div>
+              </v-card>
             </template>
           </div>
         </v-col>
@@ -110,6 +119,18 @@
       <h3 class="text-h6 font-weight-bold mb-4">Course not found.</h3>
       <v-btn class="btn-gradient" @click="$router.push('/courses/all')">Browse courses</v-btn>
     </v-card>
+
+    <!-- Certificate Modal -->
+    <v-dialog v-model="certModal" max-width="800px" eager transition="dialog-bottom-transition">
+      <v-card class="glass-panel text-center pa-4" flat style="overflow: hidden;">
+        <div class="d-flex justify-end">
+          <v-btn icon="mdi-close" variant="text" @click="certModal = false" />
+        </div>
+        <v-card-text class="pt-0">
+          <course-certificate :name="userName" :course="course.title" :instructor="course.author" :prop-cert-id="certificateKey" />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -134,7 +155,8 @@ export default {
       isCompleted: false,
       currentLessonId: null,
       quizPassed: false,
-      certificateKey: null
+      certificateKey: null,
+      certModal: false
     }
   },
   computed: {
