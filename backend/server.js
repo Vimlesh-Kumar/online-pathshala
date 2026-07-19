@@ -3,16 +3,16 @@ import 'dotenv/config';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 
-import userRouter from './api/routes/user.router.js';
-import courseRouter from './api/routes/course.router.js';
-import enrollmentRouter from './api/routes/enrollment.router.js';
-import objectivesRouter from './api/routes/courseObjectives.router.js';
-import lecturesRouter from './api/routes/sectionLectures.router.js';
-import cartRouter from './api/routes/cart.router.js';
-import wishListRouter from './api/routes/wishlist.router.js';
-import orderRouter from './api/routes/order.router.js';
-import engagementRouter from './api/routes/engagement.router.js';
-import aiSupportRouter from './api/routes/aiSupport.router.js';
+import userRouter from './features/user/user.router.js';
+import courseRouter from './features/course/course.router.js';
+import enrollmentRouter from './features/enrollment/enrollment.router.js';
+import objectivesRouter from './features/courseObjectives/courseObjectives.router.js';
+import lecturesRouter from './features/sectionLectures/sectionLectures.router.js';
+import cartRouter from './features/cart/cart.router.js';
+import wishListRouter from './features/wishlist/wishlist.router.js';
+import orderRouter from './features/order/order.router.js';
+import engagementRouter from './features/engagement/engagement.router.js';
+import aiSupportRouter from './features/aiSupport/aiSupport.router.js';
 
 const app = express();
 const PORT = process.env.PORT || process.env.APP_PORT || 5000;

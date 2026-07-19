@@ -156,12 +156,10 @@ const buildCourseRow = (category, index) => {
  * thumbnailForCourse — since every course now gets its own unique image.)
  */
 const getCategoryVideoKeys = async () => {
-    const [rows] = await pool.query(
-        `SELECT c.category, MIN(l.video_key) AS video_key
-         FROM courses c
-         JOIN lesson l ON l.course_id = c.id
-         GROUP BY c.category`
-    );
+    const rows = await pool('courses as c')
+        .select('c.category', pool.raw('MIN(l.video_key) AS video_key'))
+        .join('lesson as l', 'l.course_id', 'c.id')
+        .groupBy('c.category');
     const videoKeys = {};
     for (const row of rows) {
         videoKeys[row.category] = row.video_key;
@@ -190,28 +188,32 @@ const insertLessonsAndObjectives = async (category, firstCourseId, count, videoK
     for (let i = 0; i < count; i++) {
         const courseId = firstCourseId + i;
         for (const lesson of LESSON_TEMPLATE) {
-            lessonRows.push([lesson.duration, courseId, lesson.name, videoKey, lesson.section]);
+            lessonRows.push({
+                duration: lesson.duration,
+                course_id: courseId,
+                lesson_name: lesson.name,
+                video_key: videoKey,
+                section_name: lesson.section
+            });
         }
         for (const objective of objectives) {
-            objectiveRows.push([objective, courseId]);
+            objectiveRows.push({
+                objective,
+                course_id: courseId
+            });
         }
     }
 
-    await pool.query(
-        'INSERT INTO lesson (duration, course_id, lesson_name, video_key, section_name) VALUES ?',
-        [lessonRows]
-    );
-    await pool.query(
-        'INSERT INTO course_objectives (objective, course_id) VALUES ?',
-        [objectiveRows]
-    );
+    await pool('lesson').insert(lessonRows);
+    await pool('course_objectives').insert(objectiveRows);
 };
 
 async function run() {
-    const [[{ count }]] = await pool.query('SELECT COUNT(*) AS count FROM courses');
+    const row = await pool('courses').count('* as count').first();
+    const count = row.count;
     if (count >= TARGET_TOTAL) {
         console.log(`Catalog already has ${count} courses (>= ${TARGET_TOTAL}) — skipping generation.`);
-        await pool.end();
+        await pool.destroy();
         return;
     }
 
@@ -235,25 +237,33 @@ async function run() {
                 (_, i) => buildCourseRow(category, start + i)
             );
 
-            const [result] = await pool.query(
-                'INSERT INTO courses (author, category, price, subtitle, thumb_url, title, rating) VALUES ?',
-                [rows]
-            );
+            const courseRows = rows.map(([author, category, price, subtitle, thumb_url, title, rating]) => ({
+                author,
+                category,
+                price,
+                subtitle,
+                thumb_url,
+                title,
+                rating
+            }));
 
-            await insertLessonsAndObjectives(category, result.insertId, batchCount, videoKey);
+            const [insertId] = await pool('courses').insert(courseRows);
+
+            await insertLessonsAndObjectives(category, insertId, batchCount, videoKey);
 
             totalInserted += batchCount;
             console.log(`  ${category}: ${start + batchCount}/${perCategory} generated (${totalInserted} total so far)`);
         }
     }
 
-    const [[{ finalCount }]] = await pool.query('SELECT COUNT(*) AS finalCount FROM courses');
+    const finalRow = await pool('courses').count('* as finalCount').first();
+    const finalCount = finalRow.finalCount;
     console.log(`✅ Done. Catalog now has ${finalCount} courses.`);
-    await pool.end();
+    await pool.destroy();
 }
 
 run().catch(async (err) => {
     console.error('❌ Catalog generation failed:', err.message);
-    await pool.end();
+    await pool.destroy();
     process.exit(1);
 });

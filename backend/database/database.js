@@ -1,4 +1,4 @@
-import mysql from 'mysql2/promise';
+import knex from 'knex';
 import 'dotenv/config';
 
 const {
@@ -38,10 +38,6 @@ const connectionConfig = {
     user: DB_USER,
     password: DB_PASSWORD,
     database: MYSQL_DATABASE,
-    connectionLimit: 10,
-    waitForConnections: true,
-    queueLimit: 0,
-    enableKeepAlive: true,
     ssl: resolveSsl()
 };
 
@@ -50,14 +46,17 @@ if (DB_SOCKET_PATH && isLocal) {
     connectionConfig.socketPath = DB_SOCKET_PATH;
 }
 
-const pool = mysql.createPool(connectionConfig);
+const pool = knex({
+    client: 'mysql2',
+    connection: connectionConfig,
+    pool: { min: 2, max: 10 }
+});
 
 // Verify connectivity on boot so failures show up clearly in the deploy logs.
 (async () => {
     try {
-        const connection = await pool.getConnection();
-        console.log(`✅ Connected to MySQL at ${DB_HOST}:${DB_PORT} (db: ${MYSQL_DATABASE})`);
-        connection.release();
+        await pool.raw('SELECT 1');
+        console.log(`✅ Connected to MySQL at ${DB_HOST}:${DB_PORT} (db: ${MYSQL_DATABASE}) using Knex`);
     } catch (err) {
         console.error('❌ Database connection failed:', err.message);
     }

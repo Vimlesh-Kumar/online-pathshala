@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { sendError } from '../api/utils/apiResponse.js';
+import { sendError } from '../utils/apiResponse.js';
 
 const SECRET_KEY = process.env.JWT_SECRET || "MYSECRETKEYFORJWT";
 
