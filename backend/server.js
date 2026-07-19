@@ -1,7 +1,16 @@
 import express from 'express';
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+
+// Load environment-specific .env file
+// Priority: .env.local (local dev) > .env (production)
+const nodeEnv = process.env.NODE_ENV || 'development';
+if (nodeEnv === 'development') {
+  dotenv.config({ path: '.env.local' });
+} else {
+  dotenv.config();
+}
 
 import userRouter from './features/user/user.router.js';
 import courseRouter from './features/course/course.router.js';
@@ -18,10 +27,14 @@ import keyVaultService from './utils/keyVault.service.js';
 
 const app = express();
 const PORT = process.env.PORT || process.env.APP_PORT || 5000;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
-// Initialize Azure Key Vault if enabled
-if (process.env.AZURE_KEYVAULT_ENABLED === 'true') {
+// Initialize secrets management (Key Vault for production, .env for local)
+if (NODE_ENV === 'production' && process.env.AZURE_KEYVAULT_ENABLED === 'true') {
   keyVaultService.initialize();
+  console.log('🔐 Using Azure Key Vault for secrets (production mode)');
+} else {
+  console.log('📄 Using environment variables for secrets (development mode)');
 }
 
 app.use(bodyParser.json({ limit: "500mb" }));
