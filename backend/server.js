@@ -13,9 +13,16 @@ import wishListRouter from './features/wishlist/wishlist.router.js';
 import orderRouter from './features/order/order.router.js';
 import engagementRouter from './features/engagement/engagement.router.js';
 import aiSupportRouter from './features/aiSupport/aiSupport.router.js';
+import cacheService from './utils/cache.service.js';
+import keyVaultService from './utils/keyVault.service.js';
 
 const app = express();
 const PORT = process.env.PORT || process.env.APP_PORT || 5000;
+
+// Initialize Azure Key Vault if enabled
+if (process.env.AZURE_KEYVAULT_ENABLED === 'true') {
+  keyVaultService.initialize();
+}
 
 app.use(bodyParser.json({ limit: "500mb" }));
 app.use(bodyParser.urlencoded({ limit: "500mb", extended: true }));
@@ -37,8 +44,11 @@ app.use('/', orderRouter);
 app.use('/', engagementRouter);
 app.use('/', aiSupportRouter);
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`🚀 Server is running on PORT: ${PORT}`);
+
+    // Initialize Valkey cache
+    await cacheService.initialize();
 });
 
 export default app;
