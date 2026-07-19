@@ -59,18 +59,11 @@ const store = createStore({
             commit('updateSelectedCategory', category);
         },
         async fetchingUser(context) {
-            const token = localStorage.getItem('token')
-            if (!token) {
-                context.commit('updateUser', null)
-                return
-            }
-
             try {
                 const response = await axios.get(`/user/details`)
                 context.commit('updateUser', response.data.data)
             }
             catch (error) {
-                console.log(error);
                 context.commit('updateUser', null)
             }
         },
@@ -93,15 +86,6 @@ const store = createStore({
                 commit('updateAllCourses', [])
             }
         },
-        async fetchingUserCourses(context) {
-            try {
-                const response = await axios.get(`/user/courses`)
-                context.commit('updateUserCourses', response.data.data || [])
-            } catch (error) {
-                console.log(error);
-                context.commit('updateUserCourses', [])
-            }
-        },
         async getACourse(context, course) {
             context.commit('updateSingleCourseDetails', course)
         },
@@ -109,13 +93,20 @@ const store = createStore({
             const response = await axios.get(`/course/objectives-display/${id}`)
             context.commit('updateCourseObjctives', response.data.data || [])
         },
+        async fetchingUserCourses(context) {
+            try {
+                const response = await axios.get(`/user/courses`)
+                context.commit('updateUserCourses', response.data.data || [])
+            } catch (error) {
+                context.commit('updateUserCourses', [])
+            }
+        },
         async getCartCourses(context) {
             try {
                 const response = await axios.get('/user/cart');
                 context.commit('updateCartCourses', response.data.data?.courses || [])
                 context.commit('updateCartSummary', response.data.data?.summary || { itemCount: 0, totalAmount: 0 })
             } catch (error) {
-                console.log(error);
                 context.commit('updateCartCourses', [])
                 context.commit('updateCartSummary', { itemCount: 0, totalAmount: 0 })
             }
@@ -125,7 +116,6 @@ const store = createStore({
                 const response = await axios.get('/user/wishlist')
                 context.commit('updateWishlistCourses', response.data.data || [])
             } catch (error) {
-                console.log(error);
                 context.commit('updateWishlistCourses', [])
             }
         },
