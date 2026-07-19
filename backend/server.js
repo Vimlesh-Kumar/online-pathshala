@@ -60,8 +60,14 @@ app.use('/', aiSupportRouter);
 app.listen(PORT, async () => {
     console.log(`🚀 Server is running on PORT: ${PORT}`);
 
-    // Initialize Valkey cache
-    await cacheService.initialize();
+    // Initialize Valkey cache (optional in local dev)
+    const cacheReady = await cacheService.initialize();
+    if (!cacheReady) {
+        const nodeEnv = process.env.NODE_ENV || 'development';
+        if (nodeEnv === 'production') {
+            console.error('⚠️  Cache service failed to initialize (production requires working cache)');
+        }
+    }
 });
 
 export default app;

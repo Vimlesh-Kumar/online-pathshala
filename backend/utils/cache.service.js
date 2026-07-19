@@ -9,6 +9,7 @@ class CacheService {
     try {
       const host = process.env.VALKEY_HOST || 'localhost';
       const port = Number.parseInt(process.env.VALKEY_PORT || '6379', 10);
+      const nodeEnv = process.env.NODE_ENV || 'development';
 
       // Fetch password from Azure Key Vault if configured
       let password = process.env.VALKEY_PASSWORD;
@@ -16,14 +17,21 @@ class CacheService {
         password = await keyVaultService.getSecret(process.env.VALKEY_SECRET_NAME || 'valkey-password');
       }
 
+      // Skip Valkey initialization if password is placeholder in local dev
+      if (nodeEnv === 'development' && password === 'update_with_your_aiven_password') {
+        console.log('⏭️  Skipping Valkey initialization (local development, no password set)');
+        console.log('   💡 To use Valkey locally: Set VALKEY_PASSWORD in .env.local');
+        return false;
+      }
+
       this.#client = createClient({
-        host,
-        port,
-        password: password || undefined,
         socket: {
+          host,
+          port,
           reconnectStrategy: (retries) => Math.min(retries * 50, 500),
-          connectTimeout: 10000,
+          connectTimeout: 5000,
         },
+        ...(password && { password }),
       });
 
       this.#client.on('connect', () => {
@@ -32,8 +40,14 @@ class CacheService {
       });
 
       this.#client.on('error', (err) => {
-        console.error('❌ Valkey connection error:', err.message);
+        const errorMsg = err?.message || JSON.stringify(err);
+        console.error(`❌ Valkey connection error: ${errorMsg}`);
         this.#isConnected = false;
+
+        // In local dev, don't crash if Redis isn't available
+        if (nodeEnv === 'development') {
+          console.log('   💡 Tip: Start Redis with: redis-server (or skip for now)');
+        }
       });
 
       this.#client.on('end', () => {
@@ -44,8 +58,20 @@ class CacheService {
       await this.#client.connect();
       return true;
     } catch (error) {
-      console.error('❌ Failed to initialize Valkey:', error.message);
-      return false;
+      const nodeEnv = process.env.NODE_ENV || 'development';
+      const errorMsg = error?.message || JSON.stringify(error);
+
+      if (nodeEnv === 'development') {
+        console.log(`⏭️  Valkey not available (local development): ${errorMsg}`);
+        console.log('   💡 To use Valkey locally:');
+        console.log('      1. Install Redis: brew install redis (macOS)');
+        console.log('      2. Start Redis: redis-server');
+        console.log('      3. Restart your server: npm run dev');
+        return false;
+      } else {
+        console.error('❌ Failed to initialize Valkey (production):', errorMsg);
+        return false;
+      }
     }
   }
 
