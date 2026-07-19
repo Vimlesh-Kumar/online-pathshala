@@ -35,15 +35,13 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const token = localStorage.getItem('token');
   const requiresAuth = (to.path.startsWith('/user') && to.path !== '/user/sign-in' && to.path !== '/user/sign-up') || to.path.startsWith('/learn');
   
   if (requiresAuth && !token) {
     toast.error('Please log in to access this page.');
-    next('/user/sign-in');
-  } else {
-    next();
+    return '/user/sign-in';
   }
 });
 
