@@ -59,8 +59,8 @@ VALKEY_PASSWORD=
 # Leave empty if local Redis has no password
 
 # ── Vercel Blob Storage ──
-BLOB_STORE_ID=store_mGe0JsUeYJRLOTM0
-BLOB_READ_WRITE_TOKEN=vercel_blob_rw_mGe0JsUeYJRLOTM0_TRKji5uTfoA2Tn4ocgxrVgjNM8jqtJ
+BLOB_STORE_ID=your_vercel_store_id
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_your_token_here
 
 # ── AI Support (Groq - Optional) ──
 GROQ_API_KEY=your_groq_api_key_here
