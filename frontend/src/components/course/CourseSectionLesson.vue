@@ -1,60 +1,86 @@
 <template>
     <div>
-        <v-container class="d-flex justify-center" v-for="(lesson, index) in lessons" :key="index">
-            <v-card class="px-10 justify-center" width="700">
-                <v-card-title class="my-2">Lecture {{ index + 1 }}:</v-card-title>
-                <!-- {{ sectionWithLectures }} -->
-                <!-- {{ sectionName }} -->
-                <div>
-                    <v-form @submit.prevent="submitForm">
-                        <v-text-field label="Lesson Name" v-model="lessons[index].name" required></v-text-field>
-                        <v-text-field label="Lesson Duration" v-model="lessons[index].duration" required></v-text-field>
-                        <div class="my-3">
+        <div v-for="(lesson, index) in lessons" :key="index" class="mb-6 flex justify-center">
+            <div class="w-full max-w-[700px] rounded-[26px] border border-black/10 p-6 dark:border-white/12">
+                <h3 class="mb-4 font-display text-lg font-bold">Lecture {{ index + 1 }}:</h3>
 
+                <form novalidate @submit.prevent="submitForm">
+                    <app-field
+                        v-model="lessons[index].name"
+                        class="mb-4"
+                        label="Lesson Name"
+                        required
+                    />
+                    <app-field
+                        v-model="lessons[index].duration"
+                        class="mb-4"
+                        label="Lesson Duration"
+                        required
+                    />
 
-                            <v-row>
-                                <v-file-input label="Select a file" accept=".jpg,.jpeg,.png,.pdf,.mp4" type="file"
-                                    @change="onFileSelected"></v-file-input>
+                    <div class="my-3 flex flex-wrap items-center gap-3">
+                        <label
+                            class="inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-black/10 px-4 py-2.5 text-sm font-semibold transition-colors hover:border-primary/50 dark:border-white/12"
+                        >
+                            <app-icon name="lucide:paperclip" size="18" />
+                            {{ selectedFile ? selectedFile.name : 'Select a file' }}
+                            <input
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.pdf,.mp4"
+                                class="sr-only"
+                                @change="onFileSelected"
+                            />
+                        </label>
 
-                                <v-btn class="mx-5 my-3 bg-yellow" @click="uploadFile(index)"><span
-                                        class="mdi mdi-upload"></span>
-                                    Upload</v-btn>
-                            </v-row>
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-2 rounded-full bg-primary/12 px-5 py-2.5 font-semibold text-primary transition-colors hover:bg-primary/20"
+                            @click="uploadFile(index)"
+                        >
+                            <app-icon name="lucide:upload" size="18" /> Upload
+                        </button>
+                    </div>
 
+                    <div
+                        v-if="uploadProgress !== null"
+                        class="relative h-6 overflow-hidden rounded-full bg-foreground/10"
+                    >
+                        <div
+                            class="h-full bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] transition-[width] duration-200"
+                            :style="{ width: `${uploadProgress}%` }"
+                        ></div>
+                        <strong class="absolute inset-0 grid place-items-center text-xs text-white">
+                            {{ Math.ceil(uploadProgress) }}%
+                        </strong>
+                    </div>
+                    <div v-if="uploadStatus !== ''" class="mt-2 font-medium text-primary">
+                        {{ uploadStatus }}
+                    </div>
+                </form>
 
-                            <v-progress-linear v-if="uploadProgress !== null" :value="uploadProgress" height="25"
-                                v-model="uploadProgress" color="primary">
-                                <strong class="text-white">{{ Math.ceil(uploadProgress) }}%</strong>
-                            </v-progress-linear>
-                            <div v-if="uploadStatus !== ''" class="text-primary font-weight-medium ms-7">{{
-                                uploadStatus }}</div>
-
-
-                        </div>
-
-                    </v-form>
-                </div>
-                <v-btn class="btn-gradient mb-8" @click="saveAndAddNewLecture"
-                    v-if="index === lessons.length - 1"><span class="mdi mdi-plus-thick"></span>Next Lecture</v-btn>
-            </v-card>
-
-        </v-container>
-        <div class="d-flex justify-end mt-3 me-15">
-            <div class="mx-10">
-
-                <v-btn type="submit" color="green-lighten-3" @click="submitForm">Save Section</v-btn>
+                <button
+                    v-if="index === lessons.length - 1"
+                    class="btn-brand mt-6"
+                    @click="saveAndAddNewLecture"
+                >
+                    <app-icon name="lucide:plus" size="18" /> Next Lecture
+                </button>
             </div>
+        </div>
 
+        <div class="mt-3 flex justify-end">
+            <button type="submit" class="btn-brand" @click="submitForm">Save Section</button>
         </div>
     </div>
 </template>
 
-
-
 <script>
 import axios from 'axios';
+import AppField from '@/components/ui/AppField.vue';
+import AppIcon from '@/components/ui/AppIcon.vue';
 
 export default {
+    components: { AppField, AppIcon },
     data() {
         return {
             lessons: [{ name: '', duration: '', video_key: '', sectionName: '', course_id: null }],
@@ -71,19 +97,16 @@ export default {
         const currentUrl = this.$route.path
         const url = currentUrl.split("/")
         const courseId = url[2];
-        // console.log(courseId)
         this.courseId = courseId
-        // this.lessons.course_id=courseId
     },
 
     methods: {
         onFileSelected(event) {
-            console.log(event.target.files[0])
             this.selectedFile = event.target.files[0]
         },
         /**
-         * Function to upload video file for course 
-         * @param {Integer} index Index to provide lecture to fetch lecture details 
+         * Function to upload video file for course
+         * @param {Integer} index Index to provide lecture to fetch lecture details
          */
         async uploadFile(index) {
             const file = this.selectedFile;
@@ -98,12 +121,9 @@ export default {
                     content: fileContent
                 }, {
                     onUploadProgress: (uploadEvent) => {
-                        console.log("progress: " + Math.round(uploadEvent.loaded / uploadEvent.total * 100) + '%')
                         const percentCompleted = Math.round((uploadEvent.loaded * 100) / uploadEvent.total)
                         this.uploadProgress = percentCompleted
-                        console.log(percentCompleted)
                         this.uploadStatus = `Uploading file: ${percentCompleted}%`
-
                     }
                 })
                 try {
@@ -121,7 +141,6 @@ export default {
                 this.lessons[index].video_key = response.data.video_id;
                 this.lessons[index].sectionName = this.sectionName;
                 this.lessons[index].course_id = this.courseId
-                // console.log(this.courseId)
             }
 
         },
@@ -130,7 +149,6 @@ export default {
         async submitForm() {
 
             const formData = this.lessons
-            console.log(formData);
             // submit the form data to the server here
             await axios.post('/course/section/save', formData)
         },
@@ -138,12 +156,8 @@ export default {
         saveAndAddNewLecture() {
             this.lectureCount++;
             this.lessons.push({ name: '', duration: '', video_key: '', sectionName: this.sectionName, course_id: null })
-            // console.log(this.lessons)
 
         },
     }
 }
 </script>
-
-
-

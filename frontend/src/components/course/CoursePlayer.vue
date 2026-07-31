@@ -1,137 +1,175 @@
 <template>
-  <v-container class="app-section" fluid>
-    <div v-if="loading" class="text-center py-16">
-      <v-progress-circular indeterminate color="primary" size="48" />
+  <div class="mx-auto max-w-[1600px] px-4 pt-10 pb-14">
+    <div v-if="loading" class="py-16 text-center">
+      <app-icon name="lucide:loader-circle" size="48" class="mx-auto animate-spin text-primary" />
     </div>
 
     <template v-else-if="course">
       <!-- Header -->
-      <div class="d-flex align-center flex-wrap ga-3 mb-5">
-        <v-btn variant="text" class="px-2" @click="$router.push(`/course/${course.id}`)">
-          <v-icon start>mdi-arrow-left</v-icon> Course page
-        </v-btn>
-        <div class="flex-grow-1">
+      <div class="mb-5 flex flex-wrap items-center gap-3">
+        <button
+          class="inline-flex items-center gap-2 rounded-full px-3 py-2 font-semibold text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
+          @click="$router.push(`/course/${course.id}`)"
+        >
+          <app-icon name="lucide:arrow-left" size="18" /> Course page
+        </button>
+        <div class="flex-1">
           <div class="eyebrow mb-1">{{ course.category }}</div>
-          <h1 class="player-title">{{ course.title }}</h1>
+          <h1
+            class="font-display text-[clamp(1.4rem,2.4vw,2rem)] leading-tight font-extrabold tracking-tight"
+          >
+            {{ course.title }}
+          </h1>
         </div>
-        <div class="progress-chip glass-panel">
+        <div class="glass-panel flex flex-col items-center rounded-[18px] px-5 py-2.5">
           <progress-ring :value="progressPct" :size="52" :stroke-width="6" label-size="13px" />
-          <span class="progress-sub">{{ completedCount }}/{{ totalCount }} lessons</span>
+          <span class="text-xs text-muted-foreground">{{ completedCount }}/{{ totalCount }} lessons</span>
         </div>
       </div>
-      <v-progress-linear :model-value="progressPct" color="primary" height="8" rounded class="mb-8" />
+      <div class="mb-8 h-2 overflow-hidden rounded-full bg-foreground/10">
+        <div
+          class="h-full rounded-full bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] transition-[width] duration-500"
+          :style="{ width: `${Math.min(progressPct, 100)}%` }"
+        ></div>
+      </div>
 
-      <v-row>
+      <div class="grid gap-6 md:grid-cols-12">
         <!-- Player -->
-        <v-col cols="12" md="8">
-          <v-card class="glass-panel section-card overflow-hidden mb-5" flat>
-            <div class="video-wrap">
+        <div class="md:col-span-8">
+          <div class="glass-panel section-card mb-5 overflow-hidden">
+            <div class="relative w-full bg-black pt-[56.25%]">
               <iframe
                 v-if="currentLesson"
                 :src="videoUrl"
                 title="Lesson video"
+                class="absolute inset-0 size-full"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen
               ></iframe>
             </div>
-            <v-card-text class="pa-6">
-              <div class="d-flex align-center justify-space-between flex-wrap ga-4">
-                <div>
-                  <div class="text-caption text-medium-emphasis mb-1">{{ currentLesson?.section_name }}</div>
-                  <h2 class="text-h6 font-weight-bold">{{ currentLesson?.lesson_name }}</h2>
-                </div>
-                <div class="d-flex ga-3">
-                  <v-btn
-                    v-if="!isLessonComplete(currentLesson?.id)"
-                    class="btn-gradient"
-                    :loading="saving"
-                    @click="completeAndNext"
-                  >
-                    <v-icon start>mdi-check</v-icon> Mark complete
-                  </v-btn>
-                  <v-btn v-else variant="tonal" color="success" disabled>
-                    <v-icon start>mdi-check-circle</v-icon> Completed
-                  </v-btn>
-                  <v-btn variant="outlined" :disabled="!hasNext" @click="goToNext">
-                    Next <v-icon end>mdi-arrow-right</v-icon>
-                  </v-btn>
-                </div>
+            <div class="flex flex-wrap items-center justify-between gap-4 p-6">
+              <div>
+                <div class="mb-1 text-xs text-muted-foreground">{{ currentLesson?.section_name }}</div>
+                <h2 class="font-display text-lg font-bold">{{ currentLesson?.lesson_name }}</h2>
               </div>
-            </v-card-text>
-          </v-card>
+              <div class="flex gap-3">
+                <button
+                  v-if="!isLessonComplete(currentLesson?.id)"
+                  class="btn-brand"
+                  :disabled="saving"
+                  @click="completeAndNext"
+                >
+                  <app-icon
+                    :name="saving ? 'lucide:loader-circle' : 'lucide:check'"
+                    size="18"
+                    :class="saving ? 'animate-spin' : ''"
+                  />
+                  Mark complete
+                </button>
+                <button
+                  v-else
+                  class="inline-flex cursor-not-allowed items-center gap-2 rounded-full bg-emerald-500/12 px-6 py-3 font-semibold text-emerald-500"
+                  disabled
+                >
+                  <app-icon name="lucide:circle-check" size="18" /> Completed
+                </button>
+                <button
+                  class="inline-flex items-center gap-2 rounded-full border border-black/10 px-6 py-3 font-semibold transition-colors hover:border-primary/50 disabled:opacity-50 dark:border-white/15"
+                  :disabled="!hasNext"
+                  @click="goToNext"
+                >
+                  Next <app-icon name="lucide:arrow-right" size="18" />
+                </button>
+              </div>
+            </div>
+          </div>
 
-          <div v-if="isCompleted" class="d-flex flex-column ga-6">
+          <div v-if="isCompleted" class="flex flex-col gap-6">
             <template v-if="!quizPassed">
-              <v-alert type="success" variant="tonal" class="section-card" prominent>
+              <div
+                class="section-card border border-emerald-500/30 bg-emerald-500/10 p-6 text-emerald-600 dark:text-emerald-400"
+              >
                 🎉 All lessons complete! Pass the final quiz (70%+) to earn your certificate.
-              </v-alert>
+              </div>
               <course-quiz :course-id="course.id" @passed="onQuizPassed" />
             </template>
-            <template v-else>
-              <v-card class="glass-panel section-card pa-6 text-center position-relative overflow-hidden" flat>
-                <div class="eyebrow mb-2">🏆 COURSE COMPLETED</div>
-                <h3 class="text-h5 font-weight-bold mb-2">Congratulations, {{ userName }}!</h3>
-                <p class="text-body-2 text-medium-emphasis mb-5">You have earned your verified certificate of completion for this course.</p>
-                <div class="d-flex justify-center ga-3">
-                  <v-btn class="btn-gradient" @click="certModal = true">
-                    <v-icon start>mdi-certificate</v-icon> View Certificate
-                  </v-btn>
-                </div>
-              </v-card>
-            </template>
+            <div v-else class="glass-panel section-card relative overflow-hidden p-6 text-center">
+              <div class="eyebrow mb-2">🏆 COURSE COMPLETED</div>
+              <h3 class="mb-2 font-display text-2xl font-bold">Congratulations, {{ userName }}!</h3>
+              <p class="mb-5 text-sm text-muted-foreground">
+                You have earned your verified certificate of completion for this course.
+              </p>
+              <div class="flex justify-center gap-3">
+                <button class="btn-brand" @click="certModal = true">
+                  <app-icon name="lucide:award" size="18" /> View Certificate
+                </button>
+              </div>
+            </div>
           </div>
-        </v-col>
+        </div>
 
         <!-- Curriculum sidebar -->
-        <v-col cols="12" md="4">
-          <v-card class="glass-panel section-card pa-5" flat>
-            <div class="d-flex align-center justify-space-between mb-4">
-              <h3 class="text-h6 font-weight-bold">Course content</h3>
-              <span class="text-caption text-medium-emphasis">{{ totalCount }} lessons</span>
+        <div class="md:col-span-4">
+          <div class="glass-panel section-card p-5">
+            <div class="mb-4 flex items-center justify-between">
+              <h3 class="font-display text-lg font-bold">Course content</h3>
+              <span class="text-xs text-muted-foreground">{{ totalCount }} lessons</span>
             </div>
 
             <div v-for="section in sections" :key="section.name" class="mb-4">
-              <div class="section-name mb-2">{{ section.name }}</div>
-              <div
+              <div class="mb-2 text-xs font-extrabold tracking-widest text-muted-foreground uppercase">
+                {{ section.name }}
+              </div>
+              <button
                 v-for="lesson in section.lessons"
                 :key="lesson.id"
-                class="lesson-row"
+                class="lesson-row flex w-full items-center rounded-xl p-3 text-left transition-colors"
                 :class="{ active: lesson.id === currentLessonId }"
                 @click="selectLesson(lesson.id)"
               >
-                <v-icon :color="isLessonComplete(lesson.id) ? 'success' : undefined" size="20" class="mr-3">
-                  {{ isLessonComplete(lesson.id) ? 'mdi-check-circle' : 'mdi-play-circle-outline' }}
-                </v-icon>
-                <div class="flex-grow-1">
-                  <div class="lesson-name">{{ lesson.lesson_name }}</div>
-                  <div class="lesson-meta"><v-icon size="12">mdi-clock-outline</v-icon> {{ lesson.duration }}</div>
-                </div>
-              </div>
+                <app-icon
+                  :name="isLessonComplete(lesson.id) ? 'lucide:circle-check' : 'lucide:circle-play'"
+                  size="20"
+                  class="mr-3 shrink-0"
+                  :class="isLessonComplete(lesson.id) ? 'text-emerald-500' : 'text-muted-foreground'"
+                />
+                <span class="flex-1">
+                  <span class="block text-[0.92rem] leading-snug font-semibold">
+                    {{ lesson.lesson_name }}
+                  </span>
+                  <span class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                    <app-icon name="lucide:clock" size="12" /> {{ lesson.duration }}
+                  </span>
+                </span>
+              </button>
             </div>
-          </v-card>
-        </v-col>
-      </v-row>
+          </div>
+        </div>
+      </div>
     </template>
 
-    <v-card v-else class="glass-panel section-card pa-10 text-center" flat>
-      <v-icon size="52" color="primary" class="mb-3">mdi-alert-circle-outline</v-icon>
-      <h3 class="text-h6 font-weight-bold mb-4">Course not found.</h3>
-      <v-btn class="btn-gradient" @click="$router.push('/courses/all')">Browse courses</v-btn>
-    </v-card>
+    <div v-else class="glass-panel section-card p-10 text-center">
+      <app-icon name="lucide:circle-alert" size="52" class="mx-auto mb-3 text-primary" />
+      <h3 class="mb-4 font-display text-lg font-bold">Course not found.</h3>
+      <button class="btn-brand mx-auto" @click="$router.push('/courses/all')">Browse courses</button>
+    </div>
 
     <!-- Certificate Modal -->
-    <v-dialog v-if="course" v-model="certModal" max-width="800px" eager transition="dialog-bottom-transition">
-      <v-card class="glass-panel text-center pa-4" flat style="overflow: hidden;">
-        <div class="d-flex justify-end">
-          <v-btn icon="mdi-close" variant="text" @click="certModal = false" />
-        </div>
-        <v-card-text class="pt-0">
-          <course-certificate :name="userName" :course="course.title" :instructor="course.author" :prop-cert-id="certificateKey" />
-        </v-card-text>
-      </v-card>
-    </v-dialog>
-  </v-container>
+    <dialog-root v-if="course" v-model:open="certModal">
+      <dialog-content class="max-h-[90vh] overflow-y-auto text-center sm:max-w-[800px]">
+        <dialog-header class="sr-only">
+          <dialog-title>Certificate of completion</dialog-title>
+        </dialog-header>
+        <course-certificate
+          :name="userName"
+          :course="course.title"
+          :instructor="course.author"
+          :prop-cert-id="certificateKey"
+        />
+      </dialog-content>
+    </dialog-root>
+  </div>
 </template>
 
 <script>
@@ -140,10 +178,26 @@ import CourseQuiz from './CourseQuiz.vue'
 import CourseCertificate from './CourseCertificate.vue'
 import ProgressRing from '../support/ProgressRing.vue'
 import { fireConfetti } from '@/utils/confetti'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import {
+  Dialog as DialogRoot,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
 
 export default {
   name: 'CoursePlayer',
-  components: { CourseQuiz, CourseCertificate, ProgressRing },
+  components: {
+    CourseQuiz,
+    CourseCertificate,
+    ProgressRing,
+    AppIcon,
+    DialogRoot,
+    DialogContent,
+    DialogHeader,
+    DialogTitle
+  },
   data() {
     return {
       loading: true,
@@ -228,7 +282,7 @@ export default {
   methods: {
     async onQuizPassed() {
       this.quizPassed = true
-      
+
       // Generate unique validation ID based on user name, course title and current date
       const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
       const str = `${this.userName}-${this.course.title}-${dateStr}`
@@ -290,59 +344,11 @@ export default {
 </script>
 
 <style scoped>
-.player-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(1.4rem, 2.4vw, 2rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--text-strong);
-  line-height: 1.15;
+.lesson-row:hover {
+  background: var(--grad-primary-soft);
 }
-
-.progress-chip {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 20px;
-  border-radius: var(--r-md);
-}
-.progress-pct { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.4rem; font-weight: 800; line-height: 1; }
-.progress-sub { font-size: 0.75rem; color: var(--text-soft); }
-
-.video-wrap {
-  position: relative;
-  width: 100%;
-  padding-top: 56.25%;
-  background: #000;
-}
-.video-wrap iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.section-name {
-  font-weight: 800;
-  font-size: 0.8rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-}
-
-.lesson-row {
-  display: flex;
-  align-items: center;
-  padding: 12px 12px;
-  border-radius: var(--r-sm);
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-.lesson-row:hover { background: var(--grad-primary-soft); }
 .lesson-row.active {
   background: var(--grad-primary-soft);
   box-shadow: inset 3px 0 0 var(--brand-2);
 }
-.lesson-name { font-weight: 600; font-size: 0.92rem; color: var(--text-strong); line-height: 1.3; }
-.lesson-meta { font-size: 0.75rem; color: var(--text-soft); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
 </style>

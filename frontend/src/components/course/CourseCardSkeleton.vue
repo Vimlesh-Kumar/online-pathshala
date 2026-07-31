@@ -1,17 +1,19 @@
 <template>
-  <v-card class="section-card overflow-hidden h-100" flat>
-    <div class="skeleton" style="height: 188px;"></div>
-    <v-card-text class="pa-5">
-      <div class="skeleton mb-3" style="height: 14px; width: 40%;"></div>
-      <div class="skeleton mb-2" style="height: 18px; width: 90%;"></div>
-      <div class="skeleton mb-4" style="height: 18px; width: 65%;"></div>
-      <div class="skeleton mb-4" style="height: 14px; width: 50%;"></div>
-      <div class="d-flex justify-space-between">
-        <div class="skeleton" style="height: 24px; width: 30%;"></div>
-        <div class="skeleton" style="height: 24px; width: 25%;"></div>
+  <div
+    class="h-full overflow-hidden rounded-[26px] border border-black/5 bg-white/70 dark:border-white/10 dark:bg-white/5"
+  >
+    <div class="skeleton h-[188px] rounded-none"></div>
+    <div class="p-5">
+      <div class="skeleton mb-3 h-3.5 w-2/5"></div>
+      <div class="skeleton mb-2 h-4.5 w-[90%]"></div>
+      <div class="skeleton mb-4 h-4.5 w-[65%]"></div>
+      <div class="skeleton mb-4 h-3.5 w-1/2"></div>
+      <div class="flex justify-between">
+        <div class="skeleton h-6 w-[30%]"></div>
+        <div class="skeleton h-6 w-1/4"></div>
       </div>
-    </v-card-text>
-  </v-card>
+    </div>
+  </div>
 </template>
 
 <script>

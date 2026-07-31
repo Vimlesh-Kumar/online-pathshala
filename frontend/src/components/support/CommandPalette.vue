@@ -3,7 +3,7 @@
     <div v-if="open" class="palette-backdrop" @click.self="close">
       <div class="palette-panel glass-panel section-card">
         <div class="palette-input-row">
-          <v-icon size="22" class="mr-2" color="primary">mdi-magnify</v-icon>
+          <app-icon name="lucide:search" size="22" class="mr-2 text-primary" />
           <input
             id="command-palette-input"
             ref="input"
@@ -16,7 +16,11 @@
             @keydown.enter.prevent="select(active)"
             @keydown.esc="close"
           />
-          <v-chip size="small" variant="outlined" class="ml-2">Esc</v-chip>
+          <span
+            class="ml-2 rounded-full border border-black/10 px-2.5 py-0.5 text-xs font-semibold text-muted-foreground dark:border-white/15"
+          >
+            Esc
+          </span>
         </div>
 
         <div class="palette-results">
@@ -31,7 +35,7 @@
               @mouseenter="activeIndex(r) !== -1 && (active = activeIndex(r))"
               @click="select(r)"
             >
-              <v-icon size="18" class="mr-3" color="primary">{{ r.icon }}</v-icon>
+              <app-icon :name="r.icon" size="18" class="mr-3 text-primary" />
               <span>{{ r.label }}</span>
             </div>
 
@@ -42,7 +46,7 @@
               @mouseenter="activeIndex(r) !== -1 && (active = activeIndex(r))"
               @click="select(r)"
             >
-              <v-icon size="18" class="mr-3" color="primary">mdi-book-open-variant-outline</v-icon>
+              <app-icon name="lucide:book-open" size="18" class="mr-3 text-primary" />
               <span class="line-clamp-1">{{ r.label }}</span>
               <span class="palette-sub ml-auto">{{ r.category }}</span>
             </div>
@@ -55,20 +59,22 @@
 
 <script>
 import axios from 'axios'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const STATIC_PAGES = [
-  { label: 'Home', path: '/', icon: 'mdi-home-outline' },
-  { label: 'My Learning', path: '/user', icon: 'mdi-view-dashboard-outline' },
-  { label: 'All Courses', path: '/courses/all', icon: 'mdi-view-grid-outline' },
-  { label: 'Cart', path: '/user/cart', icon: 'mdi-cart-outline' },
-  { label: 'Wishlist', path: '/user/wishlist', icon: 'mdi-heart-outline' },
-  { label: 'Orders', path: '/user/orders', icon: 'mdi-receipt-text-outline' },
-  { label: 'Add a course', path: '/user/tutor/add-course', icon: 'mdi-plus-box-outline' },
-  { label: 'Instructor dashboard', path: '/user/tutor/dashboard', icon: 'mdi-chart-box-outline' },
+  { label: 'Home', path: '/', icon: 'lucide:house' },
+  { label: 'My Learning', path: '/user', icon: 'lucide:layout-dashboard' },
+  { label: 'All Courses', path: '/courses/all', icon: 'lucide:layout-grid' },
+  { label: 'Cart', path: '/user/cart', icon: 'lucide:shopping-cart' },
+  { label: 'Wishlist', path: '/user/wishlist', icon: 'lucide:heart' },
+  { label: 'Orders', path: '/user/orders', icon: 'lucide:receipt-text' },
+  { label: 'Add a course', path: '/user/tutor/add-course', icon: 'lucide:square-plus' },
+  { label: 'Instructor dashboard', path: '/user/tutor/dashboard', icon: 'lucide:chart-column' },
 ]
 
 export default {
   name: 'CommandPalette',
+  components: { AppIcon },
   data() {
     return {
       open: false,

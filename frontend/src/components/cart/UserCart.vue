@@ -1,122 +1,164 @@
 <template>
-  <v-container class="app-section">
-    <section class="page-intro pa-6 pa-md-10 mb-8">
+  <div class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
+    <section class="page-intro mb-8 p-6 md:p-10">
       <div class="eyebrow mb-4">Shopping Cart</div>
       <h1 class="app-section-title mb-3">Review your selected courses</h1>
-      <p class="app-section-copy mb-0">Apply a coupon and check out for free — you'll be enrolled instantly.</p>
+      <p class="text-muted-foreground">
+        Apply a coupon and check out for free — you'll be enrolled instantly.
+      </p>
     </section>
 
-    <v-row>
-      <v-col cols="12" md="8">
-        <v-card class="glass-panel section-card pa-4 pa-md-6" flat>
-          <div class="d-flex align-center justify-space-between mb-6">
-            <h2 class="text-h5 font-weight-bold">Cart items</h2>
-            <span class="text-body-2 text-medium-emphasis">{{ coursesInCart.length }} courses</span>
+    <div class="grid gap-6 md:grid-cols-12">
+      <div class="md:col-span-8">
+        <div class="glass-panel section-card p-4 md:p-6">
+          <div class="mb-6 flex items-center justify-between">
+            <h2 class="font-display text-2xl font-bold">Cart items</h2>
+            <span class="text-sm text-muted-foreground">{{ coursesInCart.length }} courses</span>
           </div>
 
-          <div v-if="coursesInCart.length" class="cart-list">
-            <v-card v-for="item in coursesInCart" :key="item.id" class="cart-item section-card pa-4" flat>
-              <div class="d-flex flex-column flex-md-row ga-4">
-                <v-img :src="item.thumb_url" width="220" height="132" cover class="rounded-xl flex-shrink-0" />
-                <div class="flex-grow-1">
-                  <div class="d-flex flex-column flex-md-row justify-space-between ga-4">
-                    <div>
-                      <h3 class="text-h6 font-weight-bold mb-2">{{ item.title }}</h3>
-                      <p class="text-body-2 text-medium-emphasis mb-2">{{ item.author }}</p>
-                      <div class="d-flex align-center">
-                        <v-rating :model-value="item.rating" color="warning" density="compact" half-increments readonly size="small" />
-                        <span class="ml-2 font-weight-bold">{{ item.rating }}</span>
-                      </div>
+          <div v-if="coursesInCart.length" class="grid gap-4.5">
+            <div
+              v-for="item in coursesInCart"
+              :key="item.id"
+              class="section-card border border-black/5 bg-[var(--surface-2)] p-4 dark:border-white/10"
+            >
+              <div class="flex flex-col gap-4 md:flex-row">
+                <img
+                  :src="item.thumb_url"
+                  :alt="item.title"
+                  class="h-33 w-full shrink-0 rounded-xl object-cover md:w-55"
+                />
+                <div class="flex flex-1 flex-col justify-between gap-4 md:flex-row">
+                  <div>
+                    <h3 class="mb-2 font-display text-lg font-bold">{{ item.title }}</h3>
+                    <p class="mb-2 text-sm text-muted-foreground">{{ item.author }}</p>
+                    <div class="flex items-center gap-2">
+                      <star-rating :model-value="Number(item.rating || 0)" :size="16" />
+                      <span class="font-bold">{{ item.rating }}</span>
                     </div>
-                    <div class="text-md-right">
-                      <div class="text-h5 font-weight-black mb-3 gradient-text">₹{{ formatMoney(item.price) }}</div>
-                      <div class="d-flex flex-wrap justify-md-end ga-2">
-                        <wish-list :course_id="item.id" :user="user" />
-                        <v-btn variant="outlined" rounded="pill" color="error" @click="removeFromCart(item.id)">Remove</v-btn>
-                      </div>
+                  </div>
+                  <div class="md:text-right">
+                    <div class="gradient-text mb-3 font-display text-2xl font-black">
+                      ₹{{ formatMoney(item.price) }}
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 md:justify-end">
+                      <wish-list :course_id="item.id" :user="user" />
+                      <button
+                        class="rounded-full border border-destructive/40 px-5 py-2 font-semibold text-destructive transition-colors hover:bg-destructive/10"
+                        @click="removeFromCart(item.id)"
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-            </v-card>
+            </div>
           </div>
 
-          <v-card v-else class="section-card pa-8 text-center" flat>
-            <v-icon size="60" color="primary" class="mb-4">mdi-cart-off</v-icon>
-            <h3 class="text-h5 font-weight-bold mb-3">Your cart is empty.</h3>
-            <p class="app-section-copy mb-6">Browse the catalog and add courses to continue.</p>
-            <v-btn class="btn-gradient" @click="$router.push('/courses/all')">Browse courses</v-btn>
-          </v-card>
-        </v-card>
-      </v-col>
+          <div v-else class="section-card p-8 text-center">
+            <app-icon name="lucide:shopping-cart" size="60" class="mx-auto mb-4 text-primary" />
+            <h3 class="mb-3 font-display text-2xl font-bold">Your cart is empty.</h3>
+            <p class="mb-6 text-muted-foreground">Browse the catalog and add courses to continue.</p>
+            <button class="btn-brand mx-auto" @click="$router.push('/courses/all')">Browse courses</button>
+          </div>
+        </div>
+      </div>
 
-      <v-col cols="12" md="4">
-        <v-card class="glass-panel section-card summary-card pa-6" flat>
+      <div class="md:col-span-4">
+        <div class="glass-panel section-card p-6">
           <div class="eyebrow mb-4">Order Summary</div>
 
-          <div class="d-flex justify-space-between mb-3">
+          <div class="mb-3 flex justify-between">
             <span>Items</span>
             <strong>{{ cartSummary.itemCount }}</strong>
           </div>
-          <div class="d-flex justify-space-between mb-3">
+          <div class="mb-3 flex justify-between">
             <span>Subtotal</span>
             <strong>₹{{ formatMoney(cartSummary.totalAmount) }}</strong>
           </div>
-          <div v-if="couponResult" class="d-flex justify-space-between mb-3 text-success">
+          <div v-if="couponResult" class="mb-3 flex justify-between text-emerald-500">
             <span>Discount ({{ couponResult.code }})</span>
             <strong>−₹{{ formatMoney(couponResult.discount) }}</strong>
           </div>
 
           <!-- Coupon -->
-          <div class="d-flex ga-2 mb-1 mt-4">
-            <v-text-field
-              v-model="coupon" label="Coupon code" variant="outlined" density="compact"
-              hide-details :disabled="!coursesInCart.length" @keyup.enter="applyCoupon"
+          <div class="mt-4 mb-1 flex gap-2">
+            <app-field
+              v-model="coupon"
+              class="flex-1"
+              placeholder="Coupon code"
+              :disabled="!coursesInCart.length"
+              @keyup.enter="applyCoupon"
             />
-            <v-btn variant="tonal" :loading="checkingCoupon" :disabled="!coupon || !coursesInCart.length" @click="applyCoupon">Apply</v-btn>
+            <button
+              class="shrink-0 rounded-2xl bg-primary/12 px-5 font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+              :disabled="checkingCoupon || !coupon || !coursesInCart.length"
+              @click="applyCoupon"
+            >
+              Apply
+            </button>
           </div>
-          <div v-if="couponError" class="text-error text-caption mb-2">{{ couponError }}</div>
-          <div v-else-if="couponResult" class="text-success text-caption mb-2">
-            <v-icon size="14">mdi-check-circle</v-icon> {{ couponResult.label }}
+          <div v-if="couponError" class="mb-2 text-xs text-destructive">{{ couponError }}</div>
+          <div v-else-if="couponResult" class="mb-2 flex items-center gap-1 text-xs text-emerald-500">
+            <app-icon name="lucide:circle-check" size="14" /> {{ couponResult.label }}
           </div>
-          <div class="text-caption text-medium-emphasis mb-5">Try: LEARN50 · WELCOME10 · FREE100</div>
+          <div class="mb-5 text-xs text-muted-foreground">Try: LEARN50 · WELCOME10 · FREE100</div>
 
-          <v-divider class="mb-4" />
-          <div class="d-flex justify-space-between mb-6">
-            <span class="text-h6 font-weight-bold">Total</span>
-            <span class="text-h5 font-weight-black gradient-text">₹{{ formatMoney(displayTotal) }}</span>
+          <separator class="mb-4" />
+          <div class="mb-6 flex items-center justify-between">
+            <span class="font-display text-lg font-bold">Total</span>
+            <span class="gradient-text font-display text-2xl font-black">
+              ₹{{ formatMoney(displayTotal) }}
+            </span>
           </div>
 
-          <v-btn
-            class="btn-gradient" block size="large"
-            :loading="checkingOut" :disabled="!coursesInCart.length"
+          <button
+            class="btn-brand w-full"
+            :disabled="checkingOut || !coursesInCart.length"
             @click="completeCheckout"
           >
-            <v-icon start>mdi-lock-check</v-icon> Complete checkout
-          </v-btn>
-          <p class="text-caption text-medium-emphasis text-center mt-3 mb-0">Free enrollment · no card required</p>
-        </v-card>
-      </v-col>
-    </v-row>
+            <app-icon
+              :name="checkingOut ? 'lucide:loader-circle' : 'lucide:lock'"
+              size="18"
+              :class="checkingOut ? 'animate-spin' : ''"
+            />
+            Complete checkout
+          </button>
+          <p class="mt-3 text-center text-xs text-muted-foreground">Free enrollment · no card required</p>
+        </div>
+      </div>
+    </div>
 
     <!-- Success dialog -->
-    <v-dialog v-model="successDialog" max-width="460" persistent>
-      <v-card class="glass-panel pa-2" rounded="xl">
-        <v-card-text class="text-center pa-6">
-          <v-avatar size="72" class="success-badge mb-4"><v-icon size="40" color="white">mdi-check-bold</v-icon></v-avatar>
-          <h2 class="text-h5 font-weight-bold mb-2">You're enrolled! 🎉</h2>
-          <p class="app-section-copy mb-4">
-            {{ receipt?.items?.length }} course{{ receipt?.items?.length === 1 ? '' : 's' }} added to your learning.
-            <br />Receipt <strong>{{ receipt?.ref }}</strong> · ₹{{ formatMoney(receipt?.total) }}
-          </p>
-          <div class="d-flex ga-3">
-            <v-btn variant="tonal" class="flex-grow-1" @click="goOrders">View receipt</v-btn>
-            <v-btn class="btn-gradient flex-grow-1" @click="goLearning">Start learning</v-btn>
-          </div>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
-  </v-container>
+    <dialog-root v-model:open="successDialog">
+      <dialog-content class="text-center sm:max-w-[460px]" @interact-outside.prevent @escape-key-down.prevent>
+        <dialog-header class="sr-only">
+          <dialog-title>Enrollment complete</dialog-title>
+        </dialog-header>
+        <span
+          class="mx-auto mb-4 grid size-18 place-items-center rounded-full bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] shadow-[0_18px_40px_-14px_rgb(124_58_237_/_0.9)]"
+        >
+          <app-icon name="lucide:check" size="38" class="text-white" />
+        </span>
+        <h2 class="mb-2 font-display text-2xl font-bold">You're enrolled! 🎉</h2>
+        <p class="mb-4 text-muted-foreground">
+          {{ receipt?.items?.length }} course{{ receipt?.items?.length === 1 ? '' : 's' }} added to your
+          learning.
+          <br />Receipt <strong>{{ receipt?.ref }}</strong> · ₹{{ formatMoney(receipt?.total) }}
+        </p>
+        <div class="flex gap-3">
+          <button
+            class="flex-1 rounded-full bg-primary/12 px-5 py-3 font-semibold text-primary transition-colors hover:bg-primary/20"
+            @click="goOrders"
+          >
+            View receipt
+          </button>
+          <button class="btn-brand flex-1" @click="goLearning">Start learning</button>
+        </div>
+      </dialog-content>
+    </dialog-root>
+  </div>
 </template>
 
 <script>
@@ -124,9 +166,29 @@ import axios from 'axios';
 import { mapGetters } from 'vuex';
 import WishList from '../wishlist/WishList.vue'
 import { toast } from '@/plugins/toast'
+import AppField from '@/components/ui/AppField.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import StarRating from '@/components/ui/StarRating.vue'
+import { Separator } from '@/components/ui/separator'
+import {
+  Dialog as DialogRoot,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
 
 export default {
-  components: { WishList },
+  components: {
+    WishList,
+    AppField,
+    AppIcon,
+    StarRating,
+    Separator,
+    DialogRoot,
+    DialogContent,
+    DialogHeader,
+    DialogTitle
+  },
   data() {
     return {
       coupon: '',
@@ -198,18 +260,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.cart-list {
-  display: grid;
-  gap: 18px;
-}
-.cart-item {
-  background: var(--surface-2);
-  border: 1px solid var(--glass-border);
-}
-.success-badge {
-  background: var(--grad-primary);
-  box-shadow: var(--shadow-glow);
-}
-</style>

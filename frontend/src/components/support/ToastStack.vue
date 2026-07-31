@@ -2,11 +2,15 @@
   <div class="toast-stack">
     <transition-group name="toast-pop">
       <div v-for="t in toasts" :key="t.id" class="toast-item glass-panel" :class="t.type">
-        <v-icon size="20" class="mr-2">{{ icon(t.type) }}</v-icon>
+        <app-icon :name="icon(t.type)" size="20" class="mr-2 toast-icon" />
         <span class="toast-text">{{ t.message }}</span>
-        <v-btn icon size="x-small" variant="text" class="ml-2" @click="toast.remove(t.id)">
-          <v-icon size="16">mdi-close</v-icon>
-        </v-btn>
+        <button
+          class="ml-2 grid size-6 shrink-0 place-items-center rounded-full transition-colors hover:bg-foreground/10"
+          aria-label="Dismiss"
+          @click="toast.remove(t.id)"
+        >
+          <app-icon name="lucide:x" size="16" />
+        </button>
       </div>
     </transition-group>
   </div>
@@ -14,9 +18,11 @@
 
 <script>
 import { toast, useToastState } from '@/plugins/toast'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 export default {
   name: 'ToastStack',
+  components: { AppIcon },
   setup() {
     const state = useToastState()
     return { toast, state }
@@ -28,9 +34,9 @@ export default {
   },
   methods: {
     icon(type) {
-      if (type === 'success') return 'mdi-check-circle'
-      if (type === 'error') return 'mdi-alert-circle'
-      return 'mdi-information'
+      if (type === 'success') return 'lucide:circle-check'
+      if (type === 'error') return 'lucide:circle-alert'
+      return 'lucide:info'
     }
   }
 }
@@ -59,9 +65,9 @@ export default {
   color: var(--text-strong);
 }
 
-.toast-item.success .v-icon { color: var(--brand-success, #22c55e); }
-.toast-item.error .v-icon { color: var(--brand-error, #ef4444); }
-.toast-item.info .v-icon { color: var(--brand-2); }
+.toast-item.success .toast-icon { color: #22c55e; }
+.toast-item.error .toast-icon { color: #ef4444; }
+.toast-item.info .toast-icon { color: var(--brand-2); }
 
 .toast-text {
   flex-grow: 1;

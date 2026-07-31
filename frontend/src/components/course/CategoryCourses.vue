@@ -1,145 +1,232 @@
 <template>
-  <v-container class="app-section">
-    <section class="page-intro pa-6 pa-md-10 mb-8">
+  <div class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
+    <section class="page-intro mb-6 p-6 md:px-10 md:py-8">
       <div class="eyebrow mb-4">Course Catalog</div>
       <h1 class="app-section-title mb-3">{{ title }}</h1>
-      <p class="app-section-copy mb-0">Use search, category, and sorting controls to narrow the catalog without leaving the page.</p>
+      <p class="text-muted-foreground">
+        Use search, category, and sorting controls to narrow the catalog without leaving the page.
+      </p>
     </section>
 
-    <section class="glass-panel section-card pa-4 pa-md-6">
-      <v-row class="mb-2" align="center">
-        <v-col cols="12" md="5">
-          <v-text-field
-            class="search-input"
+    <!-- Toolbar sticks under the header so filters stay reachable while scrolling. -->
+    <section
+      class="sticky top-24 z-30 mb-6 rounded-3xl border border-black/5 bg-background/80 p-3 backdrop-blur-xl md:p-4 dark:border-white/10 dark:bg-[#0e1626]/80"
+    >
+      <div class="grid items-center gap-3 md:grid-cols-12">
+        <div class="relative flex items-center md:col-span-5">
+          <app-icon
+            name="lucide:search"
+            size="18"
+            class="pointer-events-none absolute left-4 text-muted-foreground"
+          />
+          <input
             v-model="localSearchQuery"
-            prepend-inner-icon="mdi-magnify"
-            label="Search courses"
-            variant="solo-filled"
-            flat
-            hide-details
-            rounded="pill"
+            type="search"
+            aria-label="Search courses"
+            placeholder="Search courses"
+            class="h-12 w-full rounded-full border border-black/10 bg-foreground/[0.04] pr-4 pl-11 outline-none placeholder:text-muted-foreground focus:border-primary/50 focus:ring-3 focus:ring-primary/20 dark:border-white/10"
             @keyup.enter="handleLocalSearch"
           />
-        </v-col>
-        <v-col cols="12" md="3">
-          <v-select
-            class="filter-select"
-            v-model="localCategory"
-            :items="['All', ...category]"
-            label="Category"
-            variant="solo-filled"
-            flat
-            hide-details
-            rounded="pill"
-            @update:model-value="handleCategoryChange"
-          />
-        </v-col>
-        <v-col cols="12" md="2">
-          <v-select
-            class="filter-select"
-            v-model="sortBy"
-            :items="sortOptions"
-            label="Sort"
-            variant="solo-filled"
-            flat
-            hide-details
-            rounded="pill"
-            @update:model-value="handleSortChange"
-          />
-        </v-col>
-        <v-col cols="12" md="2" class="d-flex ga-2">
-          <v-btn
-            variant="tonal"
-            rounded="pill"
-            class="flex-grow-1"
+        </div>
+
+        <div class="md:col-span-3">
+          <select-root v-model="localCategory" @update:model-value="handleCategoryChange">
+            <select-trigger class="h-12 w-full rounded-full" aria-label="Category">
+              <select-value placeholder="Category" />
+            </select-trigger>
+            <select-content class="rounded-2xl">
+              <select-item v-for="cat in ['All', ...category]" :key="cat" :value="cat">{{ cat }}</select-item>
+            </select-content>
+          </select-root>
+        </div>
+
+        <div class="md:col-span-2">
+          <select-root v-model="sortBy" @update:model-value="handleSortChange">
+            <select-trigger class="h-12 w-full rounded-full" aria-label="Sort">
+              <select-value placeholder="Sort" />
+            </select-trigger>
+            <select-content class="rounded-2xl">
+              <select-item v-for="option in sortOptions" :key="option" :value="option">
+                {{ option }}
+              </select-item>
+            </select-content>
+          </select-root>
+        </div>
+
+        <div class="flex gap-2 md:col-span-2">
+          <button
+            class="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary/12 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/20"
             @click="showMoreFilters = !showMoreFilters"
           >
-            <v-icon start size="18">mdi-tune-variant</v-icon> Filters
-            <v-badge v-if="activeFilterCount" :content="activeFilterCount" color="primary" inline class="ml-1" />
-          </v-btn>
-          <v-btn variant="outlined" rounded="pill" @click="resetFilters">Reset</v-btn>
-        </v-col>
-      </v-row>
-
-      <!-- Price / rating filters -->
-      <v-expand-transition>
-        <div v-if="showMoreFilters" class="more-filters pa-4 mb-2">
-          <v-row align="center">
-            <v-col cols="12" md="6">
-              <div class="text-body-2 font-weight-bold mb-2">
-                Price range: ₹{{ priceRange[0] }} – ₹{{ priceRange[1] }}
-              </div>
-              <v-range-slider
-                v-model="priceRange"
-                :min="0"
-                :max="5000"
-                :step="100"
-                color="primary"
-                hide-details
-                @end="handlePriceChange"
-              />
-            </v-col>
-            <v-col cols="12" md="4">
-              <div class="text-body-2 font-weight-bold mb-2">Minimum rating</div>
-              <v-rating
-                v-model="minRating"
-                color="warning"
-                active-color="warning"
-                hover
-                size="26"
-                @update:model-value="handleRatingChange"
-              />
-            </v-col>
-            <v-col cols="12" md="2" class="d-flex justify-md-end">
-              <v-btn v-if="minRating" size="small" variant="text" @click="minRating = 0; handleRatingChange()">
-                Clear rating
-              </v-btn>
-            </v-col>
-          </v-row>
+            <app-icon name="lucide:sliders-horizontal" size="18" /> Filters
+            <span
+              v-if="activeFilterCount"
+              class="grid size-5 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground"
+            >
+              {{ activeFilterCount }}
+            </span>
+          </button>
+          <button
+            class="rounded-full border border-black/10 px-4 py-3 font-semibold transition-colors hover:border-primary/50 dark:border-white/15"
+            @click="resetFilters"
+          >
+            Reset
+          </button>
         </div>
-      </v-expand-transition>
-
-      <div class="d-flex flex-wrap align-center justify-space-between mb-6 mt-4 px-1">
-        <div class="text-body-1 font-weight-bold">{{ resultsCount }} results</div>
-        <div class="text-body-2 text-medium-emphasis">Page {{ page }} of {{ totalPages || 1 }}</div>
       </div>
 
-      <template v-if="loading">
-        <all-courses :all-courses="[]" :loading="true" />
-      </template>
+      <!-- Price / rating filters -->
+      <transition name="filters-expand">
+        <div
+          v-if="showMoreFilters"
+          class="mt-4 grid items-center gap-6 rounded-[18px] border border-black/5 bg-primary/5 p-4 md:grid-cols-12 dark:border-white/10"
+        >
+          <div class="md:col-span-6">
+            <div class="mb-3 text-sm font-bold">
+              Price range: ₹{{ priceRange[0] }} – ₹{{ priceRange[1] }}
+            </div>
+            <slider
+              v-model="priceRange"
+              :min="0"
+              :max="5000"
+              :step="100"
+              @value-commit="handlePriceChange"
+            />
+          </div>
+          <div class="md:col-span-4">
+            <div class="mb-3 text-sm font-bold">Minimum rating</div>
+            <star-rating
+              :model-value="minRating"
+              :size="26"
+              :readonly="false"
+              @update:model-value="handleRatingChange"
+            />
+          </div>
+          <div class="flex md:col-span-2 md:justify-end">
+            <button
+              v-if="minRating"
+              class="text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              @click="handleRatingChange(0)"
+            >
+              Clear rating
+            </button>
+          </div>
+        </div>
+      </transition>
+    </section>
+
+    <!-- Results grid sits directly on the page: wrapping it in a second glass
+         panel nested the surfaces and made the layout read as boxy. -->
+    <section>
+      <div class="mb-5 flex flex-wrap items-center justify-between gap-2 px-1">
+        <div class="font-bold">
+          {{ resultsCount.toLocaleString('en-IN') }}
+          <span class="font-normal text-muted-foreground">results</span>
+        </div>
+        <div class="text-sm text-muted-foreground">Page {{ page }} of {{ totalPages || 1 }}</div>
+      </div>
+
+      <all-courses v-if="loading" :all-courses="[]" :loading="true" />
 
       <template v-else-if="courses.length > 0">
         <all-courses :all-courses="courses" />
-        <div class="d-flex justify-center mt-10">
-          <v-pagination
-            v-model="page"
-            :length="totalPages || 1"
-            :total-visible="totalVisiblePages"
-            rounded="circle"
-            color="primary"
-            density="comfortable"
-            @update:model-value="fetchCourses"
-          />
-        </div>
+
+        <pagination
+          v-slot="{ page: currentPage }"
+          v-model:page="page"
+          class="mt-10"
+          :total="total"
+          :items-per-page="pageSize"
+          :sibling-count="siblingCount"
+          show-edges
+          @update:page="fetchCourses"
+        >
+          <pagination-content v-slot="{ items }">
+            <pagination-first class="rounded-full" />
+            <pagination-previous class="rounded-full" />
+
+            <template v-for="(item, index) in items">
+              <pagination-item
+                v-if="item.type === 'page'"
+                :key="index"
+                :value="item.value"
+                :is-active="item.value === currentPage"
+                class="rounded-full"
+              >
+                {{ item.value }}
+              </pagination-item>
+              <pagination-ellipsis v-else :key="`e${index}`" />
+            </template>
+
+            <pagination-next class="rounded-full" />
+            <pagination-last class="rounded-full" />
+          </pagination-content>
+        </pagination>
       </template>
 
-      <v-card v-else class="section-card pa-8 text-center mt-4" flat>
-        <v-icon size="60" color="primary" class="mb-4">mdi-magnify-remove-outline</v-icon>
-        <h2 class="text-h5 font-weight-bold mb-3">No courses matched your filters.</h2>
-        <p class="app-section-copy mb-6">Try a broader search or switch to another category.</p>
-        <v-btn color="primary" rounded="pill" @click="resetFilters">Clear filters</v-btn>
-      </v-card>
+      <div
+        v-else
+        class="rounded-3xl border border-black/5 bg-card p-12 text-center dark:border-white/10 dark:bg-white/[0.04]"
+      >
+        <app-icon name="lucide:search-x" size="60" class="mx-auto mb-4 text-primary" />
+        <h2 class="mb-3 font-display text-2xl font-bold">No courses matched your filters.</h2>
+        <p class="mb-6 text-muted-foreground">Try a broader search or switch to another category.</p>
+        <button class="btn-brand mx-auto" @click="resetFilters">Clear filters</button>
+      </div>
     </section>
-  </v-container>
+  </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
+import { useMediaQuery } from '@vueuse/core'
 import AllCourses from './AllCourses.vue'
 import axios from 'axios'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import StarRating from '@/components/ui/StarRating.vue'
+import { Slider } from '@/components/ui/slider'
+import {
+  Select as SelectRoot,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationFirst,
+  PaginationItem,
+  PaginationLast,
+  PaginationNext,
+  PaginationPrevious
+} from '@/components/ui/pagination'
 
 export default {
-  components: { AllCourses },
+  components: {
+    AllCourses,
+    AppIcon,
+    StarRating,
+    Slider,
+    SelectRoot,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationFirst,
+    PaginationItem,
+    PaginationLast,
+    PaginationNext,
+    PaginationPrevious
+  },
+  setup() {
+    // Replaces Vuetify's `$vuetify.display.mobile`.
+    return { isMobile: useMediaQuery('(max-width: 960px)') }
+  },
   data() {
     return {
       courses: [],
@@ -169,11 +256,10 @@ export default {
     totalPages() {
       return Math.ceil(this.total / this.pageSize)
     },
-    // Cap how many page numbers v-pagination renders — without this it
-    // renders one button per page (800+ with the 10,000-course catalog),
-    // overflowing the layout. Vuetify collapses the rest into "…" for us.
-    totalVisiblePages() {
-      return this.$vuetify.display.mobile ? 5 : 7
+    // Cap how many page numbers render — without this the 10,000-course
+    // catalog would emit 800+ buttons. The rest collapse into "…".
+    siblingCount() {
+      return this.isMobile ? 1 : 2
     },
     activeFilterCount() {
       let n = 0
@@ -253,7 +339,8 @@ export default {
       else delete query.maxPrice
       this.$router.push({ path: '/courses/all', query })
     },
-    handleRatingChange() {
+    handleRatingChange(value) {
+      this.minRating = Number(value) || 0
       const query = { ...this.$route.query }
       if (this.minRating > 0) query.minRating = this.minRating
       else delete query.minRating
@@ -274,14 +361,15 @@ export default {
 </script>
 
 <style scoped>
-.filter-select :deep(.v-field) {
-  background: var(--glass-bg);
-  border-radius: 999px;
+/* Stand-in for Vuetify's <v-expand-transition>. */
+.filters-expand-enter-active,
+.filters-expand-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  overflow: hidden;
 }
-
-.more-filters {
-  background: var(--grad-primary-soft);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--r-md);
+.filters-expand-enter-from,
+.filters-expand-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 </style>

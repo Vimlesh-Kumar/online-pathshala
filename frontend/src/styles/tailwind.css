@@ -1,0 +1,205 @@
+/**
+ * Tailwind CSS v4 entry + design tokens for Online Pathshala.
+ */
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ── shadcn-vue / Inspira UI tokens ──────────────────────────────────────── */
+:root {
+  --background: #f6f7fb;
+  --foreground: #0f172a;
+
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+
+  --accent: #ede9fe;
+  --accent-foreground: #4c1d95;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  --border: rgb(15 23 42 / 0.10);
+  --input: rgb(15 23 42 / 0.12);
+  --ring: #6366f1;
+
+  --radius: 0.875rem;
+}
+
+.dark {
+  --background: #070b16;
+  --foreground: #f8fafc;
+
+  --card: #0e1626;
+  --card-foreground: #f8fafc;
+
+  --popover: #0e1626;
+  --popover-foreground: #f8fafc;
+
+  --primary: #818cf8;
+  --primary-foreground: #0b1120;
+
+  --secondary: #17203a;
+  --secondary-foreground: #e2e8f0;
+
+  --muted: #131c30;
+  --muted-foreground: #94a3b8;
+
+  --accent: #1e1b4b;
+  --accent-foreground: #ddd6fe;
+
+  --destructive: #f87171;
+  --destructive-foreground: #0b1120;
+
+  --border: rgb(255 255 255 / 0.10);
+  --input: rgb(255 255 255 / 0.14);
+  --ring: #818cf8;
+}
+
+/* ── Brand tokens ────────────────────────────────────────────────────────────
+ * Same custom-property names the pre-migration `global.css` used, so every
+ * not-yet-converted `<style scoped>` block keeps rendering during the phased
+ * rollout. Dark is the default experience; `.light` is the secondary theme.
+ */
+:root {
+  /* Brand ramp (violet → indigo → cyan) */
+  --brand-1: #7c3aed;
+  --brand-2: #6366f1;
+  --brand-3: #06b6d4;
+  --brand-accent: #f43f5e;
+  --brand-amber: #f59e0b;
+
+  --grad-primary: linear-gradient(135deg, #7c3aed 0%, #6366f1 45%, #06b6d4 100%);
+  --grad-primary-soft: linear-gradient(135deg, rgb(124 58 237 / 0.12), rgb(6 182 212 / 0.12));
+  --grad-accent: linear-gradient(135deg, #f43f5e 0%, #f59e0b 100%);
+  --grad-text: linear-gradient(120deg, #a78bfa, #818cf8 40%, #22d3ee);
+
+  /* Surfaces & text — dark-first defaults */
+  --app-bg: #070b16;
+  --surface: #0e1626;
+  --surface-2: #131c30;
+  --glass-bg: rgb(255 255 255 / 0.05);
+  --glass-border: rgb(255 255 255 / 0.10);
+  --text-strong: #f8fafc;
+  --text-main: #e2e8f0;
+  --text-soft: #94a3b8;
+  --text-faint: #64748b;
+
+  /* Radii */
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 34px;
+  --r-pill: 999px;
+
+  /* Shadows */
+  --shadow-sm: 0 4px 14px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 18px 40px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 30px 70px rgb(0 0 0 / 0.6);
+  --shadow-glow: 0 20px 50px rgb(124 58 237 / 0.45);
+}
+
+.light {
+  --grad-text: linear-gradient(120deg, #7c3aed, #6366f1 40%, #06b6d4);
+
+  --app-bg: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #f9fafe;
+  --glass-bg: rgb(255 255 255 / 0.72);
+  --glass-border: rgb(17 24 39 / 0.08);
+  --text-strong: #0f172a;
+  --text-main: #1e293b;
+  --text-soft: #64748b;
+  --text-faint: #94a3b8;
+
+  --shadow-sm: 0 4px 14px rgb(15 23 42 / 0.06);
+  --shadow-md: 0 18px 40px rgb(15 23 42 / 0.10);
+  --shadow-lg: 0 30px 70px rgb(79 70 229 / 0.18);
+  --shadow-glow: 0 20px 50px rgb(124 58 237 / 0.35);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Brand ramp exposed as Tailwind colors: bg-brand-1, text-brand-3, … */
+  --color-brand-1: var(--brand-1);
+  --color-brand-2: var(--brand-2);
+  --color-brand-3: var(--brand-3);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-amber: var(--brand-amber);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+  --font-sans: "Inter", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+
+  /* Required by Inspira UI's <AuroraBackground>. Other pulled Inspira
+   * components scope their own keyframes inside the component file. */
+  --animate-aurora: aurora 60s linear infinite;
+  @keyframes aurora {
+    from {
+      background-position:
+        50% 50%,
+        50% 50%;
+    }
+    to {
+      background-position:
+        350% 50%,
+        350% 50%;
+    }
+  }
+}
+
+html {
+  color-scheme: light dark;
+}
+html.dark {
+  color-scheme: dark;
+}
+html.light {
+  color-scheme: light;
+}

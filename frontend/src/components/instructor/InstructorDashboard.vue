@@ -1,78 +1,101 @@
 <template>
-  <v-container class="app-section">
-    <section class="page-intro pa-6 pa-md-10 mb-8">
-      <div class="d-flex flex-column flex-md-row justify-space-between align-md-center ga-4">
+  <div class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
+    <section class="page-intro mb-8 p-6 md:p-10">
+      <div class="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <div class="eyebrow mb-4">Instructor Dashboard</div>
           <h1 class="app-section-title mb-2">Your teaching at a glance</h1>
-          <p class="app-section-copy mb-0">Track enrollments, ratings, and revenue across your courses.</p>
+          <p class="text-muted-foreground">Track enrollments, ratings, and revenue across your courses.</p>
         </div>
-        <v-btn class="btn-gradient" size="large" @click="$router.push('/user/tutor/add-course')">
-          <v-icon start>mdi-plus</v-icon> New course
-        </v-btn>
+        <button class="btn-brand shrink-0" @click="$router.push('/user/tutor/add-course')">
+          <app-icon name="lucide:plus" size="18" /> New course
+        </button>
       </div>
     </section>
 
-    <div v-if="loading" class="text-center py-12"><v-progress-circular indeterminate color="primary" size="44" /></div>
+    <div v-if="loading" class="py-12 text-center">
+      <app-icon name="lucide:loader-circle" size="44" class="mx-auto animate-spin text-primary" />
+    </div>
 
     <template v-else>
       <!-- Stat tiles -->
-      <v-row class="mb-4">
-        <v-col v-for="tile in tiles" :key="tile.label" cols="12" sm="4">
-          <v-card class="glass-panel section-card pa-6 hover-lift" flat>
-            <div class="tile-icon mb-3"><v-icon color="white">{{ tile.icon }}</v-icon></div>
-            <div class="tile-value gradient-text">{{ tile.value }}</div>
-            <div class="tile-label">{{ tile.label }}</div>
-          </v-card>
-        </v-col>
-      </v-row>
+      <div class="mb-4 grid gap-6 sm:grid-cols-3">
+        <div
+          v-for="tile in tiles"
+          :key="tile.label"
+          class="glass-panel section-card p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+        >
+          <div
+            class="mb-3 grid size-12 place-items-center rounded-xl bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] shadow-[0_18px_40px_-14px_rgb(124_58_237_/_0.9)]"
+          >
+            <app-icon :name="tile.icon" size="22" class="text-white" />
+          </div>
+          <div class="gradient-text font-display text-[2.2rem] leading-none font-extrabold">
+            {{ tile.value }}
+          </div>
+          <div class="mt-1 text-muted-foreground">{{ tile.label }}</div>
+        </div>
+      </div>
 
       <!-- Per-course breakdown -->
-      <v-card class="glass-panel section-card pa-6" flat>
-        <h2 class="text-h6 font-weight-bold mb-5">Course performance</h2>
-        <div v-if="courses.length" class="d-flex flex-column ga-3">
-          <div v-for="c in courses" :key="c.id" class="course-row" @click="$router.push(`/course/${c.id}`)">
-            <v-img :src="c.thumb_url" width="96" height="60" cover class="rounded-lg flex-shrink-0" />
-            <div class="flex-grow-1 mx-4">
-              <div class="font-weight-bold line-clamp-1">{{ c.title }}</div>
-              <div class="text-caption text-medium-emphasis">{{ c.category }}</div>
-            </div>
-            <div class="stat-cell">
-              <div class="stat-num">{{ c.enrollments }}</div>
-              <div class="stat-cap">learners</div>
-            </div>
-            <div class="stat-cell">
-              <div class="stat-num"><v-icon size="16" color="warning">mdi-star</v-icon> {{ c.avg_rating.toFixed(1) }}</div>
-              <div class="stat-cap">rating</div>
-            </div>
-            <div class="stat-cell">
-              <div class="stat-num">₹{{ formatMoney(c.revenue) }}</div>
-              <div class="stat-cap">revenue</div>
-            </div>
-          </div>
+      <div class="glass-panel section-card p-6">
+        <h2 class="mb-5 font-display text-lg font-bold">Course performance</h2>
+        <div v-if="courses.length" class="flex flex-col gap-3">
+          <button
+            v-for="c in courses"
+            :key="c.id"
+            class="course-row flex w-full items-center rounded-[18px] border border-black/5 p-3 text-left transition-colors dark:border-white/10"
+            @click="$router.push(`/course/${c.id}`)"
+          >
+            <img :src="c.thumb_url" :alt="c.title" class="h-15 w-24 shrink-0 rounded-lg object-cover" />
+            <span class="mx-4 flex-1">
+              <span class="line-clamp-1 block font-bold">{{ c.title }}</span>
+              <span class="block text-xs text-muted-foreground">{{ c.category }}</span>
+            </span>
+            <span class="min-w-21 text-center">
+              <span class="block font-extrabold">{{ c.enrollments }}</span>
+              <span class="block text-[0.72rem] tracking-wide text-muted-foreground uppercase">learners</span>
+            </span>
+            <span class="min-w-21 text-center">
+              <span class="flex items-center justify-center gap-1 font-extrabold">
+                <app-icon name="lucide:star" size="16" filled class="text-brand-amber" />
+                {{ c.avg_rating.toFixed(1) }}
+              </span>
+              <span class="block text-[0.72rem] tracking-wide text-muted-foreground uppercase">rating</span>
+            </span>
+            <span class="min-w-21 text-center">
+              <span class="block font-extrabold">₹{{ formatMoney(c.revenue) }}</span>
+              <span class="block text-[0.72rem] tracking-wide text-muted-foreground uppercase">revenue</span>
+            </span>
+          </button>
         </div>
-        <div v-else class="text-center py-8">
-          <v-icon size="52" color="primary" class="mb-3">mdi-school-outline</v-icon>
-          <p class="app-section-copy mb-4">You haven't published any courses yet.</p>
-          <v-btn class="btn-gradient" @click="$router.push('/user/tutor/add-course')">Create your first course</v-btn>
+        <div v-else class="py-8 text-center">
+          <app-icon name="lucide:graduation-cap" size="52" class="mx-auto mb-3 text-primary" />
+          <p class="mb-4 text-muted-foreground">You haven't published any courses yet.</p>
+          <button class="btn-brand mx-auto" @click="$router.push('/user/tutor/add-course')">
+            Create your first course
+          </button>
         </div>
-      </v-card>
+      </div>
     </template>
-  </v-container>
+  </div>
 </template>
 
 <script>
+import AppIcon from '@/components/ui/AppIcon.vue'
+
 export default {
   name: 'InstructorDashboard',
+  components: { AppIcon },
   data() {
     return { loading: true, courses: [], totals: { courses: 0, enrollments: 0, revenue: 0 } }
   },
   computed: {
     tiles() {
       return [
-        { label: 'Published courses', value: this.totals.courses, icon: 'mdi-bookshelf' },
-        { label: 'Total enrollments', value: this.totals.enrollments, icon: 'mdi-account-group' },
-        { label: 'Total revenue', value: `₹${this.formatMoney(this.totals.revenue)}`, icon: 'mdi-cash-multiple' },
+        { label: 'Published courses', value: this.totals.courses, icon: 'lucide:library' },
+        { label: 'Total enrollments', value: this.totals.enrollments, icon: 'lucide:users' },
+        { label: 'Total revenue', value: `₹${this.formatMoney(this.totals.revenue)}`, icon: 'lucide:banknote' },
       ]
     },
   },
@@ -96,21 +119,7 @@ export default {
 </script>
 
 <style scoped>
-.tile-icon {
-  width: 48px; height: 48px; border-radius: var(--r-sm);
-  display: grid; place-items: center;
-  background: var(--grad-primary); box-shadow: var(--shadow-glow);
+.course-row:hover {
+  background: var(--grad-primary-soft);
 }
-.tile-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.2rem; font-weight: 800; line-height: 1; }
-.tile-label { color: var(--text-soft); margin-top: 4px; }
-
-.course-row {
-  display: flex; align-items: center;
-  padding: 12px; border-radius: var(--r-md); cursor: pointer;
-  border: 1px solid var(--glass-border); transition: background 0.15s ease;
-}
-.course-row:hover { background: var(--grad-primary-soft); }
-.stat-cell { text-align: center; min-width: 84px; }
-.stat-num { font-weight: 800; color: var(--text-strong); }
-.stat-cap { font-size: 0.72rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.04em; }
 </style>

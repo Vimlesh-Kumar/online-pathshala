@@ -1,156 +1,242 @@
 <template>
-  <div>
+  <div class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
     <!-- ── Hero ─────────────────────────────────────── -->
-    <v-container class="app-section">
-      <section class="page-intro pa-6 pa-md-12">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
+    <section
+      class="relative overflow-hidden rounded-[34px] border border-black/5 bg-white/60 p-6 shadow-2xl backdrop-blur-2xl md:p-12 dark:border-white/10 dark:bg-white/5"
+    >
+      <!-- Ambient layer: drifting particles plus two soft corner glows. The old
+           full-strength blur blobs washed the panel out once the app went dark. -->
+      <particles-bg
+        class="pointer-events-none absolute inset-0"
+        :quantity="90"
+        :color="isDark ? '#a78bfa' : '#6366f1'"
+      />
+      <div
+        class="pointer-events-none absolute -top-32 -right-24 size-96 rounded-full bg-[radial-gradient(circle,rgb(124_58_237_/_0.22),transparent_65%)] blur-3xl"
+      ></div>
+      <div
+        class="pointer-events-none absolute -bottom-24 -left-20 size-80 rounded-full bg-[radial-gradient(circle,rgb(6_182_212_/_0.18),transparent_65%)] blur-3xl"
+      ></div>
+      <border-beam :size="220" :duration="14" color-from="#7c3aed" color-to="#06b6d4" />
 
-        <v-row align="center" class="position-relative" style="z-index: 1">
-          <v-col cols="12" md="7">
-            <div class="eyebrow mb-6">✨ Modern Learning Marketplace</div>
-            <h1 class="hero-title mb-5">
-              Learn anything.<br />
-              <span class="gradient-text">Beautifully.</span>
-            </h1>
-            <p class="app-section-copy hero-copy mb-8">
-              Practical, job-ready courses with a clean player, progress tracking, and a catalog
-              that actually feels good to browse. Learn at your pace — free to start.
-            </p>
+      <div class="relative z-1 grid items-center gap-10 lg:grid-cols-12">
+        <div class="lg:col-span-7">
+          <div class="eyebrow mb-6">✨ Modern Learning Marketplace</div>
 
-            <div class="d-flex flex-wrap ga-4 mb-10">
-              <v-btn size="x-large" class="btn-gradient px-8" @click="$router.push('/courses/all')">
-                Explore courses <v-icon end>mdi-arrow-right</v-icon>
-              </v-btn>
-              <v-btn size="x-large" variant="outlined" class="px-7 outline-btn" @click="$router.push('/user/sign-up')">
-                Create free account
-              </v-btn>
-            </div>
-
-            <div class="d-flex flex-wrap ga-8">
-              <div v-for="stat in stats" :key="stat.label">
-                <div class="stat-value gradient-text">{{ stat.value }}</div>
-                <div class="stat-label">{{ stat.label }}</div>
-              </div>
-            </div>
-          </v-col>
-
-          <v-col cols="12" md="5" class="d-none d-md-block">
-            <div class="hero-visual">
-              <v-card class="hero-card glass-panel" flat>
-                <v-img src="../assets/homepage2.jpg" height="240" cover class="hero-card-img" />
-                <v-card-text class="pa-6">
-                  <div class="d-flex align-center justify-space-between mb-3">
-                    <span class="eyebrow">Featured Path</span>
-                    <span class="rating-badge"><v-icon size="15" color="warning">mdi-star</v-icon> 4.8</span>
-                  </div>
-                  <h3 class="text-h6 font-weight-bold mb-2">Dev to Deployment</h3>
-                  <div class="progress-row mb-2">
-                    <span>Progress</span><span class="font-weight-bold">68%</span>
-                  </div>
-                  <v-progress-linear model-value="68" color="primary" height="8" rounded />
-                </v-card-text>
-              </v-card>
-
-              <div class="float-badge float-badge-1 glass-panel">
-                <v-icon color="success">mdi-check-decagram</v-icon>
-                <div><b>Certificate</b><br /><small>on completion</small></div>
-              </div>
-              <div class="float-badge float-badge-2 glass-panel">
-                <v-icon color="accent">mdi-play-circle</v-icon>
-                <div><b>HD Video</b><br /><small>lessons</small></div>
-              </div>
-            </div>
-          </v-col>
-        </v-row>
-      </section>
-
-      <!-- ── Category rail ──────────────────────────── -->
-      <section class="mt-10">
-        <div class="d-flex align-center flex-wrap ga-3">
-          <span class="rail-label mr-2">Browse:</span>
-          <v-chip
-            v-for="cat in category"
-            :key="cat"
-            class="category-chip"
-            variant="outlined"
-            @click="goToCategory(cat)"
+          <h1
+            class="mb-5 font-display text-[clamp(2.6rem,5.5vw,4.8rem)] leading-[1.02] font-extrabold tracking-[-0.04em]"
           >
-            {{ cat }}
-          </v-chip>
-        </div>
-      </section>
+            Learn anything.<br />
+            <!--
+              FlipWords animates each letter with a `filter`, which gives every
+              letter its own paint layer and breaks `background-clip: text`
+              inheritance — so it cannot live inside `.gradient-text`. A solid
+              brand tint is used instead.
+            -->
+            <flip-words
+              class="-ml-2 text-[#7c3aed] dark:text-[#a78bfa]"
+              :words="['Beautifully.', 'Practically.', 'Confidently.', 'On your terms.']"
+            />
+          </h1>
 
-      <!-- ── Featured courses ───────────────────────── -->
-      <section class="mt-10" v-reveal>
-        <div class="d-flex flex-column flex-md-row align-md-end justify-space-between mb-7">
-          <div>
-            <div class="eyebrow mb-3">🔥 Featured Courses</div>
-            <h2 class="app-section-title">Start with the strongest picks</h2>
-            <p class="app-section-copy mt-3 mb-0">Top-rated courses from the catalog, ready to explore.</p>
+          <p class="mb-8 max-w-[54ch] text-[1.08rem] leading-relaxed text-muted-foreground">
+            Practical, job-ready courses with a clean player, progress tracking, and a catalog that
+            actually feels good to browse. Learn at your pace — free to start.
+          </p>
+
+          <div class="mb-10 flex flex-wrap gap-4">
+            <shimmer-button
+              class="font-display font-bold shadow-[0_20px_50px_-15px_rgb(124_58_237_/_0.9)]"
+              background="linear-gradient(135deg,#7c3aed 0%,#6366f1 45%,#06b6d4 100%)"
+              @click="$router.push('/courses/all')"
+            >
+              <span class="inline-flex items-center gap-2 px-3 py-1 text-base text-white">
+                Explore courses
+                <app-icon name="lucide:arrow-right" size="18" />
+              </span>
+            </shimmer-button>
+
+            <button
+              class="rounded-full border-[1.5px] border-black/10 px-7 py-3 font-display text-base font-bold transition-all hover:-translate-y-0.5 hover:border-primary/50 dark:border-white/15"
+              @click="$router.push('/user/sign-up')"
+            >
+              Create free account
+            </button>
           </div>
-          <v-btn variant="text" color="primary" class="mt-4 mt-md-0 font-weight-bold" @click="$router.push('/courses/all')">
-            Browse full catalog <v-icon end>mdi-arrow-right</v-icon>
-          </v-btn>
+
+          <div class="flex flex-wrap gap-8">
+            <div v-for="stat in stats" :key="stat.label">
+              <div class="gradient-text font-display text-[1.9rem] leading-none font-extrabold">
+                <number-ticker
+                  :value="stat.value"
+                  :decimal-places="stat.decimals"
+                  class="tracking-tight"
+                />{{ stat.suffix }}
+              </div>
+              <div class="mt-1 text-sm text-muted-foreground">{{ stat.label }}</div>
+            </div>
+          </div>
         </div>
 
-        <all-courses :all-courses="allCourses.slice(0, 8)" :loading="loadingCourses" />
-      </section>
-
-      <!-- ── Feature band ───────────────────────────── -->
-      <section class="mt-14">
-        <v-row>
-          <v-col v-for="(feature, i) in features" :key="feature.title" cols="12" md="4">
-            <v-card v-reveal="i * 90" class="glass-panel section-card h-100 pa-7 hover-lift" flat>
-              <div class="feature-icon mb-5">
-                <v-icon size="28" color="white">{{ feature.icon }}</v-icon>
+        <div class="hidden lg:col-span-5 lg:block">
+          <div class="relative p-3">
+            <div
+              class="overflow-hidden rounded-[34px] border border-black/5 bg-white/70 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
+            >
+              <img
+                src="../assets/homepage2.jpg"
+                alt="A learner watching a video lesson"
+                class="h-60 w-full object-cover"
+              />
+              <div class="p-6">
+                <div class="mb-3 flex items-center justify-between">
+                  <span class="eyebrow">Featured Path</span>
+                  <span class="inline-flex items-center gap-1 font-extrabold text-brand-amber">
+                    <app-icon name="lucide:star" size="15" filled /> 4.8
+                  </span>
+                </div>
+                <h3 class="mb-2 font-display text-lg font-bold">Dev to Deployment</h3>
+                <div class="mb-2 flex justify-between text-sm text-muted-foreground">
+                  <span>Progress</span><span class="font-bold text-foreground">68%</span>
+                </div>
+                <div class="h-2 overflow-hidden rounded-full bg-foreground/10">
+                  <div
+                    class="h-full w-[68%] rounded-full bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4]"
+                  ></div>
+                </div>
               </div>
-              <h3 class="text-h6 font-weight-bold mb-3">{{ feature.title }}</h3>
-              <p class="app-section-copy mb-0">{{ feature.desc }}</p>
-            </v-card>
-          </v-col>
-        </v-row>
-      </section>
+            </div>
 
-      <!-- ── CTA band ───────────────────────────────── -->
-      <section class="mt-14" v-reveal>
-        <v-card class="cta-band pa-8 pa-md-12" flat>
-          <v-row align="center">
-            <v-col cols="12" md="8">
-              <h2 class="cta-title mb-3">Ready to teach what you know?</h2>
-              <p class="cta-copy mb-0">Publish a course, build your curriculum, and reach learners — all in one place.</p>
-            </v-col>
-            <v-col cols="12" md="4" class="d-flex justify-md-end">
-              <v-btn size="x-large" class="cta-btn px-8" @click="$router.push('/user/tutor/add-course')">
-                Become an instructor
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card>
-      </section>
-    </v-container>
+            <div class="float-badge absolute top-[2%] -left-[8%]">
+              <app-icon name="lucide:badge-check" size="20" class="text-emerald-500" />
+              <div><b>Certificate</b><br /><small class="text-muted-foreground">on completion</small></div>
+            </div>
+            <div class="float-badge float-badge-delayed absolute -right-[6%] -bottom-[4%]">
+              <app-icon name="lucide:circle-play" size="20" class="text-[#f43f5e]" />
+              <div><b>HD Video</b><br /><small class="text-muted-foreground">lessons</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Category rail ──────────────────────────── -->
+    <section class="mt-10 flex flex-wrap items-center gap-3">
+      <span class="mr-2 font-bold text-muted-foreground">Browse:</span>
+      <button
+        v-for="cat in category"
+        :key="cat"
+        class="rounded-full border border-black/10 px-4 py-1.5 font-semibold transition-all hover:-translate-y-0.5 hover:border-transparent hover:bg-linear-135 hover:from-[#7c3aed] hover:via-[#6366f1] hover:to-[#06b6d4] hover:text-white dark:border-white/12"
+        @click="goToCategory(cat)"
+      >
+        {{ cat }}
+      </button>
+    </section>
+
+    <!-- ── Featured courses ───────────────────────── -->
+    <section v-reveal class="mt-12">
+      <div class="mb-7 flex flex-col justify-between md:flex-row md:items-end">
+        <div>
+          <div class="eyebrow mb-3">🔥 Featured Courses</div>
+          <h2 class="app-section-title">Start with the strongest picks</h2>
+          <p class="mt-3 text-muted-foreground">Top-rated courses from the catalog, ready to explore.</p>
+        </div>
+        <button
+          class="mt-4 inline-flex items-center gap-1 font-bold text-primary transition-colors hover:text-primary/80 md:mt-0"
+          @click="$router.push('/courses/all')"
+        >
+          Browse full catalog <app-icon name="lucide:arrow-right" size="18" />
+        </button>
+      </div>
+
+      <all-courses :all-courses="allCourses.slice(0, 8)" :loading="loadingCourses" />
+    </section>
+
+    <!-- ── Feature band ───────────────────────────── -->
+    <section class="mt-16 grid gap-6 md:grid-cols-3">
+      <card-spotlight
+        v-for="(feature, i) in features"
+        :key="feature.title"
+        v-reveal="i * 90"
+        class="h-full rounded-[26px] border border-black/5 bg-white/60 p-7 backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
+        :gradient-color="isDark ? '#312e81' : '#ddd6fe'"
+        :gradient-size="260"
+      >
+        <div
+          class="mb-5 grid size-14 place-items-center rounded-[18px] bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] shadow-[0_18px_40px_-14px_rgb(124_58_237_/_0.9)]"
+        >
+          <app-icon :name="feature.icon" size="26" class="text-white" />
+        </div>
+        <h3 class="mb-3 font-display text-lg font-bold">{{ feature.title }}</h3>
+        <p class="leading-relaxed text-muted-foreground">{{ feature.desc }}</p>
+      </card-spotlight>
+    </section>
+
+    <!-- ── CTA band ───────────────────────────────── -->
+    <section v-reveal class="mt-16">
+      <div
+        class="relative grid items-center gap-6 overflow-hidden rounded-[34px] bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] p-8 shadow-2xl md:grid-cols-3 md:p-12"
+      >
+        <div class="md:col-span-2">
+          <h2 class="mb-3 font-display text-[clamp(1.6rem,3vw,2.4rem)] font-extrabold tracking-tight text-white">
+            Ready to teach what you know?
+          </h2>
+          <p class="max-w-[52ch] text-[1.05rem] text-white/90">
+            Publish a course, build your curriculum, and reach learners — all in one place.
+          </p>
+        </div>
+        <div class="flex md:justify-end">
+          <button
+            class="rounded-full bg-white px-8 py-3.5 font-display text-base font-extrabold text-[#7c3aed] shadow-lg transition-transform hover:-translate-y-0.5"
+            @click="$router.push('/user/tutor/add-course')"
+          >
+            Become an instructor
+          </button>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import AllCourses from '../components/course/AllCourses.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import { useAppTheme } from '@/composables/useAppTheme'
+import { ParticlesBg } from '@/components/ui/particles-bg'
+import { BorderBeam } from '@/components/ui/border-beam'
+import { ShimmerButton } from '@/components/ui/shimmer-button'
+import { NumberTicker } from '@/components/ui/number-ticker'
+import { FlipWords } from '@/components/ui/flip-words'
+import { CardSpotlight } from '@/components/ui/card-spotlight'
 
 export default {
-  components: { AllCourses },
+  components: {
+    AllCourses,
+    AppIcon,
+    ParticlesBg,
+    BorderBeam,
+    ShimmerButton,
+    NumberTicker,
+    FlipWords,
+    CardSpotlight
+  },
+  setup() {
+    const { isDark } = useAppTheme()
+    return { isDark }
+  },
   data() {
     return {
       loadingCourses: true,
       stats: [
-        { value: '10k+', label: 'Active learners' },
-        { value: '100+', label: 'Structured lessons' },
-        { value: '4.8★', label: 'Average rating' }
+        { value: 10, suffix: 'k+', decimals: 0, label: 'Active learners' },
+        { value: 100, suffix: '+', decimals: 0, label: 'Structured lessons' },
+        { value: 4.8, suffix: '★', decimals: 1, label: 'Average rating' }
       ],
       features: [
-        { title: 'Focused discovery', desc: 'Browse featured and filtered courses in a clean, consistent catalog — no clutter.', icon: 'mdi-compass-outline' },
-        { title: 'Track your progress', desc: 'A distraction-free player with lesson-by-lesson completion and resume-where-you-left-off.', icon: 'mdi-chart-line-variant' },
-        { title: 'Learn & earn', desc: 'Finish a course, get an auto-generated certificate, and showcase what you achieved.', icon: 'mdi-certificate-outline' }
+        { title: 'Focused discovery', desc: 'Browse featured and filtered courses in a clean, consistent catalog — no clutter.', icon: 'lucide:compass' },
+        { title: 'Track your progress', desc: 'A distraction-free player with lesson-by-lesson completion and resume-where-you-left-off.', icon: 'lucide:chart-line' },
+        { title: 'Learn & earn', desc: 'Finish a course, get an auto-generated certificate, and showcase what you achieved.', icon: 'lucide:award' }
       ]
     }
   },
@@ -173,130 +259,29 @@ export default {
 </script>
 
 <style scoped>
-.hero-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(2.6rem, 5.5vw, 4.8rem);
-  line-height: 1.02;
-  letter-spacing: -0.04em;
-  font-weight: 800;
-  color: var(--text-strong);
-}
-
-.hero-copy {
-  max-width: 54ch;
-  font-size: 1.08rem;
-}
-
-.stat-value {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.9rem;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.stat-label {
-  color: var(--text-soft);
-  font-size: 0.9rem;
-  margin-top: 4px;
-}
-
-.outline-btn {
-  border: 1.5px solid var(--glass-border);
-  color: var(--text-strong);
-  font-weight: 700;
-}
-
-/* Hero visual */
-.hero-visual {
-  position: relative;
-  padding: 12px;
-}
-
-.hero-card {
-  overflow: hidden;
-  border-radius: var(--r-xl);
-}
-
-.hero-card-img {
-  border-top-left-radius: var(--r-xl);
-  border-top-right-radius: var(--r-xl);
-}
-
-.rating-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 800;
-  color: var(--brand-amber);
-}
-
-.progress-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  color: var(--text-soft);
-}
-
+/* Opaque rather than glassy: over the hero photo a translucent badge was
+   unreadable in dark mode. */
 .float-badge {
-  position: absolute;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
   border-radius: var(--r-md);
-  font-size: 0.8rem;
-  line-height: 1.2;
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
   color: var(--text-main);
+  font-size: 0.78rem;
+  line-height: 1.25;
   box-shadow: var(--shadow-md);
   animation: float 10s ease-in-out infinite;
 }
-.float-badge small { color: var(--text-soft); }
-.float-badge-1 { top: 4%; left: -6%; }
-.float-badge-2 { bottom: 8%; right: -4%; animation-delay: -4s; }
-
-/* Category rail */
-.rail-label { color: var(--text-soft); font-weight: 700; }
-.category-chip {
-  font-weight: 600;
-  border-color: var(--glass-border);
-  transition: all 0.2s ease;
-}
-.category-chip:hover {
-  background: var(--grad-primary) !important;
-  color: #fff !important;
-  border-color: transparent;
-  transform: translateY(-2px);
+.float-badge-delayed {
+  animation-delay: -4s;
 }
 
-/* Feature icon */
-.feature-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--r-md);
-  display: grid;
-  place-items: center;
-  background: var(--grad-primary);
-  box-shadow: var(--shadow-glow);
-}
-
-/* CTA band */
-.cta-band {
-  border-radius: var(--r-xl);
-  background: var(--grad-primary);
-  color: #fff;
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-}
-.cta-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(1.6rem, 3vw, 2.4rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-.cta-copy { opacity: 0.92; font-size: 1.05rem; max-width: 52ch; }
-.cta-btn {
-  background: #fff !important;
-  color: var(--brand-1) !important;
-  font-weight: 800;
+@media (prefers-reduced-motion: reduce) {
+  .float-badge {
+    animation: none;
+  }
 }
 </style>

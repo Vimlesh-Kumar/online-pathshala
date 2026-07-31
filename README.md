@@ -18,7 +18,7 @@ A robust Online Learning Management System (LMS) designed to empower learners an
 ### 🛠️ **Platform & Infrastructure**
 - **Robust API**: RESTful architecture for efficient data handling.
 - **Database Migrations**: Version-controlled database schema using `db-migrate`.
-- **Responsive Design**: Mobile-first approach using Vuetify 3 components.
+- **Responsive Design**: Mobile-first approach built on Tailwind CSS utilities, with a dark-first theme and a light mode toggle.
 
 ---
 
@@ -27,7 +27,10 @@ A robust Online Learning Management System (LMS) designed to empower learners an
 **Frontend:**
 - **Vue 3**: The Progressive JavaScript Framework.
 - **Vite**: Next-generation frontend tooling.
-- **Vuetify 3**: Material Design component library.
+- **Tailwind CSS v4**: Utility-first styling with a dark-first design-token layer.
+- **shadcn-vue (reka-ui)**: Accessible, copy-in component primitives — dialogs, selects, tabs, pagination.
+- **Inspira UI (motion-v)**: Animated hero, card and text components for the marketing surfaces.
+- **Iconify + Lucide**: Icons bundled offline as a generated subset (`npm run icons`).
 - **Vuex/Vue Router**: Official state management and routing.
 - **Axios**: Promised-based HTTP client for API communication.
 

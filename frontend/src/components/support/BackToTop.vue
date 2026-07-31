@@ -1,21 +1,22 @@
 <template>
   <transition name="back-to-top">
-    <v-btn
+    <button
       v-if="visible"
-      icon
-      size="large"
-      class="back-to-top glass-panel hover-lift"
-      variant="flat"
+      class="back-to-top glass-panel hover-lift grid size-12 place-items-center rounded-full"
+      aria-label="Back to top"
       @click="scrollTop"
     >
-      <v-icon>mdi-arrow-up</v-icon>
-    </v-btn>
+      <app-icon name="lucide:arrow-up" size="22" />
+    </button>
   </transition>
 </template>
 
 <script>
+import AppIcon from '@/components/ui/AppIcon.vue'
+
 export default {
   name: 'BackToTop',
+  components: { AppIcon },
   data() {
     return { visible: false }
   },

@@ -3,6 +3,7 @@
  * Bootstraps Vuetify and other plugins then mounts the App`
  */
 import './axios';
+import './styles/tailwind.css';
 import './styles/global.css';
 import httpInterceptor from './interceptor';
 import store from './store/store'

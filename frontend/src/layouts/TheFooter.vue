@@ -1,323 +1,413 @@
 <template>
-  <v-footer class="footer-shell">
-    <v-container class="py-10 py-md-16">
-      <!-- Top wave divider -->
-      <div class="footer-divider mb-10"></div>
+  <footer class="mt-20 px-4 pb-10 text-foreground/90">
+    <div class="mx-auto max-w-[1400px]">
+      <!-- Decorative top divider -->
+      <div
+        class="mb-10 h-0.5 rounded-full bg-linear-to-r from-transparent via-[#6366f1] to-transparent opacity-40"
+      ></div>
 
-      <v-row class="footer-panel pa-8 pa-md-12" no-gutters>
-        <!-- Brand + Developer Spotlight -->
-        <v-col cols="12" lg="5" class="pr-lg-12 mb-10 mb-lg-0">
-          <div class="d-flex align-center mb-6">
-            <div class="footer-brand-icon mr-4">
-              <v-icon color="white" size="28">mdi-school</v-icon>
+      <div
+        class="relative grid gap-10 overflow-hidden rounded-[34px] border border-white/10 bg-white/60 p-8 shadow-xl backdrop-blur-2xl md:p-12 lg:grid-cols-12 dark:bg-white/5"
+      >
+        <!-- Ambient glows -->
+        <div
+          class="pointer-events-none absolute -top-1/2 -right-[20%] size-[400px] rounded-full bg-[radial-gradient(circle,rgb(124_58_237_/_0.12),transparent_70%)]"
+        ></div>
+        <div
+          class="pointer-events-none absolute -bottom-[30%] -left-[10%] size-[300px] rounded-full bg-[radial-gradient(circle,rgb(6_182_212_/_0.1),transparent_70%)]"
+        ></div>
+
+        <!-- Brand + developer spotlight -->
+        <div class="relative lg:col-span-5 lg:pr-12">
+          <div class="mb-6 flex items-center gap-4">
+            <div
+              class="grid size-12 place-items-center rounded-2xl bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] shadow-[0_8px_24px_rgb(124_58_237_/_0.35)]"
+            >
+              <app-icon name="lucide:graduation-cap" size="26" class="text-white" />
             </div>
             <div>
-              <div class="footer-brand gradient-text">Online Pathshala</div>
-              <div class="footer-tagline">Learn anything, beautifully</div>
+              <div class="gradient-text font-display text-[1.4rem] leading-tight font-extrabold tracking-tight">
+                Online Pathshala
+              </div>
+              <div class="text-[0.78rem] font-medium text-muted-foreground">Learn anything, beautifully</div>
             </div>
           </div>
 
-          <p class="footer-copy mb-6">
-            A full-stack learning management platform built with modern web technologies.
-            Designed and developed as a comprehensive project showcasing end-to-end software engineering skills.
+          <p class="mb-6 max-w-prose leading-relaxed text-muted-foreground">
+            A full-stack learning management platform built with modern web technologies. Designed and
+            developed as a comprehensive project showcasing end-to-end software engineering skills.
           </p>
 
-          <!-- Developer Info Card -->
-          <div class="dev-card pa-5 mb-6">
-            <div class="dev-card-label mb-2">
-              <v-icon size="14" class="mr-1" color="#7c3aed">mdi-code-tags</v-icon>
-              Developed by
+          <div class="rounded-3xl border border-white/10 bg-foreground/[0.03] p-5">
+            <div class="mb-2 flex items-center gap-1.5 text-xs font-bold tracking-widest uppercase">
+              <app-icon name="lucide:code" size="14" class="text-[#7c3aed]" />
+              <span class="text-muted-foreground">Developed by</span>
             </div>
-            <div class="dev-name mb-1">Vimlesh Kumar</div>
-            <div class="dev-role">Full Stack Developer</div>
-            <div class="d-flex flex-wrap ga-2 mt-4">
-              <a href="https://github.com/Vimlesh-Kumar" target="_blank" rel="noopener" class="social-btn" aria-label="GitHub">
-                <v-icon size="18">mdi-github</v-icon>
-              </a>
-              <a href="https://linkedin.com/in/vimlesh11" target="_blank" rel="noopener" class="social-btn" aria-label="LinkedIn">
-                <v-icon size="18">mdi-linkedin</v-icon>
-              </a>
-              <a href="mailto:vimlesh11072000@gmail.com" class="social-btn" aria-label="Email">
-                <v-icon size="18">mdi-email-outline</v-icon>
-              </a>
-              <a href="https://vimlesh.dev" target="_blank" rel="noopener" class="social-btn" aria-label="Portfolio">
-                <v-icon size="18">mdi-globe</v-icon>
+            <div class="font-display text-lg font-extrabold">Vimlesh Kumar</div>
+            <div class="text-sm text-muted-foreground">Full Stack Developer</div>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <a
+                v-for="social in socials"
+                :key="social.label"
+                :href="social.href"
+                :target="social.href.startsWith('mailto:') ? undefined : '_blank'"
+                rel="noopener"
+                :aria-label="social.label"
+                class="grid size-9 place-items-center rounded-xl border border-white/10 text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:text-foreground"
+              >
+                <app-icon :name="social.icon" size="18" />
               </a>
             </div>
           </div>
-        </v-col>
+        </div>
 
-        <!-- Navigation Links -->
-        <v-col cols="6" sm="4" lg="2" class="mb-8 mb-lg-0">
-          <div class="footer-heading">Explore</div>
-          <div class="footer-links">
-            <button class="footer-link" @click="$router.push('/')">
-              <v-icon size="14" class="mr-2">mdi-home-outline</v-icon>Home
-            </button>
-            <button class="footer-link" @click="$router.push('/courses/all')">
-              <v-icon size="14" class="mr-2">mdi-bookshelf</v-icon>Courses
-            </button>
-            <button class="footer-link" @click="$router.push('/user')">
-              <v-icon size="14" class="mr-2">mdi-school-outline</v-icon>My Learning
-            </button>
-            <button class="footer-link" @click="$router.push('/user/cart')">
-              <v-icon size="14" class="mr-2">mdi-cart-outline</v-icon>Cart
-            </button>
-            <button class="footer-link" @click="$router.push('/user/wishlist')">
-              <v-icon size="14" class="mr-2">mdi-heart-outline</v-icon>Wishlist
-            </button>
+        <!-- Link columns -->
+        <nav
+          v-for="column in linkColumns"
+          :key="column.heading"
+          class="relative col-span-6 sm:col-span-4 lg:col-span-2"
+        >
+          <div class="mb-4 text-xs font-extrabold tracking-widest uppercase">{{ column.heading }}</div>
+          <div class="flex flex-col items-start gap-2.5">
+            <component
+              :is="link.href ? 'a' : 'button'"
+              v-for="link in column.links"
+              :key="link.label"
+              :href="link.href"
+              :target="link.href ? '_blank' : undefined"
+              :rel="link.href ? 'noopener' : undefined"
+              class="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              @click="link.path && $router.push(link.path)"
+            >
+              <app-icon :name="link.icon" size="14" />
+              {{ link.label }}
+            </component>
           </div>
-        </v-col>
+        </nav>
 
-        <!-- For Instructors -->
-        <v-col cols="6" sm="4" lg="2" class="mb-8 mb-lg-0">
-          <div class="footer-heading">For Instructors</div>
-          <div class="footer-links">
-            <button class="footer-link" @click="$router.push('/user/tutor/dashboard')">
-              <v-icon size="14" class="mr-2">mdi-view-dashboard-outline</v-icon>Dashboard
-            </button>
-            <button class="footer-link" @click="$router.push('/user/tutor/add-course')">
-              <v-icon size="14" class="mr-2">mdi-plus-circle-outline</v-icon>Create Course
-            </button>
-            <button class="footer-link" @click="$router.push('/user/orders')">
-              <v-icon size="14" class="mr-2">mdi-receipt-text-outline</v-icon>Orders
-            </button>
-            <button class="footer-link" @click="$router.push('/user/profile')">
-              <v-icon size="14" class="mr-2">mdi-account-circle-outline</v-icon>Profile
-            </button>
-            <a href="https://github.com/Vimlesh-Kumar/online-pathshala" target="_blank" rel="noopener" class="footer-link">
-              <v-icon size="14" class="mr-2">mdi-github</v-icon>Source Code
-            </a>
-          </div>
-        </v-col>
-
-        <!-- Tech Stack + Categories -->
-        <v-col cols="12" sm="4" lg="3">
-          <div class="footer-heading">Built With</div>
-          <div class="d-flex flex-wrap ga-2 mb-8">
-            <span class="tech-badge" v-for="tech in techStack" :key="tech.name">
-              <v-icon size="13" class="mr-1">{{ tech.icon }}</v-icon>{{ tech.name }}
+        <!-- Tech stack + categories -->
+        <div class="relative sm:col-span-4 lg:col-span-3">
+          <div class="mb-4 text-xs font-extrabold tracking-widest uppercase">Built With</div>
+          <div class="mb-8 flex flex-wrap gap-2">
+            <span
+              v-for="tech in techStack"
+              :key="tech.name"
+              class="inline-flex items-center gap-1 rounded-full border border-white/10 bg-foreground/[0.04] px-2.5 py-1 text-xs font-semibold text-muted-foreground"
+            >
+              <app-icon :name="tech.icon" size="13" />{{ tech.name }}
             </span>
           </div>
 
-          <div class="footer-heading">Categories</div>
-          <div class="d-flex flex-wrap ga-2">
-            <v-chip
+          <div class="mb-4 text-xs font-extrabold tracking-widest uppercase">Categories</div>
+          <div class="flex flex-wrap gap-2">
+            <button
               v-for="cat in category.slice(0, 6)"
               :key="cat"
-              variant="outlined"
-              rounded="pill"
-              size="small"
-              class="footer-chip"
+              class="rounded-full border border-white/12 px-3 py-1 text-xs font-semibold text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:text-foreground"
               @click="handleCategorySelect(cat)"
             >
               {{ cat }}
-            </v-chip>
-          </div>
-        </v-col>
-      </v-row>
-
-      <!-- Stats Bar -->
-      <div class="stats-bar mt-8 pa-6">
-        <v-row no-gutters justify="center" class="text-center">
-          <v-col v-for="stat in stats" :key="stat.label" cols="6" sm="3">
-            <div class="stat-value">{{ stat.value }}</div>
-            <div class="stat-label">{{ stat.label }}</div>
-          </v-col>
-        </v-row>
-      </div>
-
-      <!-- Bottom Bar -->
-      <div class="bottom-bar mt-8 px-4">
-        <div class="d-flex flex-column flex-md-row justify-space-between align-center ga-3">
-          <div class="d-flex align-center ga-2">
-            <span class="pulse-dot"></span>
-            <span class="bottom-text">© {{ currentYear }} Online Pathshala — All rights reserved</span>
-          </div>
-          <div class="d-flex align-center ga-1 bottom-text">
-            <span>Made with</span>
-            <v-icon size="14" color="#f43f5e" class="heart-beat">mdi-heart</v-icon>
-            <span>by <strong class="gradient-text">Vimlesh Kumar</strong></span>
-          </div>
-          <div class="d-flex ga-4">
-            <button class="bottom-link" @click="activeModal = 'privacy'">Privacy</button>
-            <button class="bottom-link" @click="activeModal = 'terms'">Terms</button>
-            <button class="bottom-link" @click="activeModal = 'contact'">Contact</button>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- ── Privacy Policy Modal ──────────────── -->
-      <v-dialog v-model="showPrivacy" max-width="680" scrollable>
-        <div class="modal-shell pa-8 pa-md-10">
-          <div class="d-flex justify-space-between align-center mb-6">
-            <div class="d-flex align-center ga-3">
-              <div class="modal-icon modal-icon--purple"><v-icon color="white" size="22">mdi-shield-lock-outline</v-icon></div>
-              <h2 class="modal-title">Privacy Policy</h2>
-            </div>
-            <v-btn icon variant="text" size="small" @click="activeModal = ''"><v-icon>mdi-close</v-icon></v-btn>
+      <!-- Stats bar -->
+      <div
+        class="mt-8 grid grid-cols-2 gap-6 rounded-3xl border border-white/10 bg-foreground/[0.03] p-6 text-center sm:grid-cols-4"
+      >
+        <div v-for="stat in stats" :key="stat.label">
+          <div class="gradient-text font-display text-2xl font-extrabold">{{ stat.value }}</div>
+          <div class="mt-1 text-xs text-muted-foreground">{{ stat.label }}</div>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="mt-8 flex flex-col items-center justify-between gap-3 px-4 md:flex-row">
+        <div class="flex items-center gap-2">
+          <span class="pulse-dot"></span>
+          <span class="text-sm text-muted-foreground">
+            © {{ currentYear }} Online Pathshala — All rights reserved
+          </span>
+        </div>
+        <div class="flex items-center gap-1 text-sm text-muted-foreground">
+          <span>Made with</span>
+          <app-icon name="lucide:heart" size="14" class="heart-beat text-[#f43f5e]" />
+          <span>by <strong class="gradient-text">Vimlesh Kumar</strong></span>
+        </div>
+        <div class="flex gap-4">
+          <button
+            v-for="modal in modals"
+            :key="modal.id"
+            class="text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+            @click="activeModal = modal.id"
+          >
+            {{ modal.trigger }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Privacy / Terms / Contact ────────────────────────────────── -->
+    <dialog-root v-model:open="showPrivacy">
+      <dialog-content class="max-h-[85vh] gap-0 overflow-y-auto sm:max-w-[680px]">
+        <dialog-header class="mb-6 flex-row items-center gap-3 space-y-0">
+          <div
+            class="grid size-11 shrink-0 place-items-center rounded-2xl bg-linear-135 from-[#7c3aed] to-[#6366f1]"
+          >
+            <app-icon name="lucide:shield-check" size="22" class="text-white" />
           </div>
-          <div class="modal-body">
-            <p class="modal-section-label">Last updated: July 2026</p>
+          <dialog-title class="font-display text-2xl font-extrabold">Privacy Policy</dialog-title>
+        </dialog-header>
 
-            <h3 class="modal-heading">Data We Collect</h3>
-            <p>We collect only the information necessary to provide a great learning experience — your name, email address, and profile picture when you sign up. Course progress, quiz results, and purchase history are stored to personalize your dashboard.</p>
+        <div class="prose-legal">
+          <p class="legal-meta">Last updated: July 2026</p>
 
-            <h3 class="modal-heading">How We Use It</h3>
-            <p>Your data powers your personalized experience: course recommendations, progress tracking, and certificate generation. We never sell your information to third parties.</p>
+          <h3>Data We Collect</h3>
+          <p>
+            We collect only the information necessary to provide a great learning experience — your name,
+            email address, and profile picture when you sign up. Course progress, quiz results, and purchase
+            history are stored to personalize your dashboard.
+          </p>
 
-            <h3 class="modal-heading">Data Storage & Security</h3>
-            <p>All data is stored securely using encrypted connections (HTTPS/TLS). Passwords are hashed using industry-standard algorithms. Media assets are stored on Vercel Blob Storage with private access controls.</p>
+          <h3>How We Use It</h3>
+          <p>
+            Your data powers your personalized experience: course recommendations, progress tracking, and
+            certificate generation. We never sell your information to third parties.
+          </p>
 
-            <h3 class="modal-heading">Cookies</h3>
-            <p>We use local storage to maintain your session token. No third-party tracking cookies are used on this platform.</p>
+          <h3>Data Storage &amp; Security</h3>
+          <p>
+            All data is stored securely using encrypted connections (HTTPS/TLS). Passwords are hashed using
+            industry-standard algorithms. Media assets are stored on Vercel Blob Storage with private access
+            controls.
+          </p>
 
-            <h3 class="modal-heading">Your Rights</h3>
-            <p>You can update or delete your profile at any time from the account settings page. For full data deletion requests, contact us at the email below.</p>
+          <h3>Cookies</h3>
+          <p>
+            We use local storage to maintain your session token. No third-party tracking cookies are used on
+            this platform.
+          </p>
 
-            <div class="modal-contact-strip mt-6">
-              <v-icon size="16" class="mr-2" color="#7c3aed">mdi-email-outline</v-icon>
-              <span>Questions? Reach out at <strong>vimlesh11072000@gmail.com</strong></span>
-            </div>
+          <h3>Your Rights</h3>
+          <p>
+            You can update or delete your profile at any time from the account settings page. For full data
+            deletion requests, contact us at the email below.
+          </p>
+
+          <div class="legal-strip">
+            <app-icon name="lucide:mail" size="16" class="text-[#7c3aed]" />
+            <span>Questions? Reach out at <strong>vimlesh11072000@gmail.com</strong></span>
           </div>
         </div>
-      </v-dialog>
+      </dialog-content>
+    </dialog-root>
 
-      <!-- ── Terms of Use Modal ────────────────── -->
-      <v-dialog v-model="showTerms" max-width="680" scrollable>
-        <div class="modal-shell pa-8 pa-md-10">
-          <div class="d-flex justify-space-between align-center mb-6">
-            <div class="d-flex align-center ga-3">
-              <div class="modal-icon modal-icon--blue"><v-icon color="white" size="22">mdi-file-document-outline</v-icon></div>
-              <h2 class="modal-title">Terms of Use</h2>
-            </div>
-            <v-btn icon variant="text" size="small" @click="activeModal = ''"><v-icon>mdi-close</v-icon></v-btn>
+    <dialog-root v-model:open="showTerms">
+      <dialog-content class="max-h-[85vh] gap-0 overflow-y-auto sm:max-w-[680px]">
+        <dialog-header class="mb-6 flex-row items-center gap-3 space-y-0">
+          <div
+            class="grid size-11 shrink-0 place-items-center rounded-2xl bg-linear-135 from-[#6366f1] to-[#06b6d4]"
+          >
+            <app-icon name="lucide:file-text" size="22" class="text-white" />
           </div>
-          <div class="modal-body">
-            <p class="modal-section-label">Effective: July 2026</p>
+          <dialog-title class="font-display text-2xl font-extrabold">Terms of Use</dialog-title>
+        </dialog-header>
 
-            <h3 class="modal-heading">Acceptance</h3>
-            <p>By accessing Online Pathshala, you agree to these terms. If you don't agree, please don't use the platform.</p>
+        <div class="prose-legal">
+          <p class="legal-meta">Effective: July 2026</p>
 
-            <h3 class="modal-heading">User Accounts</h3>
-            <p>You are responsible for maintaining the security of your account credentials. One account per person — sharing accounts is not permitted.</p>
+          <h3>Acceptance</h3>
+          <p>
+            By accessing Online Pathshala, you agree to these terms. If you don't agree, please don't use the
+            platform.
+          </p>
 
-            <h3 class="modal-heading">Course Content</h3>
-            <p>All course materials are the intellectual property of their respective instructors. You may access purchased courses for personal learning only. Redistributing, downloading, or sharing course content is prohibited.</p>
+          <h3>User Accounts</h3>
+          <p>
+            You are responsible for maintaining the security of your account credentials. One account per
+            person — sharing accounts is not permitted.
+          </p>
 
-            <h3 class="modal-heading">Instructor Responsibilities</h3>
-            <p>Instructors are responsible for the accuracy and originality of their course content. Online Pathshala reserves the right to remove content that violates community guidelines.</p>
+          <h3>Course Content</h3>
+          <p>
+            All course materials are the intellectual property of their respective instructors. You may access
+            purchased courses for personal learning only. Redistributing, downloading, or sharing course
+            content is prohibited.
+          </p>
 
-            <h3 class="modal-heading">Payments & Refunds</h3>
-            <p>All purchases are processed securely. Refund requests can be submitted within 7 days of purchase if less than 20% of the course has been completed.</p>
+          <h3>Instructor Responsibilities</h3>
+          <p>
+            Instructors are responsible for the accuracy and originality of their course content. Online
+            Pathshala reserves the right to remove content that violates community guidelines.
+          </p>
 
-            <h3 class="modal-heading">Platform Usage</h3>
-            <p>Automated scraping, abuse of the support system, or attempts to manipulate reviews are grounds for account suspension.</p>
+          <h3>Payments &amp; Refunds</h3>
+          <p>
+            All purchases are processed securely. Refund requests can be submitted within 7 days of purchase
+            if less than 20% of the course has been completed.
+          </p>
 
-            <div class="modal-contact-strip mt-6">
-              <v-icon size="16" class="mr-2" color="#6366f1">mdi-gavel</v-icon>
-              <span>These terms may be updated. We'll notify registered users via email.</span>
-            </div>
-          </div>
-        </div>
-      </v-dialog>
+          <h3>Platform Usage</h3>
+          <p>
+            Automated scraping, abuse of the support system, or attempts to manipulate reviews are grounds for
+            account suspension.
+          </p>
 
-      <!-- ── Contact Modal ─────────────────────── -->
-      <v-dialog v-model="showContact" max-width="680" scrollable>
-        <div class="modal-shell pa-8 pa-md-10">
-          <div class="d-flex justify-space-between align-center mb-6">
-            <div class="d-flex align-center ga-3">
-              <div class="modal-icon modal-icon--cyan"><v-icon color="white" size="22">mdi-message-text-outline</v-icon></div>
-              <h2 class="modal-title">Get In Touch</h2>
-            </div>
-            <v-btn icon variant="text" size="small" @click="activeModal = ''"><v-icon>mdi-close</v-icon></v-btn>
-          </div>
-          <div class="modal-body">
-            <p class="mb-6" style="color: var(--text-soft); line-height: 1.7;">
-              I'm always open to feedback, collaboration, or just a friendly hello. Feel free to reach out through any of the channels below.
-            </p>
-
-            <div class="contact-cards">
-              <a href="mailto:vimlesh11072000@gmail.com" class="contact-card">
-                <div class="contact-card-icon" style="background: linear-gradient(135deg, #7c3aed, #6366f1);">
-                  <v-icon color="white" size="22">mdi-email-fast-outline</v-icon>
-                </div>
-                <div>
-                  <div class="contact-card-label">Email</div>
-                  <div class="contact-card-value">vimlesh11072000@gmail.com</div>
-                </div>
-                <v-icon size="16" class="ml-auto" color="#94a3b8">mdi-arrow-top-right</v-icon>
-              </a>
-
-              <a href="https://github.com/Vimlesh-Kumar" target="_blank" rel="noopener" class="contact-card">
-                <div class="contact-card-icon" style="background: linear-gradient(135deg, #1e293b, #334155);">
-                  <v-icon color="white" size="22">mdi-github</v-icon>
-                </div>
-                <div>
-                  <div class="contact-card-label">GitHub</div>
-                  <div class="contact-card-value">github.com/Vimlesh-Kumar</div>
-                </div>
-                <v-icon size="16" class="ml-auto" color="#94a3b8">mdi-arrow-top-right</v-icon>
-              </a>
-
-              <a href="https://linkedin.com/in/vimlesh11" target="_blank" rel="noopener" class="contact-card">
-                <div class="contact-card-icon" style="background: linear-gradient(135deg, #0077b5, #00a0dc);">
-                  <v-icon color="white" size="22">mdi-linkedin</v-icon>
-                </div>
-                <div>
-                  <div class="contact-card-label">LinkedIn</div>
-                  <div class="contact-card-value">linkedin.com/in/vimlesh11</div>
-                </div>
-                <v-icon size="16" class="ml-auto" color="#94a3b8">mdi-arrow-top-right</v-icon>
-              </a>
-
-              <a href="https://vimlesh.dev" target="_blank" rel="noopener" class="contact-card">
-                <div class="contact-card-icon" style="background: linear-gradient(135deg, #7c3aed, #ec4899);">
-                  <v-icon color="white" size="22">mdi-globe</v-icon>
-                </div>
-                <div>
-                  <div class="contact-card-label">Portfolio</div>
-                  <div class="contact-card-value">vimlesh.dev</div>
-                </div>
-                <v-icon size="16" class="ml-auto" color="#94a3b8">mdi-arrow-top-right</v-icon>
-              </a>
-            </div>
-
-            <div class="contact-location mt-6">
-              <v-icon size="16" class="mr-2" color="#06b6d4">mdi-map-marker-outline</v-icon>
-              <span>Gandhinagar, Gujarat · +91-8130684131</span>
-            </div>
+          <div class="legal-strip">
+            <app-icon name="lucide:scale" size="16" class="text-[#6366f1]" />
+            <span>These terms may be updated. We'll notify registered users via email.</span>
           </div>
         </div>
-      </v-dialog>
-    </v-container>
-  </v-footer>
+      </dialog-content>
+    </dialog-root>
+
+    <dialog-root v-model:open="showContact">
+      <dialog-content class="max-h-[85vh] gap-0 overflow-y-auto sm:max-w-[680px]">
+        <dialog-header class="mb-6 flex-row items-center gap-3 space-y-0">
+          <div
+            class="grid size-11 shrink-0 place-items-center rounded-2xl bg-linear-135 from-[#06b6d4] to-[#7c3aed]"
+          >
+            <app-icon name="lucide:message-square" size="22" class="text-white" />
+          </div>
+          <dialog-title class="font-display text-2xl font-extrabold">Get In Touch</dialog-title>
+        </dialog-header>
+
+        <p class="mb-6 leading-relaxed text-muted-foreground">
+          I'm always open to feedback, collaboration, or just a friendly hello. Feel free to reach out through
+          any of the channels below.
+        </p>
+
+        <div class="grid gap-3">
+          <a
+            v-for="channel in contactChannels"
+            :key="channel.label"
+            :href="channel.href"
+            :target="channel.href.startsWith('mailto:') ? undefined : '_blank'"
+            rel="noopener"
+            class="flex items-center gap-4 rounded-2xl border border-white/10 bg-foreground/[0.03] p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40"
+          >
+            <div class="grid size-11 shrink-0 place-items-center rounded-xl" :class="channel.tint">
+              <app-icon :name="channel.icon" size="22" class="text-white" />
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                {{ channel.label }}
+              </div>
+              <div class="truncate font-semibold">{{ channel.value }}</div>
+            </div>
+            <app-icon name="lucide:arrow-up-right" size="16" class="ml-auto text-muted-foreground" />
+          </a>
+        </div>
+
+        <div class="legal-strip mt-6">
+          <app-icon name="lucide:map-pin" size="16" class="text-[#06b6d4]" />
+          <span>Gandhinagar, Gujarat · +91-8130684131</span>
+        </div>
+      </dialog-content>
+    </dialog-root>
+  </footer>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import {
+  Dialog as DialogRoot,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
 
 export default {
+  components: { AppIcon, DialogRoot, DialogContent, DialogHeader, DialogTitle },
   data() {
     return {
       currentYear: new Date().getFullYear(),
       activeModal: '',
+      socials: [
+        { label: 'GitHub', icon: 'mdi:github', href: 'https://github.com/Vimlesh-Kumar' },
+        { label: 'LinkedIn', icon: 'mdi:linkedin', href: 'https://linkedin.com/in/vimlesh11' },
+        { label: 'Email', icon: 'lucide:mail', href: 'mailto:vimlesh11072000@gmail.com' },
+        { label: 'Portfolio', icon: 'lucide:globe', href: 'https://vimlesh.dev' }
+      ],
+      linkColumns: [
+        {
+          heading: 'Explore',
+          links: [
+            { label: 'Home', icon: 'lucide:house', path: '/' },
+            { label: 'Courses', icon: 'lucide:library', path: '/courses/all' },
+            { label: 'My Learning', icon: 'lucide:graduation-cap', path: '/user' },
+            { label: 'Cart', icon: 'lucide:shopping-cart', path: '/user/cart' },
+            { label: 'Wishlist', icon: 'lucide:heart', path: '/user/wishlist' }
+          ]
+        },
+        {
+          heading: 'For Instructors',
+          links: [
+            { label: 'Dashboard', icon: 'lucide:layout-dashboard', path: '/user/tutor/dashboard' },
+            { label: 'Create Course', icon: 'lucide:circle-plus', path: '/user/tutor/add-course' },
+            { label: 'Orders', icon: 'lucide:receipt-text', path: '/user/orders' },
+            { label: 'Profile', icon: 'lucide:circle-user', path: '/user/profile' },
+            {
+              label: 'Source Code',
+              icon: 'mdi:github',
+              href: 'https://github.com/Vimlesh-Kumar/online-pathshala'
+            }
+          ]
+        }
+      ],
       techStack: [
-        { name: 'Vue 3', icon: 'mdi-vuejs' },
-        { name: 'Node.js', icon: 'mdi-nodejs' },
-        { name: 'MySQL', icon: 'mdi-database' },
-        { name: 'Vuetify', icon: 'mdi-palette-swatch' },
-        { name: 'Express', icon: 'mdi-server' },
-        { name: 'Railway', icon: 'mdi-train' },
-        { name: 'Aiven', icon: 'mdi-cloud-check' },
-        { name: 'Valkey', icon: 'mdi-lightning-bolt-outline' },
-        { name: 'Vite', icon: 'mdi-lightning-bolt' },
+        { name: 'Vue 3', icon: 'mdi:vuejs' },
+        { name: 'Node.js', icon: 'mdi:nodejs' },
+        { name: 'MySQL', icon: 'mdi:database' },
+        { name: 'Tailwind', icon: 'mdi:tailwind' },
+        { name: 'Express', icon: 'mdi:server' },
+        { name: 'Railway', icon: 'mdi:train' },
+        { name: 'Aiven', icon: 'mdi:cloud-check' },
+        { name: 'Valkey', icon: 'mdi:lightning-bolt-outline' },
+        { name: 'Vite', icon: 'mdi:lightning-bolt' }
       ],
       stats: [
         { value: '9+', label: 'Course Categories' },
         { value: 'AI', label: 'Powered Support' },
         { value: 'Full Stack', label: 'Architecture' },
-        { value: '100%', label: 'Responsive' },
+        { value: '100%', label: 'Responsive' }
+      ],
+      modals: [
+        { id: 'privacy', trigger: 'Privacy' },
+        { id: 'terms', trigger: 'Terms' },
+        { id: 'contact', trigger: 'Contact' }
+      ],
+      contactChannels: [
+        {
+          label: 'Email',
+          value: 'vimlesh11072000@gmail.com',
+          icon: 'lucide:mail',
+          href: 'mailto:vimlesh11072000@gmail.com',
+          tint: 'bg-linear-135 from-[#7c3aed] to-[#6366f1]'
+        },
+        {
+          label: 'GitHub',
+          value: 'github.com/Vimlesh-Kumar',
+          icon: 'mdi:github',
+          href: 'https://github.com/Vimlesh-Kumar',
+          tint: 'bg-linear-135 from-[#1e293b] to-[#334155]'
+        },
+        {
+          label: 'LinkedIn',
+          value: 'linkedin.com/in/vimlesh11',
+          icon: 'mdi:linkedin',
+          href: 'https://linkedin.com/in/vimlesh11',
+          tint: 'bg-linear-135 from-[#0077b5] to-[#00a0dc]'
+        },
+        {
+          label: 'Portfolio',
+          value: 'vimlesh.dev',
+          icon: 'lucide:globe',
+          href: 'https://vimlesh.dev',
+          tint: 'bg-linear-135 from-[#7c3aed] to-[#ec4899]'
+        }
       ]
     }
   },
@@ -345,463 +435,68 @@ export default {
 </script>
 
 <style scoped>
-.footer-shell {
-  background: transparent;
-  color: var(--text-main);
-}
-
-/* ── Decorative top divider ─────────────────── */
-.footer-divider {
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--brand-1), var(--brand-2), var(--brand-3), transparent);
-  opacity: 0.4;
-  border-radius: 2px;
-}
-
-/* ── Main panel ─────────────────────────────── */
-.footer-panel {
-  border-radius: var(--r-xl);
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  color: var(--text-main);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-md);
-  position: relative;
-  overflow: hidden;
-}
-
-.footer-panel::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.06), transparent 70%);
-  pointer-events: none;
-}
-
-.footer-panel::after {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  left: -10%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.05), transparent 70%);
-  pointer-events: none;
-}
-
-/* ── Brand ──────────────────────────────────── */
-.footer-brand-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  background: var(--grad-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
-}
-
-.footer-brand {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.4rem;
+/* Shared long-form styling for the three legal dialogs. */
+.prose-legal :deep(h3),
+.prose-legal h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
 }
 
-.footer-tagline {
+.prose-legal p {
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.legal-meta {
   font-size: 0.78rem;
-  color: var(--text-soft);
-  font-weight: 500;
-  letter-spacing: 0.02em;
-}
-
-.footer-copy {
-  color: var(--text-soft);
-  line-height: 1.7;
-  font-size: 0.92rem;
-}
-
-/* ── Developer card ─────────────────────────── */
-.dev-card {
-  border-radius: var(--r-md);
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.06), rgba(6, 182, 212, 0.04));
-  border: 1px solid var(--glass-border);
-  position: relative;
-  overflow: hidden;
-}
-
-.dev-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--grad-primary);
-}
-
-.dev-card-label {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-faint);
   font-weight: 700;
-  display: flex;
-  align-items: center;
-}
-
-.dev-name {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--text-strong);
-}
-
-.dev-role {
-  font-size: 0.85rem;
-  color: var(--brand-2);
-  font-weight: 600;
-}
-
-/* ── Social buttons ─────────────────────────── */
-.social-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-soft);
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.social-btn:hover {
-  background: var(--grad-primary);
-  color: #fff;
-  border-color: transparent;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
-}
-
-/* ── Navigation links ───────────────────────── */
-.footer-heading {
-  margin-bottom: 18px;
-  font-weight: 800;
-  font-size: 0.85rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-strong);
-  position: relative;
-  padding-left: 12px;
 }
 
-.footer-heading::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 2px;
-  bottom: 2px;
-  width: 3px;
-  border-radius: 3px;
-  background: var(--grad-primary);
-}
-
-.footer-links {
+.legal-strip {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.footer-link {
-  color: var(--text-soft);
-  text-align: left;
-  background: transparent;
-  border: 0;
-  padding: 6px 0;
-  cursor: pointer;
-  font-weight: 500;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  border-radius: var(--r-md);
+  border: 1px solid var(--glass-border);
+  background: var(--grad-primary-soft);
+  padding: 0.85rem 1rem;
   font-size: 0.88rem;
-  display: flex;
-  align-items: center;
-  transition: all 0.2s ease;
-  border-radius: 8px;
 }
 
-.footer-link:hover {
-  color: var(--brand-2);
-  transform: translateX(6px);
-}
-
-/* ── Tech badges ────────────────────────────── */
-.tech-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 12px;
-  border-radius: var(--r-pill);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-main);
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(6, 182, 212, 0.06));
-  border: 1px solid var(--glass-border);
-  transition: all 0.25s ease;
-  cursor: default;
-}
-
-.tech-badge:hover {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.16), rgba(6, 182, 212, 0.12));
-  border-color: var(--brand-2);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
-}
-
-/* ── Category chips ─────────────────────────── */
-.footer-chip {
-  color: var(--text-main) !important;
-  border-color: var(--glass-border) !important;
-  font-weight: 600;
-  font-size: 0.78rem;
-  transition: all 0.2s ease;
-}
-
-.footer-chip:hover {
-  color: var(--brand-2) !important;
-  border-color: var(--brand-2) !important;
-  transform: translateY(-2px);
-}
-
-/* ── Stats bar ──────────────────────────────── */
-.stats-bar {
-  border-radius: var(--r-lg);
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.06), rgba(99, 102, 241, 0.04), rgba(6, 182, 212, 0.06));
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(12px);
-}
-
-.stat-value {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 800;
-  background: var(--grad-text);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  font-size: 0.78rem;
-  color: var(--text-soft);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* ── Bottom bar ─────────────────────────────── */
-.bottom-bar {
-  border-top: 1px solid var(--glass-border);
-  padding-top: 24px;
-}
-
-.bottom-text {
-  font-size: 0.82rem;
-  color: var(--text-soft);
-  font-weight: 500;
-}
-
-.bottom-link {
-  background: transparent;
-  border: 0;
-  color: var(--text-faint);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-  transition: color 0.2s ease;
-}
-
-.bottom-link:hover {
-  color: var(--brand-2);
-}
-
-/* ── Pulse dot animation ────────────────────── */
+/* Live-status dot next to the copyright line. */
 .pulse-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgb(16 185 129 / 0.7);
   animation: pulse-ring 2s infinite;
 }
 
 @keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
-  70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  70% { box-shadow: 0 0 0 8px rgb(16 185 129 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(16 185 129 / 0); }
 }
 
-/* ── Heart beat animation ───────────────────── */
 .heart-beat {
-  animation: heartbeat 1.4s ease-in-out infinite;
+  animation: heart-beat 1.4s ease-in-out infinite;
 }
 
-@keyframes heartbeat {
+@keyframes heart-beat {
   0%, 100% { transform: scale(1); }
-  14% { transform: scale(1.2); }
-  28% { transform: scale(1); }
-  42% { transform: scale(1.15); }
-  56% { transform: scale(1); }
+  20% { transform: scale(1.25); }
+  40% { transform: scale(1); }
 }
 
-/* ── Modal shells ───────────────────────────── */
-.modal-shell {
-  background: var(--surface);
-  border-radius: var(--r-xl);
-  color: var(--text-main);
-  max-height: 85vh;
-  overflow-y: auto;
-}
-
-.modal-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.modal-icon--purple { background: linear-gradient(135deg, #7c3aed, #6366f1); }
-.modal-icon--blue { background: linear-gradient(135deg, #6366f1, #06b6d4); }
-.modal-icon--cyan { background: linear-gradient(135deg, #06b6d4, #22d3ee); }
-
-.modal-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: var(--text-strong);
-  letter-spacing: -0.02em;
-}
-
-.modal-body p {
-  color: var(--text-soft);
-  line-height: 1.75;
-  font-size: 0.92rem;
-  margin-bottom: 12px;
-}
-
-.modal-section-label {
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-faint);
-  font-weight: 700;
-  margin-bottom: 20px !important;
-}
-
-.modal-heading {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-strong);
-  margin-top: 20px;
-  margin-bottom: 8px;
-}
-
-.modal-contact-strip {
-  display: flex;
-  align-items: center;
-  padding: 14px 18px;
-  border-radius: var(--r-sm);
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.06), rgba(6, 182, 212, 0.04));
-  border: 1px solid var(--glass-border);
-  font-size: 0.85rem;
-  color: var(--text-soft);
-}
-
-/* ── Contact cards ──────────────────────────── */
-.contact-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.contact-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  border-radius: var(--r-md);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  text-decoration: none;
-  color: var(--text-main);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-}
-
-.contact-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--brand-2);
-}
-
-.contact-card-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.contact-card-label {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-faint);
-  font-weight: 700;
-  margin-bottom: 2px;
-}
-
-.contact-card-value {
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--text-strong);
-}
-
-.contact-location {
-  display: flex;
-  align-items: center;
-  font-size: 0.85rem;
-  color: var(--text-soft);
-  font-weight: 500;
-}
-
-/* ── Responsive ─────────────────────────────── */
-@media (max-width: 600px) {
-  .footer-panel {
-    padding: 24px 20px !important;
-  }
-  .stats-bar {
-    padding: 20px 12px !important;
-  }
-  .stat-value {
-    font-size: 1.2rem;
-  }
-  .modal-shell {
-    padding: 24px 20px !important;
-    border-radius: var(--r-lg);
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot,
+  .heart-beat {
+    animation: none;
   }
 }
 </style>

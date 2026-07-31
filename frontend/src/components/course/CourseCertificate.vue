@@ -1,25 +1,27 @@
 <template>
-  <v-card class="glass-panel section-card pa-6 text-center" flat>
-    <div class="eyebrow mb-4 d-inline-flex">🎓 Certificate earned</div>
-    <div class="cert-frame mb-5">
+  <div class="glass-panel section-card p-6 text-center">
+    <div class="eyebrow mb-4">🎓 Certificate earned</div>
+    <div class="mb-5 flex justify-center">
       <canvas ref="canvas" width="4000" height="2800" class="cert-canvas"></canvas>
     </div>
-    <div class="d-flex justify-center gap-4 flex-wrap">
-      <v-btn class="btn-gradient" @click="downloadPNG">
-        <v-icon start>mdi-image</v-icon> Download Image (PNG)
-      </v-btn>
-      <v-btn class="btn-gradient-secondary" @click="downloadPDF">
-        <v-icon start>mdi-file-pdf-box</v-icon> Download Document (PDF)
-      </v-btn>
+    <div class="flex flex-wrap justify-center gap-4">
+      <button class="btn-brand" @click="downloadPNG">
+        <app-icon name="lucide:image" size="18" /> Download Image (PNG)
+      </button>
+      <button class="btn-accent" @click="downloadPDF">
+        <app-icon name="lucide:file-text" size="18" /> Download Document (PDF)
+      </button>
     </div>
-  </v-card>
+  </div>
 </template>
 
 <script>
 import { jsPDF } from 'jspdf'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 export default {
   name: 'CourseCertificate',
+  components: { AppIcon },
   props: {
     name: { type: String, default: 'Student' },
     course: { type: String, default: '' },
@@ -432,7 +434,6 @@ export default {
 </script>
 
 <style scoped>
-.cert-frame { display: flex; justify-content: center; }
 .cert-canvas {
   width: 100%;
   max-width: 100%;
@@ -441,19 +442,25 @@ export default {
   box-shadow: var(--shadow-lg);
   display: block;
 }
-.btn-gradient-secondary {
-  background: var(--grad-accent) !important;
-  color: #fff !important;
-  border: none !important;
+
+/* Warm counterpart to the brand-gradient `.btn-brand`. */
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--r-pill);
+  background: var(--grad-accent);
+  color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
   box-shadow: 0 10px 25px rgba(244, 63, 94, 0.2);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
-.btn-gradient-secondary:hover {
+.btn-accent:hover {
   transform: translateY(-2px);
   filter: brightness(1.05);
   box-shadow: 0 20px 45px rgba(244, 63, 94, 0.35);
-}
-.gap-4 {
-  gap: 16px;
 }
 </style>

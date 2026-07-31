@@ -1,52 +1,59 @@
 <template>
-  <v-container class="app-section">
-    <section class="page-intro pa-6 pa-md-10 mb-8">
+  <div class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
+    <section class="page-intro mb-8 p-6 md:p-10">
       <div class="eyebrow mb-4">Purchase History</div>
       <h1 class="app-section-title mb-3">Your receipts</h1>
-      <p class="app-section-copy mb-0">Every enrollment you've completed, with its coupon and total.</p>
+      <p class="text-muted-foreground">Every enrollment you've completed, with its coupon and total.</p>
     </section>
 
-    <div v-if="loading" class="text-center py-12">
-      <v-progress-circular indeterminate color="primary" size="44" />
+    <div v-if="loading" class="py-12 text-center">
+      <app-icon name="lucide:loader-circle" size="44" class="mx-auto animate-spin text-primary" />
     </div>
 
-    <div v-else-if="orders.length" class="d-grid ga-5">
-      <v-card v-for="order in orders" :key="order.ref" class="glass-panel section-card pa-6" flat>
-        <div class="d-flex flex-column flex-md-row justify-space-between ga-4">
-          <div class="flex-grow-1">
-            <div class="d-flex align-center flex-wrap ga-3 mb-3">
-              <span class="order-ref">{{ order.ref }}</span>
-              <v-chip size="small" variant="tonal" color="success">
-                <v-icon start size="14">mdi-check-decagram</v-icon>{{ order.paymentMethod }}
-              </v-chip>
-              <span class="text-caption text-medium-emphasis">{{ formatDate(order.createdAt) }}</span>
+    <div v-else-if="orders.length" class="grid gap-5">
+      <div v-for="order in orders" :key="order.ref" class="glass-panel section-card p-6">
+        <div class="flex flex-col justify-between gap-4 md:flex-row">
+          <div class="flex-1">
+            <div class="mb-3 flex flex-wrap items-center gap-3">
+              <span class="font-display font-extrabold tracking-wide">{{ order.ref }}</span>
+              <span
+                class="inline-flex items-center gap-1 rounded-full bg-emerald-500/12 px-2.5 py-1 text-xs font-semibold text-emerald-500"
+              >
+                <app-icon name="lucide:badge-check" size="14" />{{ order.paymentMethod }}
+              </span>
+              <span class="text-xs text-muted-foreground">{{ formatDate(order.createdAt) }}</span>
             </div>
-            <div class="d-flex flex-column ga-2">
-              <div v-for="title in order.titles" :key="title" class="d-flex align-center">
-                <v-icon size="18" color="primary" class="mr-2">mdi-play-circle-outline</v-icon>
-                <span class="font-weight-medium">{{ title }}</span>
+            <div class="flex flex-col gap-2">
+              <div v-for="title in order.titles" :key="title" class="flex items-center gap-2">
+                <app-icon name="lucide:circle-play" size="18" class="text-primary" />
+                <span class="font-medium">{{ title }}</span>
               </div>
             </div>
           </div>
-          <div class="text-md-right">
-            <div class="text-caption text-medium-emphasis mb-1">{{ order.itemCount }} course{{ order.itemCount === 1 ? '' : 's' }}</div>
-            <div class="text-h5 font-weight-black gradient-text">₹{{ formatMoney(order.total) }}</div>
+          <div class="md:text-right">
+            <div class="mb-1 text-xs text-muted-foreground">
+              {{ order.itemCount }} course{{ order.itemCount === 1 ? '' : 's' }}
+            </div>
+            <div class="gradient-text font-display text-2xl font-black">₹{{ formatMoney(order.total) }}</div>
           </div>
         </div>
-      </v-card>
+      </div>
     </div>
 
-    <v-card v-else class="glass-panel section-card pa-10 text-center" flat>
-      <v-icon size="56" color="primary" class="mb-3">mdi-receipt-text-outline</v-icon>
-      <h3 class="text-h6 font-weight-bold mb-4">No purchases yet.</h3>
-      <v-btn class="btn-gradient" @click="$router.push('/courses/all')">Browse courses</v-btn>
-    </v-card>
-  </v-container>
+    <div v-else class="glass-panel section-card p-10 text-center">
+      <app-icon name="lucide:receipt-text" size="56" class="mx-auto mb-3 text-primary" />
+      <h3 class="mb-4 font-display text-lg font-bold">No purchases yet.</h3>
+      <button class="btn-brand mx-auto" @click="$router.push('/courses/all')">Browse courses</button>
+    </div>
+  </div>
 </template>
 
 <script>
+import AppIcon from '@/components/ui/AppIcon.vue'
+
 export default {
   name: 'OrdersPage',
+  components: { AppIcon },
   data() {
     return { loading: true, orders: [] }
   },
@@ -70,13 +77,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.d-grid { display: grid; }
-.order-ref {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800;
-  color: var(--text-strong);
-  letter-spacing: 0.02em;
-}
-</style>

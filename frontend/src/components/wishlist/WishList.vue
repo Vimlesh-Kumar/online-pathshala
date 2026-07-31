@@ -1,32 +1,28 @@
 <template>
-  <v-btn icon variant="text" class="wishlist-button">
-    <v-icon
-      v-if="!wishlistCoursesId.includes(course_id)"
-      color="error"
-      @click="addToWishlist(course_id)"
-    >
-      mdi-heart-outline
-    </v-icon>
-    <v-icon
-      v-else
-      color="error"
-      @click="removeFromWishlist(course_id)"
-    >
-      mdi-heart
-    </v-icon>
-  </v-btn>
+  <button
+    class="grid size-10 shrink-0 place-items-center rounded-full text-[#f43f5e] transition-colors hover:bg-[#f43f5e]/10"
+    :aria-label="isWished ? 'Remove from wishlist' : 'Add to wishlist'"
+    @click="isWished ? removeFromWishlist(course_id) : addToWishlist(course_id)"
+  >
+    <app-icon name="lucide:heart" size="20" :filled="isWished" />
+  </button>
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import { toast } from '@/plugins/toast'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 export default {
+  components: { AppIcon },
   props: ['course_id', 'user'],
   computed: {
     ...mapState(['wishlistCourses']),
     wishlistCoursesId() {
       return this.wishlistCourses ? this.wishlistCourses.map((w) => w.id) : []
+    },
+    isWished() {
+      return this.wishlistCoursesId.includes(this.course_id)
     }
   },
   methods: {
@@ -57,9 +53,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.wishlist-button {
-  color: #b42318;
-}
-</style>

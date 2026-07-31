@@ -1,149 +1,276 @@
 <template>
-  <v-app-bar
-    flat
-    height="84"
-    class="header-shell px-2 px-md-6"
-  >
-    <v-container class="py-0 fill-height">
-      <div class="header-panel d-flex align-center w-100 px-2 px-md-4">
-        <router-link to="/" class="brand-link d-flex align-center text-decoration-none">
-          <v-avatar rounded="lg" size="44" class="mr-3 brand-mark">
-            <v-icon color="white" size="26">mdi-school</v-icon>
-          </v-avatar>
-          <div>
-            <div class="brand-name gradient-text">Online Pathshala</div>
-            <div class="brand-subtitle">Learn anything, beautifully</div>
-          </div>
+  <header class="sticky top-0 z-50 w-full px-3 pt-3 md:px-6 md:pt-5">
+    <div class="mx-auto max-w-[1400px]">
+      <div
+        class="flex h-16 items-center gap-2 rounded-full border border-black/5 bg-white/80 px-3 shadow-lg backdrop-blur-xl md:gap-3 md:px-5 dark:border-white/10 dark:bg-[#0e1626]/80"
+      >
+        <router-link to="/" class="flex shrink-0 items-center gap-3 no-underline">
+          <span
+            class="grid size-11 place-items-center rounded-2xl bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] shadow-[0_10px_30px_-8px_rgb(124_58_237_/_0.8)]"
+          >
+            <app-icon name="lucide:graduation-cap" size="24" class="text-white" />
+          </span>
+          <span class="hidden sm:block">
+            <span class="gradient-text block font-display text-[1.1rem] leading-tight font-extrabold">
+              Online Pathshala
+            </span>
+            <span class="block text-[0.72rem] text-muted-foreground">Learn anything, beautifully</span>
+          </span>
         </router-link>
 
-        <v-menu open-on-hover transition="slide-y-transition">
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              variant="text"
-              class="ml-4 d-none d-md-inline-flex nav-button"
+        <dropdown-menu>
+          <dropdown-menu-trigger as-child>
+            <button
+              class="hidden shrink-0 items-center gap-1 rounded-full px-3 py-2 text-sm font-semibold text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground md:inline-flex"
             >
               Categories
-              <v-icon end size="18">mdi-chevron-down</v-icon>
-            </v-btn>
-          </template>
-          <v-list class="rounded-xl pa-2">
-            <v-list-item
+              <app-icon name="lucide:chevron-down" size="16" />
+            </button>
+          </dropdown-menu-trigger>
+          <dropdown-menu-content align="start" class="w-56 rounded-2xl p-2">
+            <dropdown-menu-item
               v-for="cat in category"
               :key="cat"
-              rounded="lg"
-              :title="cat"
+              class="cursor-pointer rounded-xl px-3 py-2 font-medium"
               @click="handleCategorySelect(cat)"
-            />
-          </v-list>
-        </v-menu>
+            >
+              {{ cat }}
+            </dropdown-menu-item>
+          </dropdown-menu-content>
+        </dropdown-menu>
 
-        <v-spacer />
-
-        <v-text-field
-          v-model="searchQuery"
-          prepend-inner-icon="mdi-magnify"
-          placeholder="Search courses, topics, instructors"
-          variant="solo-filled"
-          flat
-          rounded="pill"
-          hide-details
-          density="comfortable"
-          class="search-input mx-2 mx-md-6"
-          @keyup.enter="handleSearch"
-        >
-          <template #append-inner>
-            <v-chip
-              size="small" variant="outlined" class="kbd-hint d-none d-md-inline-flex"
-              @click.stop="openCommandPalette"
-            >⌘K</v-chip>
-          </template>
-        </v-text-field>
-
-        <div class="d-none d-lg-flex align-center mr-4">
-          <v-btn variant="text" class="nav-button" @click="$router.push('/courses/all')">Explore</v-btn>
-          <v-btn
-            v-if="user?.user_role === 'Tutor'"
-            variant="text"
-            class="nav-button"
-            @click="$router.push('/user/tutor/add-course')"
+        <div class="relative mx-1 hidden min-w-0 flex-1 items-center sm:flex md:mx-4">
+          <app-icon
+            name="lucide:search"
+            size="18"
+            class="pointer-events-none absolute left-4 text-muted-foreground"
+          />
+          <input
+            v-model="searchQuery"
+            type="search"
+            aria-label="Search courses"
+            placeholder="Search courses, topics, instructors"
+            class="h-11 w-full rounded-full border border-white/10 bg-foreground/5 pr-16 pl-11 text-sm outline-none transition placeholder:text-muted-foreground focus:border-primary/50 focus:bg-foreground/[0.07] focus:ring-3 focus:ring-primary/20"
+            @keyup.enter="handleSearch"
+          />
+          <button
+            type="button"
+            class="absolute right-3 hidden rounded-full border border-white/15 px-2 py-0.5 text-[0.7rem] font-bold text-muted-foreground transition-colors hover:text-foreground md:block"
+            title="Open command palette"
+            @click.stop="openCommandPalette"
           >
-            Teach
-          </v-btn>
+            ⌘K
+          </button>
         </div>
 
-        <v-btn
-          icon
-          variant="text"
-          class="action-button mr-1"
-          :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-          @click="toggleTheme"
-        >
-          <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
-        </v-btn>
+        <div class="ml-auto flex items-center gap-1 sm:ml-0">
+          <div class="hidden items-center lg:flex">
+            <button
+              class="rounded-full px-3 py-2 text-sm font-semibold text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground"
+              @click="$router.push('/courses/all')"
+            >
+              Explore
+            </button>
+            <button
+              v-if="user?.user_role === 'Tutor'"
+              class="rounded-full px-3 py-2 text-sm font-semibold text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground"
+              @click="$router.push('/user/tutor/add-course')"
+            >
+              Teach
+            </button>
+          </div>
 
-        <div v-if="user" class="d-flex align-center">
-          <v-btn icon variant="text" class="action-button" @click="$router.push('/user/cart')">
-            <v-badge :content="cartCount" color="primary" offset-x="4" offset-y="4" :model-value="cartCount > 0">
-              <v-icon>mdi-cart-outline</v-icon>
-            </v-badge>
-          </v-btn>
+          <button
+            class="grid size-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground"
+            :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            @click="toggleTheme"
+          >
+            <app-icon :name="isDark ? 'lucide:sun' : 'lucide:moon'" size="20" />
+          </button>
 
-          <v-btn icon variant="text" class="action-button ml-1" @click="$router.push('/user/wishlist')">
-            <v-icon>mdi-heart-outline</v-icon>
-          </v-btn>
+          <template v-if="user">
+            <button
+              class="relative grid size-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground"
+              title="Cart"
+              @click="$router.push('/user/cart')"
+            >
+              <app-icon name="lucide:shopping-cart" size="20" />
+              <span
+                v-if="cartCount > 0"
+                class="absolute top-0.5 right-0.5 grid min-w-4.5 place-items-center rounded-full bg-primary px-1 text-[0.65rem] font-bold text-primary-foreground"
+              >
+                {{ cartCount }}
+              </span>
+            </button>
 
-          <v-menu transition="scale-transition">
-            <template #activator="{ props }">
-              <v-avatar v-bind="props" size="42" class="ml-3 profile-badge">
-                <v-img v-if="user.avatar_url" :src="user.avatar_url" cover />
-                <span v-else>{{ user.full_name?.charAt(0) }}</span>
-              </v-avatar>
-            </template>
+            <button
+              class="hidden size-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground sm:grid"
+              title="Wishlist"
+              @click="$router.push('/user/wishlist')"
+            >
+              <app-icon name="lucide:heart" size="20" />
+            </button>
 
-            <v-card class="rounded-2xl profile-menu" min-width="240">
-              <v-card-text>
-                <div class="font-weight-bold text-subtitle-1">{{ user.full_name }}</div>
-                <div class="text-body-2 text-medium-emphasis">{{ user.email }}</div>
-              </v-card-text>
-              <v-divider />
-              <v-list class="py-2">
-                <v-list-item prepend-icon="mdi-view-dashboard-outline" title="My learning" @click="$router.push('/user')" />
-                <v-list-item v-if="user.user_role === 'Tutor'" prepend-icon="mdi-chart-box-outline" title="Instructor dashboard" @click="$router.push('/user/tutor/dashboard')" />
-                <v-list-item prepend-icon="mdi-account-cog-outline" title="Profile settings" @click="$router.push('/user/profile')" />
-                <v-list-item prepend-icon="mdi-receipt-text-outline" title="My orders" @click="$router.push('/user/orders')" />
-                <v-list-item prepend-icon="mdi-logout" title="Logout" @click="handleLogoutClick" />
-              </v-list>
-            </v-card>
-          </v-menu>
-        </div>
+            <dropdown-menu>
+              <dropdown-menu-trigger as-child>
+                <button
+                  class="ml-1 grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] font-extrabold text-white uppercase shadow-[0_10px_30px_-10px_rgb(124_58_237_/_0.9)]"
+                  title="Account"
+                >
+                  <img
+                    v-if="user.avatar_url"
+                    :src="user.avatar_url"
+                    alt=""
+                    class="size-full object-cover"
+                  />
+                  <span v-else>{{ user.full_name?.charAt(0) }}</span>
+                </button>
+              </dropdown-menu-trigger>
 
-        <div v-else class="d-flex align-center">
-          <v-btn variant="text" class="nav-button mr-2" @click="$router.push('/user/sign-in')">Log in</v-btn>
-          <v-btn class="btn-gradient px-6" @click="$router.push('/user/sign-up')">Sign up</v-btn>
+              <dropdown-menu-content align="end" class="w-64 rounded-2xl p-2">
+                <div class="px-3 py-2">
+                  <div class="truncate font-bold">{{ user.full_name }}</div>
+                  <div class="truncate text-sm text-muted-foreground">{{ user.email }}</div>
+                </div>
+                <dropdown-menu-separator />
+                <dropdown-menu-item
+                  v-for="item in accountMenu"
+                  :key="item.label"
+                  class="cursor-pointer gap-3 rounded-xl px-3 py-2 font-medium"
+                  @click="item.action()"
+                >
+                  <app-icon :name="item.icon" size="18" class="text-muted-foreground" />
+                  {{ item.label }}
+                </dropdown-menu-item>
+              </dropdown-menu-content>
+            </dropdown-menu>
+          </template>
+
+          <template v-else>
+            <button
+              class="rounded-full px-3 py-2 text-sm font-semibold text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground"
+              @click="$router.push('/user/sign-in')"
+            >
+              Log in
+            </button>
+            <button
+              class="rounded-full bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] px-5 py-2.5 text-sm font-bold text-white shadow-[0_12px_30px_-10px_rgb(124_58_237_/_0.9)] transition-transform hover:-translate-y-0.5"
+              @click="$router.push('/user/sign-up')"
+            >
+              Sign up
+            </button>
+          </template>
+
+          <!-- Mobile: search + categories live behind this sheet. -->
+          <sheet>
+            <sheet-trigger as-child>
+              <button
+                class="grid size-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/5 sm:hidden"
+                title="Menu"
+              >
+                <app-icon name="lucide:menu" size="22" />
+              </button>
+            </sheet-trigger>
+            <sheet-content side="right" class="w-[88vw] max-w-sm">
+              <sheet-header>
+                <sheet-title class="gradient-text font-display text-xl font-extrabold">
+                  Online Pathshala
+                </sheet-title>
+              </sheet-header>
+
+              <div class="flex flex-col gap-6 overflow-y-auto px-4 pb-8">
+                <div class="relative flex items-center">
+                  <app-icon
+                    name="lucide:search"
+                    size="18"
+                    class="pointer-events-none absolute left-4 text-muted-foreground"
+                  />
+                  <input
+                    v-model="searchQuery"
+                    type="search"
+                    aria-label="Search courses"
+                    placeholder="Search courses"
+                    class="h-11 w-full rounded-full border border-white/10 bg-foreground/5 pr-4 pl-11 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
+                    @keyup.enter="handleSearch"
+                  />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <button
+                    class="rounded-xl px-3 py-2.5 text-left font-semibold transition-colors hover:bg-foreground/5"
+                    @click="$router.push('/courses/all')"
+                  >
+                    Explore courses
+                  </button>
+                  <button
+                    v-if="user"
+                    class="rounded-xl px-3 py-2.5 text-left font-semibold transition-colors hover:bg-foreground/5"
+                    @click="$router.push('/user/wishlist')"
+                  >
+                    Wishlist
+                  </button>
+                  <button
+                    v-if="user?.user_role === 'Tutor'"
+                    class="rounded-xl px-3 py-2.5 text-left font-semibold transition-colors hover:bg-foreground/5"
+                    @click="$router.push('/user/tutor/add-course')"
+                  >
+                    Teach on Pathshala
+                  </button>
+                </div>
+
+                <div>
+                  <div class="mb-2 px-3 text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                    Categories
+                  </div>
+                  <div class="flex flex-wrap gap-2 px-3">
+                    <button
+                      v-for="cat in category"
+                      :key="cat"
+                      class="rounded-full border border-white/12 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-foreground/5"
+                      @click="handleCategorySelect(cat)"
+                    >
+                      {{ cat }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </sheet-content>
+          </sheet>
         </div>
       </div>
-    </v-container>
-  </v-app-bar>
+    </div>
+  </header>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
-import { computed } from 'vue'
-import { useTheme } from 'vuetify'
+import { useAppTheme } from '@/composables/useAppTheme'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
 export default {
+  components: {
+    AppIcon,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger
+  },
   setup() {
-    const theme = useTheme()
-    const stored = localStorage.getItem('theme')
-    if (stored === 'light' || stored === 'dark') theme.change(stored)
-
-    const isDark = computed(() => theme.current.value.dark)
-    function toggleTheme() {
-      const next = theme.current.value.dark ? 'light' : 'dark'
-      theme.change(next)
-      localStorage.setItem('theme', next)
-    }
+    const { isDark, toggleTheme } = useAppTheme()
     return { isDark, toggleTheme }
   },
   data() {
@@ -162,6 +289,22 @@ export default {
     ...mapGetters(['user', 'category', 'cartItemCount']),
     cartCount() {
       return this.cartItemCount || 0
+    },
+    accountMenu() {
+      const items = [
+        { label: 'My learning', icon: 'lucide:layout-dashboard', action: () => this.$router.push('/user') },
+        { label: 'Profile settings', icon: 'lucide:user-cog', action: () => this.$router.push('/user/profile') },
+        { label: 'My orders', icon: 'lucide:receipt-text', action: () => this.$router.push('/user/orders') },
+        { label: 'Logout', icon: 'lucide:log-out', action: () => this.handleLogoutClick() }
+      ]
+      if (this.user?.user_role === 'Tutor') {
+        items.splice(1, 0, {
+          label: 'Instructor dashboard',
+          icon: 'lucide:chart-column',
+          action: () => this.$router.push('/user/tutor/dashboard')
+        })
+      }
+      return items
     }
   },
   watch: {
@@ -205,70 +348,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.header-shell {
-  background: transparent !important;
-}
-
-.header-panel {
-  height: 64px;
-  border-radius: var(--r-pill);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-md);
-}
-
-.brand-link {
-  color: var(--text-strong);
-}
-
-.brand-mark {
-  background: var(--grad-primary);
-  box-shadow: var(--shadow-glow);
-}
-
-.brand-name {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.12rem;
-  font-weight: 800;
-  line-height: 1.1;
-}
-
-.brand-subtitle {
-  color: var(--text-soft);
-  font-size: 0.74rem;
-}
-
-.search-input {
-  max-width: 520px;
-}
-
-.kbd-hint {
-  cursor: pointer;
-  font-weight: 700;
-  color: var(--text-soft);
-  opacity: 0.85;
-}
-
-.nav-button,
-.action-button {
-  color: var(--text-main);
-  font-weight: 600;
-}
-
-.profile-badge {
-  background: var(--grad-primary);
-  color: white;
-  font-weight: 800;
-  text-transform: uppercase;
-  cursor: pointer;
-  box-shadow: var(--shadow-glow);
-}
-
-.profile-menu {
-  border: 1px solid var(--glass-border);
-}
-</style>

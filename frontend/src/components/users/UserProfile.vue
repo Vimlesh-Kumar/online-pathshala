@@ -1,335 +1,295 @@
 <template>
-  <v-container class="app-section">
-    <section class="page-intro pa-6 pa-md-10 mb-10">
+  <div class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
+    <section class="page-intro mb-10 p-6 md:p-10">
       <div class="eyebrow mb-4">Account Settings</div>
       <h1 class="app-section-title mb-3">Manage Your Profile</h1>
-      <p class="app-section-copy mb-0">
+      <p class="text-muted-foreground">
         Update your personal information, links, avatar, and security credentials.
       </p>
     </section>
 
-    <v-row>
-      <!-- Navigation Tabs / Left Sidebar on Large Screens -->
-      <v-col cols="12" md="3">
-        <v-card class="glass-panel section-card pa-4 mb-6" flat>
-          <v-tabs
-            v-model="activeTab"
-            direction="vertical"
-            color="primary"
-            class="profile-tabs"
-          >
-            <v-tab value="profile" class="justify-start py-3">
-              <v-icon start class="mr-2">mdi-account-circle-outline</v-icon>
-              Edit Profile
-            </v-tab>
-            <v-tab value="socials" class="justify-start py-3">
-              <v-icon start class="mr-2">mdi-link-variant</v-icon>
-              Social Profiles
-            </v-tab>
-            <v-tab value="security" class="justify-start py-3">
-              <v-icon start class="mr-2">mdi-shield-lock-outline</v-icon>
-              Password & Security
-            </v-tab>
-          </v-tabs>
-        </v-card>
-      </v-col>
+    <tabs v-model="activeTab" orientation="vertical" class="grid gap-6 md:grid-cols-12">
+      <!-- Navigation -->
+      <div class="md:col-span-3">
+        <div class="glass-panel section-card p-4">
+          <tabs-list class="flex h-auto w-full flex-row gap-1 bg-transparent p-0 md:flex-col">
+            <tabs-trigger
+              v-for="tab in tabs"
+              :key="tab.value"
+              :value="tab.value"
+              class="w-full justify-start gap-2 rounded-xl px-3 py-3 font-semibold data-[state=active]:bg-primary/12 data-[state=active]:text-primary"
+            >
+              <app-icon :name="tab.icon" size="18" />
+              <span class="hidden sm:inline">{{ tab.label }}</span>
+            </tabs-trigger>
+          </tabs-list>
+        </div>
+      </div>
 
-      <!-- Content Area -->
-      <v-col cols="12" md="9">
-        <v-window v-model="activeTab">
-          <!-- Profile General Form -->
-          <v-window-item value="profile">
-            <v-card class="glass-panel section-card pa-6 pa-md-8" flat>
-              <h2 class="text-h5 font-weight-bold mb-6 text-strong">Personal Information</h2>
-              
-              <!-- Avatar Section -->
-              <div class="mb-8">
-                <div class="text-subtitle-1 font-weight-medium mb-4">Choose Your Avatar</div>
-                
-                <div class="d-flex flex-column flex-sm-row align-center ga-6">
-                  <!-- Current Avatar Preview -->
-                  <div class="avatar-preview-container">
-                    <v-avatar size="100" class="profile-preview-avatar">
-                      <v-img v-if="profileForm.avatar_url" :src="profileForm.avatar_url" cover />
-                      <span v-else class="text-h4 font-weight-bold">{{ userInitials }}</span>
-                    </v-avatar>
-                  </div>
-                  
-                  <div class="flex-grow-1 w-100">
-                    <p class="text-caption text-medium-emphasis mb-3">
-                      Choose from our premium colorful illustrations or upload a custom photo.
-                    </p>
-                    
-                    <!-- Pre-selected Premium Avatars Grid -->
-                    <div class="avatar-grid mb-4">
-                      <v-avatar 
-                        v-for="(avatar, i) in premiumAvatars" 
-                        :key="i"
-                        size="46" 
-                        class="cursor-pointer hover-lift avatar-option"
-                        :class="{ 'avatar-selected': profileForm.avatar_url === avatar }"
-                        @click="selectPremiumAvatar(avatar)"
-                      >
-                        <v-img :src="avatar" cover />
-                      </v-avatar>
-                    </div>
+      <!-- Content -->
+      <div class="md:col-span-9">
+        <!-- Profile general form -->
+        <tabs-content value="profile" class="mt-0">
+          <div class="glass-panel section-card p-6 md:p-8">
+            <h2 class="mb-6 font-display text-2xl font-bold">Personal Information</h2>
 
-                    <div class="d-flex align-center">
-                      <v-file-input
-                        label="Upload Custom Photo"
-                        variant="outlined"
-                        density="compact"
-                        accept="image/*"
-                        prepend-icon=""
-                        prepend-inner-icon="mdi-camera-outline"
-                        hide-details
-                        class="custom-avatar-file-input"
-                        @change="handleAvatarUpload"
-                      />
-                    </div>
+            <!-- Avatar -->
+            <div class="mb-8">
+              <div class="mb-4 font-medium">Choose Your Avatar</div>
+
+              <div class="flex flex-col items-center gap-6 sm:flex-row">
+                <div
+                  class="shrink-0 rounded-full bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] p-1 shadow-[0_18px_40px_-14px_rgb(124_58_237_/_0.9)]"
+                >
+                  <div
+                    class="grid size-25 place-items-center overflow-hidden rounded-full border-4 border-[var(--surface)] bg-[var(--surface-2)] text-3xl font-bold text-primary"
+                  >
+                    <img
+                      v-if="profileForm.avatar_url"
+                      :src="profileForm.avatar_url"
+                      alt="Your avatar"
+                      class="size-full object-cover"
+                    />
+                    <span v-else>{{ userInitials }}</span>
                   </div>
+                </div>
+
+                <div class="w-full flex-1">
+                  <p class="mb-3 text-xs text-muted-foreground">
+                    Choose from our premium colorful illustrations or upload a custom photo.
+                  </p>
+
+                  <div class="avatar-grid mb-4">
+                    <button
+                      v-for="(avatar, i) in premiumAvatars"
+                      :key="i"
+                      type="button"
+                      class="avatar-option size-11.5 overflow-hidden rounded-full bg-[var(--surface-2)]"
+                      :class="{ 'avatar-selected': profileForm.avatar_url === avatar }"
+                      :aria-label="`Select avatar ${i + 1}`"
+                      @click="selectPremiumAvatar(avatar)"
+                    >
+                      <img :src="avatar" alt="" class="size-full object-cover" />
+                    </button>
+                  </div>
+
+                  <label
+                    class="inline-flex max-w-60 cursor-pointer items-center gap-2 rounded-2xl border border-black/10 px-4 py-2.5 text-sm font-semibold transition-colors hover:border-primary/50 dark:border-white/12"
+                  >
+                    <app-icon name="lucide:camera" size="18" />
+                    Upload Custom Photo
+                    <input type="file" accept="image/*" class="sr-only" @change="handleAvatarUpload" />
+                  </label>
                 </div>
               </div>
+            </div>
 
-              <v-divider class="mb-6" />
+            <separator class="mb-6" />
 
-              <!-- Profile Form Inputs -->
-              <v-form ref="profileFormRef" @submit.prevent="saveProfile">
-                <v-row>
-                  <v-col cols="12" sm="6">
-                    <v-text-field
-                      v-model="profileForm.full_name"
-                      label="Full Name"
-                      variant="outlined"
-                      prepend-inner-icon="mdi-account-outline"
-                      :rules="[v => !!v || 'Name is required']"
-                      required
-                    />
-                  </v-col>
-                  
-                  <v-col cols="12" sm="6">
-                    <v-text-field
-                      v-model="profileForm.email"
-                      label="Email Address"
-                      variant="outlined"
-                      prepend-inner-icon="mdi-email-outline"
-                      :rules="[v => !!v || 'Email is required', v => /.+@.+\..+/.test(v) || 'E-mail must be valid']"
-                      required
-                    />
-                  </v-col>
-
-                  <v-col cols="12">
-                    <v-text-field
-                      v-model="profileForm.headline"
-                      label="Headline / Professional Title"
-                      placeholder="e.g. Full Stack Developer | Instructor at Online Pathshala"
-                      variant="outlined"
-                      prepend-inner-icon="mdi-card-text-outline"
-                    />
-                  </v-col>
-
-                  <v-col cols="12" sm="6">
-                    <v-text-field
-                      v-model="profileForm.phone"
-                      label="Phone Number"
-                      placeholder="e.g. +1 (555) 000-0000"
-                      variant="outlined"
-                      prepend-inner-icon="mdi-phone-outline"
-                    />
-                  </v-col>
-
-                  <v-col cols="12" sm="6">
-                    <v-select
-                      v-model="profileForm.gender"
-                      label="Gender"
-                      :items="['Male', 'Female', 'Non-binary', 'Prefer not to say']"
-                      variant="outlined"
-                      prepend-inner-icon="mdi-gender-male-female"
-                    />
-                  </v-col>
-
-                  <v-col cols="12">
-                    <v-text-field
-                      v-model="profileForm.address"
-                      label="Location / Address"
-                      placeholder="e.g. San Francisco, CA"
-                      variant="outlined"
-                      prepend-inner-icon="mdi-map-marker-outline"
-                    />
-                  </v-col>
-
-                  <v-col cols="12">
-                    <v-textarea
-                      v-model="profileForm.bio"
-                      label="Biography"
-                      placeholder="Tell us about yourself, your skills, achievements, and teaching/learning goals."
-                      variant="outlined"
-                      prepend-inner-icon="mdi-text-box-outline"
-                      rows="4"
-                    />
-                  </v-col>
-                </v-row>
-
-                <div class="d-flex justify-end mt-4">
-                  <v-btn
-                    type="submit"
-                    class="btn-gradient px-8"
-                    size="large"
-                    :loading="savingProfile"
-                  >
-                    Save Changes
-                  </v-btn>
-                </div>
-              </v-form>
-            </v-card>
-          </v-window-item>
-
-          <!-- Social Links Form -->
-          <v-window-item value="socials">
-            <v-card class="glass-panel section-card pa-6 pa-md-8" flat>
-              <h2 class="text-h5 font-weight-bold mb-3 text-strong">Social Profiles</h2>
-              <p class="app-section-copy mb-6">
-                Link your social handles and personal website so others in the community can connect with you.
-              </p>
-
-              <v-form @submit.prevent="saveProfile">
-                <v-text-field
-                  v-model="profileForm.website_url"
-                  label="Personal Website"
-                  placeholder="https://yourwebsite.com"
-                  variant="outlined"
-                  prepend-inner-icon="mdi-earth"
-                  class="mb-4"
-                />
-
-                <v-text-field
-                  v-model="profileForm.github_url"
-                  label="GitHub"
-                  placeholder="https://github.com/username"
-                  variant="outlined"
-                  prepend-inner-icon="mdi-github"
-                  class="mb-4"
-                />
-
-                <v-text-field
-                  v-model="profileForm.linkedin_url"
-                  label="LinkedIn"
-                  placeholder="https://linkedin.com/in/username"
-                  variant="outlined"
-                  prepend-inner-icon="mdi-linkedin"
-                  class="mb-4"
-                />
-
-                <v-text-field
-                  v-model="profileForm.twitter_url"
-                  label="Twitter / X"
-                  placeholder="https://twitter.com/username"
-                  variant="outlined"
-                  prepend-inner-icon="mdi-twitter"
-                  class="mb-4"
-                />
-
-                <v-text-field
-                  v-model="profileForm.youtube_url"
-                  label="YouTube"
-                  placeholder="https://youtube.com/c/channelname"
-                  variant="outlined"
-                  prepend-inner-icon="mdi-youtube"
-                  class="mb-6"
-                />
-
-                <div class="d-flex justify-end mt-4">
-                  <v-btn
-                    type="submit"
-                    class="btn-gradient px-8"
-                    size="large"
-                    :loading="savingProfile"
-                  >
-                    Save Links
-                  </v-btn>
-                </div>
-              </v-form>
-            </v-card>
-          </v-window-item>
-
-          <!-- Password & Security Form -->
-          <v-window-item value="security">
-            <v-card class="glass-panel section-card pa-6 pa-md-8" flat>
-              <h2 class="text-h5 font-weight-bold mb-3 text-strong">Change Password</h2>
-              <p class="app-section-copy mb-6">
-                Ensure your account is protected by using a strong, unique password.
-              </p>
-
-              <v-form ref="securityFormRef" @submit.prevent="savePassword">
-                <v-text-field
-                  v-model="securityForm.oldPassword"
-                  label="Current Password"
-                  type="password"
-                  variant="outlined"
-                  prepend-inner-icon="mdi-lock-outline"
-                  :rules="[v => !!v || 'Current password is required']"
+            <form novalidate @submit.prevent="saveProfile">
+              <div class="grid gap-4 sm:grid-cols-2">
+                <app-field
+                  v-model="profileForm.full_name"
+                  label="Full Name"
+                  icon="lucide:user"
+                  :error="profileTouched ? profileErrors.full_name : ''"
                   required
-                  class="mb-4"
                 />
-
-                <v-text-field
-                  v-model="securityForm.newPassword"
-                  label="New Password"
-                  type="password"
-                  variant="outlined"
-                  prepend-inner-icon="mdi-lock-reset"
-                  :rules="[
-                    v => !!v || 'New password is required',
-                    v => (v && v.length >= 6) || 'Password must be at least 6 characters'
-                  ]"
+                <app-field
+                  v-model="profileForm.email"
+                  label="Email Address"
+                  type="email"
+                  icon="lucide:mail"
+                  :error="profileTouched ? profileErrors.email : ''"
                   required
-                  class="mb-4"
+                />
+                <app-field
+                  v-model="profileForm.headline"
+                  class="sm:col-span-2"
+                  label="Headline / Professional Title"
+                  icon="lucide:id-card"
+                  placeholder="e.g. Full Stack Developer | Instructor at Online Pathshala"
+                />
+                <app-field
+                  v-model="profileForm.phone"
+                  label="Phone Number"
+                  icon="lucide:phone"
+                  placeholder="e.g. +1 (555) 000-0000"
                 />
 
-                <v-text-field
-                  v-model="securityForm.confirmPassword"
-                  label="Confirm New Password"
-                  type="password"
-                  variant="outlined"
-                  prepend-inner-icon="mdi-lock-check-outline"
-                  :rules="[
-                    v => !!v || 'Please confirm your new password',
-                    v => v === securityForm.newPassword || 'Passwords do not match'
-                  ]"
-                  required
-                  class="mb-6"
-                />
-
-                <div class="d-flex justify-end mt-4">
-                  <v-btn
-                    type="submit"
-                    class="btn-gradient px-8"
-                    size="large"
-                    :loading="savingPassword"
-                  >
-                    Update Password
-                  </v-btn>
+                <div class="flex flex-col gap-1.5">
+                  <span class="text-sm font-semibold">Gender</span>
+                  <select-root v-model="profileForm.gender">
+                    <select-trigger class="h-12 w-full rounded-2xl" aria-label="Gender">
+                      <select-value placeholder="Select" />
+                    </select-trigger>
+                    <select-content class="rounded-2xl">
+                      <select-item v-for="option in genders" :key="option" :value="option">
+                        {{ option }}
+                      </select-item>
+                    </select-content>
+                  </select-root>
                 </div>
-              </v-form>
-            </v-card>
-          </v-window-item>
-        </v-window>
-      </v-col>
-    </v-row>
-  </v-container>
+
+                <app-field
+                  v-model="profileForm.address"
+                  class="sm:col-span-2"
+                  label="Location / Address"
+                  icon="lucide:map-pin"
+                  placeholder="e.g. San Francisco, CA"
+                />
+                <app-field
+                  v-model="profileForm.bio"
+                  class="sm:col-span-2"
+                  label="Biography"
+                  multiline
+                  :rows="4"
+                  placeholder="Tell us about yourself, your skills, achievements, and teaching/learning goals."
+                />
+              </div>
+
+              <div class="mt-6 flex justify-end">
+                <button type="submit" class="btn-brand px-8" :disabled="savingProfile">
+                  <app-icon v-if="savingProfile" name="lucide:loader-circle" size="18" class="animate-spin" />
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </tabs-content>
+
+        <!-- Social links -->
+        <tabs-content value="socials" class="mt-0">
+          <div class="glass-panel section-card p-6 md:p-8">
+            <h2 class="mb-3 font-display text-2xl font-bold">Social Profiles</h2>
+            <p class="mb-6 text-muted-foreground">
+              Link your social handles and personal website so others in the community can connect with you.
+            </p>
+
+            <form novalidate @submit.prevent="saveProfile">
+              <app-field
+                v-for="link in socialFields"
+                :key="link.key"
+                v-model="profileForm[link.key]"
+                class="mb-4"
+                :label="link.label"
+                :icon="link.icon"
+                :placeholder="link.placeholder"
+              />
+
+              <div class="mt-6 flex justify-end">
+                <button type="submit" class="btn-brand px-8" :disabled="savingProfile">
+                  <app-icon v-if="savingProfile" name="lucide:loader-circle" size="18" class="animate-spin" />
+                  Save Links
+                </button>
+              </div>
+            </form>
+          </div>
+        </tabs-content>
+
+        <!-- Password & security -->
+        <tabs-content value="security" class="mt-0">
+          <div class="glass-panel section-card p-6 md:p-8">
+            <h2 class="mb-3 font-display text-2xl font-bold">Change Password</h2>
+            <p class="mb-6 text-muted-foreground">
+              Ensure your account is protected by using a strong, unique password.
+            </p>
+
+            <form novalidate @submit.prevent="savePassword">
+              <app-field
+                v-model="securityForm.oldPassword"
+                class="mb-4"
+                label="Current Password"
+                type="password"
+                icon="lucide:lock"
+                :error="securityTouched ? securityErrors.oldPassword : ''"
+                required
+              />
+              <app-field
+                v-model="securityForm.newPassword"
+                class="mb-4"
+                label="New Password"
+                type="password"
+                icon="lucide:lock-keyhole"
+                hint="At least 6 characters"
+                :error="securityTouched ? securityErrors.newPassword : ''"
+                required
+              />
+              <app-field
+                v-model="securityForm.confirmPassword"
+                class="mb-6"
+                label="Confirm New Password"
+                type="password"
+                icon="lucide:shield-check"
+                :error="securityTouched ? securityErrors.confirmPassword : ''"
+                required
+              />
+
+              <div class="mt-4 flex justify-end">
+                <button type="submit" class="btn-brand px-8" :disabled="savingPassword">
+                  <app-icon v-if="savingPassword" name="lucide:loader-circle" size="18" class="animate-spin" />
+                  Update Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </tabs-content>
+      </div>
+    </tabs>
+  </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
 import axios from 'axios';
 import { toast } from '../../plugins/toast';
+import AppField from '@/components/ui/AppField.vue';
+import AppIcon from '@/components/ui/AppIcon.vue';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select as SelectRoot,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 
 export default {
+  components: {
+    AppField,
+    AppIcon,
+    Separator,
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+    SelectRoot,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+  },
   data() {
     return {
       activeTab: 'profile',
       savingProfile: false,
       savingPassword: false,
+      profileTouched: false,
+      securityTouched: false,
+      tabs: [
+        { value: 'profile', label: 'Edit Profile', icon: 'lucide:circle-user' },
+        { value: 'socials', label: 'Social Profiles', icon: 'lucide:link' },
+        { value: 'security', label: 'Password & Security', icon: 'lucide:shield-check' }
+      ],
+      genders: ['Male', 'Female', 'Non-binary', 'Prefer not to say'],
+      socialFields: [
+        { key: 'website_url', label: 'Personal Website', icon: 'lucide:globe', placeholder: 'https://yourwebsite.com' },
+        { key: 'github_url', label: 'GitHub', icon: 'mdi:github', placeholder: 'https://github.com/username' },
+        { key: 'linkedin_url', label: 'LinkedIn', icon: 'mdi:linkedin', placeholder: 'https://linkedin.com/in/username' },
+        { key: 'twitter_url', label: 'Twitter / X', icon: 'mdi:twitter', placeholder: 'https://twitter.com/username' },
+        { key: 'youtube_url', label: 'YouTube', icon: 'mdi:youtube', placeholder: 'https://youtube.com/c/channelname' }
+      ],
       profileForm: {
         full_name: '',
         email: '',
@@ -376,6 +336,27 @@ export default {
         .slice(0, 2)
         .join('')
         .toUpperCase();
+    },
+    // Replaces the per-field `:rules` arrays Vuetify's <v-form> used to collect.
+    profileErrors() {
+      return {
+        full_name: this.profileForm.full_name ? '' : 'Name is required',
+        email: !this.profileForm.email
+          ? 'Email is required'
+          : /.+@.+\..+/.test(this.profileForm.email) ? '' : 'E-mail must be valid'
+      };
+    },
+    securityErrors() {
+      const { oldPassword, newPassword, confirmPassword } = this.securityForm;
+      return {
+        oldPassword: oldPassword ? '' : 'Current password is required',
+        newPassword: !newPassword
+          ? 'New password is required'
+          : newPassword.length >= 6 ? '' : 'Password must be at least 6 characters',
+        confirmPassword: !confirmPassword
+          ? 'Please confirm your new password'
+          : confirmPassword === newPassword ? '' : 'Passwords do not match'
+      };
     }
   },
   watch: {
@@ -408,6 +389,9 @@ export default {
     }
   },
   methods: {
+    hasErrors(errors) {
+      return Object.values(errors).some(Boolean);
+    },
     selectPremiumAvatar(url) {
       this.profileForm.avatar_url = url;
     },
@@ -464,8 +448,8 @@ export default {
       }
     },
     async saveProfile() {
-      const { valid } = this.$refs.profileFormRef ? await this.$refs.profileFormRef.validate() : { valid: true };
-      if (!valid) {
+      this.profileTouched = true;
+      if (this.hasErrors(this.profileErrors)) {
         toast.error('Please correct form errors before saving.');
         return;
       }
@@ -484,8 +468,8 @@ export default {
       }
     },
     async savePassword() {
-      const { valid } = await this.$refs.securityFormRef.validate();
-      if (!valid) {
+      this.securityTouched = true;
+      if (this.hasErrors(this.securityErrors)) {
         toast.error('Please fill in password fields correctly.');
         return;
       }
@@ -500,7 +484,7 @@ export default {
         this.securityForm.oldPassword = '';
         this.securityForm.newPassword = '';
         this.securityForm.confirmPassword = '';
-        this.$refs.securityFormRef.resetValidation();
+        this.securityTouched = false;
       } catch (err) {
         console.error(err);
         const errMsg = err.response?.data?.message || 'Error updating password. Confirm credentials.';
@@ -514,38 +498,6 @@ export default {
 </script>
 
 <style scoped>
-.profile-tabs {
-  background: transparent !important;
-}
-
-.profile-tabs :deep(.v-btn) {
-  letter-spacing: normal;
-  font-weight: 600;
-  color: var(--text-main);
-  opacity: 0.8;
-  border-radius: var(--r-sm) !important;
-  margin-bottom: 4px;
-}
-
-.profile-tabs :deep(.v-btn--active) {
-  color: var(--brand-2) !important;
-  background: var(--grad-primary-soft) !important;
-  opacity: 1;
-}
-
-.avatar-preview-container {
-  padding: 4px;
-  border-radius: 50%;
-  background: var(--grad-primary);
-  box-shadow: var(--shadow-glow);
-}
-
-.profile-preview-avatar {
-  border: 4px solid var(--surface);
-  background: var(--surface-2);
-  color: var(--brand-2);
-}
-
 .avatar-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -562,7 +514,6 @@ export default {
 .avatar-option {
   border: 3px solid transparent;
   transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  background: var(--surface-2);
 }
 
 .avatar-option:hover {
@@ -571,17 +522,9 @@ export default {
 }
 
 .avatar-selected {
-  border-color: var(--brand-2) !important;
+  border-color: var(--brand-2);
   transform: scale(1.15);
   box-shadow: var(--shadow-md);
   outline: 2px solid rgba(99, 102, 241, 0.3);
-}
-
-.custom-avatar-file-input {
-  max-width: 240px;
-}
-
-.text-strong {
-  color: var(--text-strong);
 }
 </style>

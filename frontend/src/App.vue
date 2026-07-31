@@ -1,19 +1,19 @@
 <template>
-  <v-app class="app-shell">
+  <div class="app-shell">
     <the-header></the-header>
-    <v-main class="app-main">
+    <main class="app-main">
       <router-view v-slot="{ Component, route }">
         <transition name="page-fade" mode="out-in">
           <component :is="Component" :key="route.path" />
         </transition>
       </router-view>
-    </v-main>
+    </main>
     <the-footer></the-footer>
     <support-chat></support-chat>
     <toast-stack></toast-stack>
     <back-to-top></back-to-top>
     <command-palette></command-palette>
-  </v-app>
+  </div>
 </template>
 
 <script>
@@ -34,9 +34,3 @@
     }
   }
 </script>
-
-<style>
-.v-btn {
-  text-transform: none;
-}
-</style>

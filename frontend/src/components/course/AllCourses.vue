@@ -1,14 +1,16 @@
 <template>
-  <v-row>
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
     <template v-if="loading">
-      <v-col v-for="n in skeletonCount" :key="'sk' + n" cols="12" sm="6" lg="4" xl="3">
-        <course-card-skeleton />
-      </v-col>
+      <course-card-skeleton v-for="n in skeletonCount" :key="'sk' + n" />
     </template>
-    <v-col v-else v-for="course in allCourses" :key="course.id" cols="12" sm="6" lg="4" xl="3">
-      <course-card :course="course" @toggle-wishlist="handleWishlist" />
-    </v-col>
-  </v-row>
+    <course-card
+      v-for="course in allCourses"
+      v-else
+      :key="course.id"
+      :course="course"
+      @toggle-wishlist="handleWishlist"
+    />
+  </div>
 </template>
 
 <script>

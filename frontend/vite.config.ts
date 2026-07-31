@@ -1,6 +1,6 @@
 // Plugins
 import vue from '@vitejs/plugin-vue'
-import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
+import tailwindcss from '@tailwindcss/vite'
 
 // Utilities
 import { defineConfig } from 'vite'
@@ -9,21 +9,8 @@ import { fileURLToPath, URL } from 'node:url'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    vue({
-      template: {
-        transformAssetUrls,
-        // compilerOptions: {
-        //   isCustomElement: (tag) => tag.startsWith('v-'),
-        // },
-      }
-    }),
-    // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
-    vuetify({
-      autoImport: true,
-      styles: {
-        configFile: 'src/styles/settings.scss',
-      },
-    }),
+    vue(),
+    tailwindcss(),
   ],
   define: { 'process.env': {} },
   resolve: {

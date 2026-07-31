@@ -1,77 +1,123 @@
 <template>
-  <v-container class="app-section d-flex justify-center">
-    <v-card class="auth-card glass-panel" flat max-width="960">
-      <v-row no-gutters>
-        <!-- Marketing panel -->
-        <v-col cols="12" md="5" class="auth-aside pa-8 pa-md-10 d-none d-md-flex flex-column">
-          <div class="d-flex align-center mb-8">
-            <v-avatar rounded="lg" size="40" class="auth-mark mr-3">
-              <v-icon color="white">mdi-school</v-icon>
-            </v-avatar>
-            <span class="text-h6 font-weight-bold">Pathshala</span>
-          </div>
-          <h2 class="auth-aside-title mb-4">Welcome back.<br />Keep learning.</h2>
-          <p class="auth-aside-copy mb-8">Pick up right where you left off and keep building job-ready skills.</p>
+  <div class="mx-auto flex max-w-[1400px] justify-center px-4 pt-10 pb-14">
+    <div
+      class="glass-panel grid w-full max-w-[960px] overflow-hidden rounded-[34px] md:grid-cols-12"
+    >
+      <!-- Marketing panel -->
+      <aside
+        class="hidden flex-col bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] p-8 text-white md:col-span-5 md:flex md:p-10"
+      >
+        <div class="mb-8 flex items-center gap-3">
+          <span class="grid size-10 place-items-center rounded-xl bg-white/20">
+            <app-icon name="lucide:graduation-cap" size="22" />
+          </span>
+          <span class="font-display text-xl font-bold">Pathshala</span>
+        </div>
+        <h2 class="mb-4 font-display text-3xl leading-tight font-extrabold">
+          Welcome back.<br />Keep learning.
+        </h2>
+        <p class="mb-8 leading-relaxed opacity-90">
+          Pick up right where you left off and keep building job-ready skills.
+        </p>
 
-          <div class="demo-box mt-auto">
-            <div class="text-caption font-weight-bold mb-1">Try the demo</div>
-            <div class="text-body-2">admin@test.com</div>
-            <div class="text-body-2">Test@1234</div>
-          </div>
-        </v-col>
+        <div class="mt-auto rounded-[18px] border border-white/25 bg-white/15 px-4 py-3.5 backdrop-blur-sm">
+          <div class="mb-1 text-xs font-bold">Try the demo</div>
+          <div class="text-sm">admin@test.com</div>
+          <div class="text-sm">Test@1234</div>
+        </div>
+      </aside>
 
-        <!-- Form -->
-        <v-col cols="12" md="7" class="pa-8 pa-md-12">
-          <h1 class="auth-title mb-2">Log in</h1>
-          <p class="app-section-copy mb-7">Enter your details to access your account.</p>
+      <!-- Form -->
+      <div class="p-8 md:col-span-7 md:p-12">
+        <h1 class="mb-2 font-display text-3xl font-extrabold">Log in</h1>
+        <p class="mb-7 text-muted-foreground">Enter your details to access your account.</p>
 
-          <v-form v-model="form" @submit.prevent="onSubmit">
-            <error :error="error"></error>
+        <form novalidate @submit.prevent="onSubmit">
+          <error-alert :error="error"></error-alert>
 
-            <v-text-field
-              v-model="email" :readonly="loading" :rules="[required]" clearable
-              label="Email" variant="outlined" prepend-inner-icon="mdi-email-outline" class="mb-3"
-            ></v-text-field>
+          <app-field
+            v-model="email"
+            class="mb-3"
+            label="Email"
+            type="email"
+            icon="lucide:mail"
+            placeholder="you@example.com"
+            :readonly="loading"
+            :error="touched ? emailError : ''"
+            required
+          />
 
-            <v-text-field
-              v-model="password" type="password" :readonly="loading" :rules="[required]" clearable
-              label="Password" variant="outlined" prepend-inner-icon="mdi-lock-outline" class="mb-4"
-            ></v-text-field>
+          <app-field
+            v-model="password"
+            class="mb-5"
+            label="Password"
+            type="password"
+            icon="lucide:lock"
+            placeholder="Your password"
+            :readonly="loading"
+            :error="touched ? passwordError : ''"
+            required
+          />
 
-            <v-btn :disabled="!form" :loading="loading" class="btn-gradient mb-4" block size="large" type="submit">
-              Sign In <v-icon end>mdi-arrow-right</v-icon>
-            </v-btn>
-          </v-form>
+          <button type="submit" class="btn-brand mb-4 w-full" :disabled="loading">
+            <template v-if="loading">
+              <app-icon name="lucide:loader-circle" size="18" class="animate-spin" /> Signing in…
+            </template>
+            <template v-else>
+              Sign In <app-icon name="lucide:arrow-right" size="18" />
+            </template>
+          </button>
+        </form>
 
-          <div class="text-body-2">
-            Don't have an account?
-            <router-link to="/user/sign-up" class="auth-link">Sign up free</router-link>
-          </div>
-        </v-col>
-      </v-row>
-    </v-card>
-  </v-container>
+        <div class="text-sm">
+          Don't have an account?
+          <router-link to="/user/sign-up" class="font-bold text-primary hover:underline">
+            Sign up free
+          </router-link>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import axios from 'axios';
-import Error from './../Message&Error/error.vue'
+// Aliased: the component was previously imported as `Error`, which shadowed the
+// global Error constructor used below.
+import ErrorAlert from './../Message&Error/error.vue'
+import AppField from '@/components/ui/AppField.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 export default {
     components: {
-        Error
+        ErrorAlert,
+        AppField,
+        AppIcon
     },
     data: () => ({
-        form: false,
-        email: null,
-        password: null,
+        email: '',
+        password: '',
         loading: false,
+        touched: false,
         error: ''
     }),
 
+    computed: {
+        emailError() {
+            return this.email ? '' : 'Field is required'
+        },
+        passwordError() {
+            return this.password ? '' : 'Field is required'
+        },
+        formValid() {
+            return !this.emailError && !this.passwordError
+        }
+    },
+
     methods: {
         async onSubmit() {
-            if (!this.form) return
+            this.touched = true
+            if (!this.formValid) return
             this.loading = true
             this.error = ''
             try {
@@ -90,52 +136,7 @@ export default {
             } finally {
                 this.loading = false
             }
-        },
-        required(v) {
-            return !!v || 'Field is required'
-        },
+        }
     },
 }
 </script>
-
-<style scoped>
-.auth-card {
-  width: 100%;
-  border-radius: var(--r-xl);
-  overflow: hidden;
-  margin-top: 24px;
-}
-
-.auth-aside {
-  background: var(--grad-primary);
-  color: #fff;
-}
-.auth-mark { background: rgba(255, 255, 255, 0.2); }
-.auth-aside-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 2rem;
-  font-weight: 800;
-  line-height: 1.1;
-}
-.auth-aside-copy { opacity: 0.9; line-height: 1.7; }
-.demo-box {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: var(--r-md);
-  padding: 14px 16px;
-  backdrop-filter: blur(6px);
-}
-
-.auth-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--text-strong);
-}
-.auth-link {
-  color: var(--brand-2);
-  font-weight: 700;
-  text-decoration: none;
-}
-.auth-link:hover { text-decoration: underline; }
-</style>

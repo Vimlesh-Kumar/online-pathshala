@@ -1,16 +1,24 @@
 <template>
   <div class="support-widget">
     <transition name="chat-pop">
-      <v-card v-if="open" class="chat-panel glass-panel section-card" flat>
+      <div v-if="open" class="chat-panel glass-panel section-card">
         <div class="chat-header">
-          <div class="d-flex align-center">
-            <v-avatar size="34" class="chat-avatar mr-3"><v-icon size="18" color="white">mdi-robot-happy-outline</v-icon></v-avatar>
+          <div class="flex items-center gap-3">
+            <span class="grid size-8.5 place-items-center rounded-full bg-white/20">
+              <app-icon name="lucide:bot" size="18" class="text-white" />
+            </span>
             <div>
-              <div class="chat-title">Pathshala Help</div>
-              <div class="chat-subtitle">Instant answers, no waiting</div>
+              <div class="text-[0.95rem] font-extrabold">Pathshala Help</div>
+              <div class="text-[0.72rem] opacity-85">Instant answers, no waiting</div>
             </div>
           </div>
-          <v-btn icon size="small" variant="text" @click="open = false"><v-icon>mdi-close</v-icon></v-btn>
+          <button
+            class="grid size-8 place-items-center rounded-full transition-colors hover:bg-white/20"
+            aria-label="Close chat"
+            @click="open = false"
+          >
+            <app-icon name="lucide:x" size="18" />
+          </button>
         </div>
 
         <div ref="scrollArea" class="chat-body">
@@ -18,38 +26,59 @@
             <div class="chat-bubble">{{ msg.text }}</div>
           </div>
 
-          <div v-if="messages.length <= 1" class="quick-questions">
-            <div class="text-caption text-medium-emphasis mb-2">Try asking:</div>
-            <v-chip
-              v-for="q in suggestions" :key="q.id" size="small" class="mb-2 mr-2"
-              variant="outlined" @click="ask(q.question)"
+          <div v-if="messages.length <= 1" class="mt-1.5">
+            <div class="mb-2 text-xs text-muted-foreground">Try asking:</div>
+            <button
+              v-for="q in suggestions"
+              :key="q.id"
+              class="mr-2 mb-2 rounded-full border border-black/10 px-3 py-1 text-left text-xs transition-colors hover:border-primary/50 dark:border-white/12"
+              @click="ask(q.question)"
             >
               {{ q.question }}
-            </v-chip>
+            </button>
           </div>
         </div>
 
         <div class="chat-input-row">
-          <v-text-field
-            v-model="input" placeholder="Ask a question…" variant="outlined" density="compact"
-            hide-details @keyup.enter="ask()"
+          <app-field
+            v-model="input"
+            class="flex-1"
+            placeholder="Ask a question…"
+            @keyup.enter="ask()"
           />
-          <v-btn icon class="btn-gradient ml-2" :loading="loading" @click="ask()">
-            <v-icon>mdi-send</v-icon>
-          </v-btn>
+          <button
+            class="ml-2 grid size-12 shrink-0 place-items-center rounded-full bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] text-white shadow-[0_12px_30px_-12px_rgb(124_58_237_/_0.9)]"
+            aria-label="Send"
+            :disabled="loading"
+            @click="ask()"
+          >
+            <app-icon
+              :name="loading ? 'lucide:loader-circle' : 'lucide:send'"
+              size="20"
+              :class="loading ? 'animate-spin' : ''"
+            />
+          </button>
         </div>
-      </v-card>
+      </div>
     </transition>
 
-    <v-btn icon size="x-large" class="chat-fab btn-gradient" @click="open = !open">
-      <v-icon size="28">{{ open ? 'mdi-close' : 'mdi-message-question-outline' }}</v-icon>
-    </v-btn>
+    <button
+      class="chat-fab grid size-14 place-items-center rounded-full bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] text-white"
+      :aria-label="open ? 'Close help chat' : 'Open help chat'"
+      @click="open = !open"
+    >
+      <app-icon :name="open ? 'lucide:x' : 'lucide:message-circle-question-mark'" size="26" />
+    </button>
   </div>
 </template>
 
 <script>
+import AppField from '@/components/ui/AppField.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
+
 export default {
   name: 'SupportChat',
+  components: { AppField, AppIcon },
   data() {
     return {
       open: false,
@@ -124,9 +153,6 @@ export default {
   color: #fff;
   flex-shrink: 0;
 }
-.chat-avatar { background: rgba(255,255,255,0.2); }
-.chat-title { font-weight: 800; font-size: 0.95rem; }
-.chat-subtitle { font-size: 0.72rem; opacity: 0.85; }
 
 .chat-body {
   flex-grow: 1;
@@ -157,8 +183,6 @@ export default {
   color: #fff;
   border-bottom-right-radius: 4px;
 }
-
-.quick-questions { margin-top: 6px; }
 
 .chat-input-row {
   display: flex;

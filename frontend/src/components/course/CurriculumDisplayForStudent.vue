@@ -1,9 +1,7 @@
 <template>
-    <v-main>
-        <v-container>
-            <h1>Student Enrolled Course</h1>
-        </v-container>
-    </v-main>
+    <div class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
+        <h1 class="app-section-title">Student Enrolled Course</h1>
+    </div>
 </template>
 
 <script>

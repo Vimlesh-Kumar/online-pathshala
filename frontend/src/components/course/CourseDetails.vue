@@ -1,143 +1,142 @@
 <template>
-  <v-container class="app-section" v-if="!singleCourse">
-    <section class="page-intro pa-6 pa-md-10 mb-8">
-      <div class="skeleton mb-4" style="height: 14px; width: 120px;"></div>
-      <div class="skeleton mb-3" style="height: 40px; width: 70%;"></div>
-      <div class="skeleton" style="height: 18px; width: 50%;"></div>
+  <div v-if="!singleCourse" class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
+    <section class="page-intro mb-8 p-6 md:p-10">
+      <div class="skeleton mb-4 h-3.5 w-30"></div>
+      <div class="skeleton mb-3 h-10 w-[70%]"></div>
+      <div class="skeleton h-4.5 w-1/2"></div>
     </section>
-  </v-container>
+  </div>
 
-  <v-container class="app-section" v-else>
-    <section class="page-intro pa-6 pa-md-10 mb-8">
-      <v-row>
-        <v-col cols="12" md="7">
-          <div class="eyebrow mb-4">{{ singleCourse.category }}</div>
-          <h1 class="app-section-title mb-4">{{ singleCourse.title }}</h1>
-          <p class="app-section-copy mb-5">{{ singleCourse.subtitle }}</p>
+  <div v-else class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
+    <section class="page-intro mb-8 grid gap-8 p-6 md:grid-cols-12 md:p-10">
+      <div class="md:col-span-7">
+        <div class="eyebrow mb-4">{{ singleCourse.category }}</div>
+        <h1 class="app-section-title mb-4">{{ singleCourse.title }}</h1>
+        <p class="mb-5 text-muted-foreground">{{ singleCourse.subtitle }}</p>
 
-          <div class="d-flex flex-wrap align-center ga-4 mb-4">
-            <div class="metric-pill px-4 py-3 d-flex align-center">
-              <v-rating :model-value="Number(singleCourse.rating || 4.5)" color="warning" density="compact" half-increments readonly size="small" />
-              <span class="ml-2 font-weight-bold">{{ singleCourse.rating || 4.5 }}</span>
-            </div>
-            <div class="metric-pill px-4 py-3">{{ singleCourse.enrolled_students || 0 }} learners</div>
-            <div class="metric-pill px-4 py-3">Created by {{ singleCourse.author }}</div>
+        <div class="mb-4 flex flex-wrap items-center gap-4">
+          <div class="metric-pill flex items-center gap-2 px-4 py-3">
+            <star-rating :model-value="Number(singleCourse.rating || 4.5)" :size="16" />
+            <span class="font-bold">{{ singleCourse.rating || 4.5 }}</span>
           </div>
-        </v-col>
+          <div class="metric-pill px-4 py-3">{{ singleCourse.enrolled_students || 0 }} learners</div>
+          <div class="metric-pill px-4 py-3">Created by {{ singleCourse.author }}</div>
+        </div>
+      </div>
 
-        <v-col cols="12" md="5">
-          <v-card class="section-card detail-side-card glass-panel hover-lift" flat>
-            <v-img :src="singleCourse.thumb_url" height="260" cover />
-            <v-card-text class="pa-6">
-              <div class="d-flex align-center justify-space-between mb-4">
-                <div class="text-h4 font-weight-black gradient-text">₹{{ formattedPrice }}</div>
-                <wish-list :course_id="singleCourse.id" :user="user" />
-              </div>
+      <div class="md:col-span-5">
+        <div
+          class="glass-panel overflow-hidden rounded-[26px] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+        >
+          <img :src="singleCourse.thumb_url" :alt="singleCourse.title" class="h-65 w-full object-cover" />
+          <div class="p-6">
+            <div class="mb-4 flex items-center justify-between">
+              <div class="gradient-text font-display text-3xl font-black">₹{{ formattedPrice }}</div>
+              <wish-list :course_id="singleCourse.id" :user="user" />
+            </div>
 
-              <v-btn
-                v-if="user?.user_role === 'Tutor' && user.id === courseAuthor?.id"
-                block
-                class="btn-gradient mb-3"
-                size="large"
-                @click="handleAddCourseLesson"
+            <button
+              v-if="user?.user_role === 'Tutor' && user.id === courseAuthor?.id"
+              class="btn-brand mb-3 w-full"
+              @click="handleAddCourseLesson"
+            >
+              Add course content
+            </button>
+
+            <template v-else>
+              <button
+                v-if="isEnrolled"
+                class="btn-brand mb-3 w-full"
+                @click="$router.push(`/learn/${singleCourse.id}`)"
               >
-                Add course content
-              </v-btn>
+                <app-icon name="lucide:circle-play" size="18" /> Go to course
+              </button>
 
               <template v-else>
-                <v-btn
-                  v-if="isEnrolled"
-                  block
-                  class="btn-gradient mb-3"
-                  size="large"
-                  @click="$router.push(`/learn/${singleCourse.id}`)"
+                <button class="btn-brand mb-3 w-full" @click="enrollAndLearn(singleCourse.id)">
+                  Enroll for free
+                </button>
+                <button
+                  v-if="!cartCourses.includes(singleCourse.id)"
+                  class="mb-3 w-full rounded-full bg-primary/12 px-6 py-3 font-semibold text-primary transition-colors hover:bg-primary/20"
+                  @click="addToCart(singleCourse.id)"
                 >
-                  <v-icon start>mdi-play-circle</v-icon> Go to course
-                </v-btn>
-
-                <template v-else>
-                  <v-btn
-                    block
-                    class="btn-gradient mb-3"
-                    size="large"
-                    @click="enrollAndLearn(singleCourse.id)"
-                  >
-                    Enroll for free
-                  </v-btn>
-                  <v-btn
-                    v-if="!cartCourses.includes(singleCourse.id)"
-                    block
-                    variant="tonal"
-                    size="large"
-                    class="mb-3"
-                    @click="addToCart(singleCourse.id)"
-                  >
-                    Add to cart
-                  </v-btn>
-                  <v-btn
-                    v-else
-                    block
-                    variant="outlined"
-                    size="large"
-                    class="mb-3"
-                    @click="$router.push('/user/cart')"
-                  >
-                    Go to cart
-                  </v-btn>
-                </template>
+                  Add to cart
+                </button>
+                <button
+                  v-else
+                  class="mb-3 w-full rounded-full border border-black/10 px-6 py-3 font-semibold transition-colors hover:border-primary/50 dark:border-white/15"
+                  @click="$router.push('/user/cart')"
+                >
+                  Go to cart
+                </button>
               </template>
+            </template>
 
-              <div class="detail-list">
-                <div><v-icon size="18" class="mr-2">mdi-video-outline</v-icon>Full lifetime access</div>
-                <div><v-icon size="18" class="mr-2">mdi-certificate-outline</v-icon>Certificate of completion</div>
-                <div><v-icon size="18" class="mr-2">mdi-cellphone-play</v-icon>Learn on desktop and mobile</div>
+            <div class="grid gap-3.5 text-muted-foreground">
+              <div v-for="perk in perks" :key="perk.label" class="flex items-center gap-2">
+                <app-icon :name="perk.icon" size="18" />{{ perk.label }}
               </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <v-row>
-      <v-col cols="12" md="8">
-        <v-card class="glass-panel section-card pa-6 mb-8" flat>
+    <!-- Full width: there is no sidebar down here, so the old 8-of-12 column
+         left a dead gutter on the right. -->
+    <div>
+      <div>
+        <div class="glass-panel section-card mb-8 p-6">
           <div class="eyebrow mb-4">What you'll learn</div>
-          <v-row>
-            <v-col v-for="objective in courseObjectives" :key="objective.id" cols="12" md="6">
-              <div class="objective-item">
-                <v-icon size="18" color="primary" class="mr-2">mdi-check-circle-outline</v-icon>
-                <span>{{ objective.objective }}</span>
-              </div>
-            </v-col>
-          </v-row>
-        </v-card>
+          <div class="grid md:grid-cols-2">
+            <div
+              v-for="objective in courseObjectives"
+              :key="objective.id"
+              class="flex items-start gap-1.5 py-3.5"
+            >
+              <app-icon name="lucide:circle-check" size="18" class="mt-0.5 text-primary" />
+              <span>{{ objective.objective }}</span>
+            </div>
+          </div>
+        </div>
 
-        <v-card class="glass-panel section-card pa-6 mb-8" flat>
-          <div class="d-flex align-center ga-2 mb-4">
-            <v-icon color="primary">mdi-message-question-outline</v-icon>
-            <div class="eyebrow mb-0">Ask about this course</div>
+        <div class="glass-panel section-card mb-8 p-6">
+          <div class="mb-4 flex items-center gap-2">
+            <app-icon name="lucide:message-circle-question-mark" size="22" class="text-primary" />
+            <div class="eyebrow">Ask about this course</div>
           </div>
-          <div class="d-flex ga-3 mb-3">
-            <v-text-field
-              v-model="courseQuestion" placeholder="e.g. does this cover functions?" variant="outlined"
-              density="comfortable" hide-details @keyup.enter="askCourse"
+          <div class="mb-3 flex gap-3">
+            <app-field
+              v-model="courseQuestion"
+              class="flex-1"
+              placeholder="e.g. does this cover functions?"
+              @keyup.enter="askCourse"
             />
-            <v-btn class="btn-gradient" :loading="askingCourse" @click="askCourse">Ask</v-btn>
+            <button class="btn-brand shrink-0" :disabled="askingCourse" @click="askCourse">
+              <app-icon v-if="askingCourse" name="lucide:loader-circle" size="18" class="animate-spin" />
+              Ask
+            </button>
           </div>
-          <v-alert v-if="courseAnswer" type="info" variant="tonal" class="mb-0">{{ courseAnswer }}</v-alert>
-        </v-card>
+          <div
+            v-if="courseAnswer"
+            class="rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm"
+          >
+            {{ courseAnswer }}
+          </div>
+        </div>
 
         <course-reviews :course-id="courseId" />
 
         <course-qna :course-id="courseId" />
 
-        <v-card class="glass-panel section-card pa-6" flat>
+        <div class="glass-panel section-card p-6">
           <div class="eyebrow mb-4">Related courses</div>
           <all-courses :all-courses="relatedCourses" />
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -148,9 +147,12 @@ import AllCourses from './AllCourses.vue';
 import CourseReviews from './CourseReviews.vue';
 import CourseQna from './CourseQna.vue';
 import { toast } from '@/plugins/toast'
+import AppIcon from '@/components/ui/AppIcon.vue';
+import AppField from '@/components/ui/AppField.vue';
+import StarRating from '@/components/ui/StarRating.vue';
 
 export default {
-  components: { WishList, AllCourses, CourseReviews, CourseQna },
+  components: { WishList, AllCourses, CourseReviews, CourseQna, AppIcon, AppField, StarRating },
   computed: {
     ...mapGetters(['user', 'courseObjectives', 'coursesInCart', 'userCourses']),
     cartCourses() {
@@ -171,7 +173,12 @@ export default {
       relatedCourses: [],
       courseQuestion: '',
       courseAnswer: '',
-      askingCourse: false
+      askingCourse: false,
+      perks: [
+        { label: 'Full lifetime access', icon: 'lucide:video' },
+        { label: 'Certificate of completion', icon: 'lucide:award' },
+        { label: 'Learn on desktop and mobile', icon: 'lucide:smartphone' }
+      ]
     }
   },
   async created() {
@@ -233,24 +240,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.detail-side-card {
-  overflow: hidden;
-  border-radius: var(--r-lg);
-}
-
-.detail-list {
-  display: grid;
-  gap: 14px;
-  color: var(--text-soft);
-}
-
-.objective-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 14px 0;
-  color: var(--text-main);
-}
-</style>
