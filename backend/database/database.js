@@ -80,6 +80,23 @@ const pool = knex({
             // Update column type if it already exists to VARCHAR(500)
             await pool.raw('ALTER TABLE users MODIFY COLUMN avatar_url VARCHAR(500)');
         }
+
+        // Courses gained a real owner column; databases created before that
+        // still identify the instructor by display name only.
+        const hasCourseOwner = await pool.schema.hasColumn('courses', 'owner_user_id');
+        if (!hasCourseOwner) {
+            console.log('Adding owner_user_id to courses table...');
+            await pool.raw('ALTER TABLE courses ADD COLUMN owner_user_id INT DEFAULT NULL');
+            await pool.raw(
+                'ALTER TABLE courses ADD CONSTRAINT fk_courses_owner FOREIGN KEY (owner_user_id) REFERENCES users(id)'
+            );
+            // Backfill from the display name. Names are not unique, so this is a
+            // best-effort migration — new courses record the owner directly.
+            const backfilled = await pool.raw(
+                'UPDATE courses c JOIN users u ON u.full_name = c.author SET c.owner_user_id = u.id WHERE c.owner_user_id IS NULL'
+            );
+            console.log(`✅ Courses table altered; owners backfilled (${backfilled[0]?.affectedRows ?? 0} rows).`);
+        }
     } catch (err) {
         console.error('❌ Database connection or schema migration failed:', err.message);
     }

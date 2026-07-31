@@ -60,8 +60,40 @@
               <div>
                 <div class="mb-1 text-xs text-muted-foreground">{{ currentLesson?.section_name }}</div>
                 <h2 class="font-display text-lg font-bold">{{ currentLesson?.lesson_name }}</h2>
+                <div
+                  v-if="resumedAt"
+                  class="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-primary/12 px-2.5 py-1 text-xs font-semibold text-primary"
+                >
+                  <app-icon name="lucide:rotate-ccw" size="13" />
+                  Resumed at {{ formatTime(resumedAt) }}
+                </div>
               </div>
-              <div class="flex gap-3">
+              <div class="flex flex-wrap items-center gap-3">
+                <!-- Speed + 10s skips: keyboard ← / → do the same. -->
+                <div v-if="playerReady" class="flex items-center gap-1 rounded-full bg-foreground/5 p-1">
+                  <button
+                    class="grid size-9 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+                    title="Back 10 seconds (←)"
+                    @click="skip(-10)"
+                  >
+                    <app-icon name="lucide:rotate-ccw" size="16" />
+                  </button>
+                  <button
+                    class="grid size-9 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+                    title="Forward 10 seconds (→)"
+                    @click="skip(10)"
+                  >
+                    <app-icon name="lucide:rotate-cw" size="16" />
+                  </button>
+                  <button
+                    class="rounded-full px-3 py-1.5 text-sm font-bold text-primary transition-colors hover:bg-primary/10"
+                    title="Playback speed (shift + . / ,)"
+                    @click="cycleSpeed"
+                  >
+                    {{ playbackRate }}×
+                  </button>
+                </div>
+
                 <button
                   v-if="!isLessonComplete(currentLesson?.id)"
                   class="btn-brand"
@@ -93,6 +125,8 @@
             </div>
           </div>
 
+          <course-announcements v-if="course" :course-id="course.id" class="mb-5" />
+
           <lesson-notes
             v-if="course && currentLessonId"
             :key="course.id"
@@ -118,9 +152,16 @@
               <p class="mb-5 text-sm text-muted-foreground">
                 You have earned your verified certificate of completion for this course.
               </p>
-              <div class="flex justify-center gap-3">
+              <div class="flex flex-wrap justify-center gap-3">
                 <button class="btn-brand" @click="certModal = true">
                   <app-icon name="lucide:award" size="18" /> View Certificate
+                </button>
+                <button
+                  v-if="certificateKey"
+                  class="inline-flex items-center gap-2 rounded-full border border-black/10 px-6 py-3 font-semibold transition-colors hover:border-primary/50 dark:border-white/15"
+                  @click="$router.push(`/verify/${certificateKey}`)"
+                >
+                  <app-icon name="lucide:shield-check" size="18" /> Verify publicly
                 </button>
               </div>
             </div>
@@ -158,6 +199,9 @@
                   </span>
                   <span class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                     <app-icon name="lucide:clock" size="12" /> {{ lesson.duration }}
+                    <template v-if="resumePointFor(lesson.id)">
+                      · left off at {{ formatTime(resumePointFor(lesson.id)) }}
+                    </template>
                   </span>
                 </span>
               </button>
@@ -194,10 +238,12 @@
 import axios from 'axios'
 import CourseQuiz from './CourseQuiz.vue'
 import CourseCertificate from './CourseCertificate.vue'
+import CourseAnnouncements from './CourseAnnouncements.vue'
 import LessonNotes from './LessonNotes.vue'
 import ProgressRing from '../support/ProgressRing.vue'
 import { fireConfetti } from '@/utils/confetti'
 import { useYouTubePlayer } from '@/composables/useYouTubePlayer'
+import { useRecentCourses } from '@/composables/useRecentCourses'
 import { toast } from '@/plugins/toast'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import {
@@ -207,11 +253,17 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 
+/** How often the playhead is checkpointed to the server. */
+const PLAYBACK_SAVE_MS = 15000
+/** Speeds the ×-button cycles through. */
+const SPEEDS = [1, 1.25, 1.5, 1.75, 2, 0.75]
+
 export default {
   name: 'CoursePlayer',
   components: {
     CourseQuiz,
     CourseCertificate,
+    CourseAnnouncements,
     LessonNotes,
     ProgressRing,
     AppIcon,
@@ -221,13 +273,18 @@ export default {
     DialogTitle
   },
   setup() {
-    const { ready, unavailable, play, currentTime, seekTo } = useYouTubePlayer()
+    const { ready, unavailable, rate, play, currentTime, seekTo, skip, setRate } = useYouTubePlayer()
+    const { remember } = useRecentCourses()
     return {
       playerReady: ready,
       playerUnavailable: unavailable,
+      playbackRate: rate,
       playVideo: play,
       currentTime,
-      seekTo
+      seekTo,
+      skip,
+      setRate,
+      rememberCourse: remember
     }
   },
   data() {
@@ -247,12 +304,16 @@ export default {
       // restarts a video that is already playing.
       mountedVideoKey: null,
       // Position a note asked for, applied when its lesson opens.
-      pendingSeek: 0
+      pendingSeek: 0,
+      // Saved playback position per lesson, so a return visit resumes.
+      playbackPositions: {},
+      playbackTimer: null,
+      resumedAt: 0
     }
   },
   watch: {
     // `post` so the player host element exists in the DOM before we attach.
-    currentLessonId: { handler: 'mountVideo', flush: 'post' }
+    currentLessonId: { handler: 'onLessonChange', flush: 'post' }
   },
   computed: {
     userName() {
@@ -299,11 +360,16 @@ export default {
       ])
       this.course = courseRes.data?.data?.course || null
       this.lessons = lessons
+      if (this.course) this.rememberCourse(this.course)
 
       // Auto-enroll (free) so progress can be tracked, then load progress.
       await this.$store.dispatch('enrollInCourse', courseId)
-      const progress = await this.$store.dispatch('fetchCourseProgress', courseId)
+      const [progress, positions] = await Promise.all([
+        this.$store.dispatch('fetchCourseProgress', courseId),
+        this.$store.dispatch('fetchPlaybackPositions', courseId).catch(() => ({}))
+      ])
       this.applyProgress(progress)
+      this.playbackPositions = positions || {}
 
       // A note can deep-link here (?lesson=&t=); otherwise resume at the first
       // incomplete lesson, else the first lesson.
@@ -327,19 +393,73 @@ export default {
     } finally {
       this.loading = false
     }
+
+    // Checkpoint the playhead so closing the tab still resumes near the right spot.
+    this.playbackTimer = setInterval(() => this.persistPosition(), PLAYBACK_SAVE_MS)
+    window.addEventListener('keydown', this.onShortcut)
+  },
+  beforeUnmount() {
+    if (this.playbackTimer) clearInterval(this.playbackTimer)
+    window.removeEventListener('keydown', this.onShortcut)
+    this.persistPosition()
   },
   methods: {
-    /** Load the current lesson's video, opening it at `pendingSeek` if a note asked for it. */
+    /** Save where the learner was in the outgoing lesson, then open the new one. */
+    onLessonChange(_newLessonId, previousLessonId) {
+      // The player still holds the previous video at this point.
+      this.persistPosition(previousLessonId)
+      this.resumedAt = 0
+      this.mountVideo()
+    },
+    /**
+     * Load the current lesson's video. A note's timestamp wins; otherwise the
+     * lesson picks up from wherever it was last left off.
+     */
     mountVideo() {
       const key = this.currentLesson?.video_key
       if (!key) return
 
-      const startSeconds = this.pendingSeek
+      let startSeconds = this.pendingSeek
       this.pendingSeek = 0
+
+      if (!startSeconds) {
+        const saved = this.resumePointFor(this.currentLessonId)
+        if (saved) {
+          startSeconds = saved
+          this.resumedAt = saved
+        }
+      }
+
       if (key === this.mountedVideoKey && !startSeconds) return
 
       this.mountedVideoKey = key
       this.playVideo(this.$refs.playerHost || null, key, startSeconds)
+    },
+    /**
+     * A worthwhile place to resume from: far enough in to matter, and only for
+     * lessons still in progress.
+     */
+    resumePointFor(lessonId) {
+      if (lessonId == null || this.isLessonComplete(lessonId)) return 0
+      const saved = Math.floor(this.playbackPositions[lessonId] || 0)
+      return saved > 10 ? saved : 0
+    },
+    /** Persist the playhead for a lesson, skipping tiny or repeated moves. */
+    persistPosition(lessonId = this.currentLessonId) {
+      if (!this.course || lessonId == null) return
+
+      const seconds = this.currentTime()
+      if (seconds === null || seconds < 5) return
+      if (Math.abs((this.playbackPositions[lessonId] || 0) - seconds) < 5) return
+
+      this.playbackPositions[lessonId] = seconds
+      this.$store
+        .dispatch('savePlaybackPosition', {
+          courseId: this.course.id,
+          lessonId,
+          positionSeconds: seconds
+        })
+        .catch((error) => console.error(error))
     },
     /** Replay the moment a note was taken at, switching lessons when needed. */
     jumpToNote({ lessonId, seconds }) {
@@ -389,6 +509,30 @@ export default {
     },
     isLessonComplete(id) {
       return id != null && this.completedIds.includes(id)
+    },
+    formatTime(seconds) {
+      const total = Math.max(0, Math.floor(Number(seconds) || 0))
+      const minutes = Math.floor(total / 60)
+      return `${minutes}:${String(total % 60).padStart(2, '0')}`
+    },
+    /** Step through the usual speeds, wrapping back to 1×. */
+    cycleSpeed() {
+      const next = SPEEDS[(SPEEDS.indexOf(this.playbackRate) + 1) % SPEEDS.length]
+      this.setRate(next)
+    },
+    /** ← / → scrub 10s; shift + , / . change speed. Ignored while typing. */
+    onShortcut(event) {
+      const target = event.target
+      const typing =
+        target?.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName)
+      if (typing || event.metaKey || event.ctrlKey || event.altKey || !this.playerReady) return
+
+      if (event.key === 'ArrowLeft') this.skip(-10)
+      else if (event.key === 'ArrowRight') this.skip(10)
+      else if (event.key === '>' || event.key === '<') this.cycleSpeed()
+      else return
+
+      event.preventDefault()
     },
     selectLesson(id) {
       this.currentLessonId = id

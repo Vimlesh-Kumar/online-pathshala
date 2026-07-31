@@ -23,6 +23,10 @@ import orderRouter from './features/order/order.router.js';
 import engagementRouter from './features/engagement/engagement.router.js';
 import aiSupportRouter from './features/aiSupport/aiSupport.router.js';
 import notesRouter from './features/notes/notes.router.js';
+import notificationRouter from './features/notification/notification.router.js';
+import momentumRouter from './features/momentum/momentum.router.js';
+import announcementRouter from './features/announcement/announcement.router.js';
+import certificateRouter from './features/certificate/certificate.router.js';
 import cacheService from './utils/cache.service.js';
 import keyVaultService from './utils/keyVault.service.js';
 
@@ -50,6 +54,8 @@ app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 app.use('/user', userRouter);
 app.use('/', courseRouter);
 app.use('/user/notes', notesRouter);
+app.use('/user/notifications', notificationRouter);
+app.use('/user/momentum', momentumRouter);
 app.use('/user/course', enrollmentRouter);
 app.use('/', objectivesRouter);
 app.use('/course/section', lecturesRouter);
@@ -57,6 +63,8 @@ app.use('/', cartRouter);
 app.use('/', wishListRouter);
 app.use('/', orderRouter);
 app.use('/', engagementRouter);
+app.use('/', announcementRouter);
+app.use('/', certificateRouter);
 app.use('/', aiSupportRouter);
 
 app.listen(PORT, async () => {

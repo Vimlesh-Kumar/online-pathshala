@@ -1,4 +1,6 @@
 import * as enrollmentServices from './enrollment.services.js';
+import * as momentumService from '../momentum/momentum.service.js';
+import * as notificationService from '../notification/notification.service.js';
 import { sendError, sendSuccess } from '../../utils/apiResponse.js';
 import { getCourseIdFromBody } from '../../utils/request.js';
 
@@ -109,8 +111,11 @@ export const updateLessonProgress = async (req, res) => {
         // Ensure the learner is enrolled (auto-enroll on first progress event).
         const enrollment = await enrollmentServices.enrolling({ course_id: courseId, user_id: req.user.id });
 
-        await enrollmentServices.markLessonComplete(enrollment.id, lessonId);
+        const newlyCompleted = await enrollmentServices.markLessonComplete(enrollment.id, lessonId);
         const result = await enrollmentServices.recalculateProgress(enrollment.id, courseId);
+
+        // Only a first completion counts towards the learner's streak.
+        if (newlyCompleted) await momentumService.recordActivity(req.user.id, 'lesson');
 
         return sendSuccess(res, {
             message: 'Progress updated.',
@@ -143,6 +148,14 @@ export const issueCertificate = async (req, res) => {
         }
 
         const result = await enrollmentServices.issueCertificate(enrollment.id, certificateKey);
+
+        await notificationService.notify(req.user.id, {
+            type: 'certificate',
+            title: 'Certificate earned 🎓',
+            body: `Your certificate ${result.certificate_key} is ready to share.`,
+            link: `/verify/${result.certificate_key}`
+        });
+
         return sendSuccess(res, {
             message: 'Certificate issued successfully.',
             data: result
@@ -150,5 +163,53 @@ export const issueCertificate = async (req, res) => {
     } catch (err) {
         console.error(err);
         return sendError(res, { statusCode: 500, message: 'Unable to issue certificate.' });
+    }
+};
+
+/**
+ * Remember where the learner paused a lesson so the next visit resumes there.
+ */
+export const savePlaybackPosition = async (req, res) => {
+    try {
+        const courseId = getCourseIdFromBody(req.body);
+        const lessonId = Number.parseInt(req.body?.lesson_id, 10);
+        const positionSeconds = Number.parseInt(req.body?.position_seconds, 10);
+
+        if (!courseId || !Number.isInteger(lessonId) || lessonId <= 0) {
+            return sendError(res, { statusCode: 400, message: 'course_id and lesson_id are required.' });
+        }
+
+        await enrollmentServices.savePlaybackPosition({
+            userId: req.user.id,
+            courseId,
+            lessonId,
+            positionSeconds: Number.isInteger(positionSeconds) && positionSeconds > 0 ? positionSeconds : 0
+        });
+
+        return sendSuccess(res, { message: 'Playback position saved.' });
+    } catch (err) {
+        console.error(err);
+        return sendError(res, { statusCode: 500, message: 'Unable to save playback position.' });
+    }
+};
+
+/**
+ * Saved playback positions for every lesson of a course, keyed by lesson id.
+ */
+export const getPlaybackPositions = async (req, res) => {
+    try {
+        const courseId = Number.parseInt(req.params.id, 10);
+        if (!courseId) {
+            return sendError(res, { statusCode: 400, message: 'A valid course id is required.' });
+        }
+
+        const rows = await enrollmentServices.getPlaybackPositions({ userId: req.user.id, courseId });
+        const positions = {};
+        for (const row of rows) positions[row.lesson_id] = Number(row.position_seconds) || 0;
+
+        return sendSuccess(res, { message: 'Playback positions fetched.', data: positions });
+    } catch (err) {
+        console.error(err);
+        return sendError(res, { statusCode: 500, message: 'Unable to fetch playback positions.' });
     }
 };

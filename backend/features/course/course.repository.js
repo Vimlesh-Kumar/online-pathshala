@@ -17,7 +17,8 @@ export const addCourseInDB = async (data) => {
         subtitle: data.subtitle,
         thumb_url: data.thumb_url,
         title: data.title,
-        rating: data.rating ?? 0
+        rating: data.rating ?? 0,
+        owner_user_id: data.owner_user_id ?? null
     });
     return { insertId };
 };

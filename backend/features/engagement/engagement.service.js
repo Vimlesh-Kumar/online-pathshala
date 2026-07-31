@@ -28,6 +28,11 @@ export const addQuestion = async (courseId, userId, content) => engagementReposi
 
 export const addAnswer = async (questionId, userId, content) => engagementRepository.addAnswer(questionId, userId, content);
 
+/**
+ * The question a given answer belongs to — used to notify whoever asked it.
+ */
+export const getQuestionById = async (questionId) => engagementRepository.getQuestionById(questionId);
+
 /* ── Quiz ────────────────────────────────────────────── */
 
 /** Public quiz — correct answers stripped. */

@@ -19,6 +19,7 @@ interface YouTubePlayer {
   getCurrentTime(): number
   seekTo(seconds: number, allowSeekAhead: boolean): void
   playVideo(): void
+  setPlaybackRate(rate: number): void
   destroy(): void
 }
 
@@ -75,6 +76,8 @@ export function useYouTubePlayer() {
   const ready = ref(false)
   /** True when the API could not be loaded — the caller should fall back. */
   const unavailable = ref(false)
+  /** Current playback speed. */
+  const rate = ref(1)
 
   let player: YouTubePlayer | null = null
   let wantedVideoId = ''
@@ -137,6 +140,24 @@ export function useYouTubePlayer() {
     }
   }
 
+  /** Change playback speed. Returns false when the player isn't ready. */
+  function setRate(value: number): boolean {
+    if (!player || !ready.value) return false
+    try {
+      player.setPlaybackRate(value)
+      rate.value = value
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /** Nudge the playhead by `delta` seconds (negative rewinds). */
+  function skip(delta: number): boolean {
+    const now = currentTime()
+    return now === null ? false : seekTo(now + delta)
+  }
+
   function destroy() {
     try {
       player?.destroy()
@@ -149,5 +170,5 @@ export function useYouTubePlayer() {
 
   onBeforeUnmount(destroy)
 
-  return { ready, unavailable, play, currentTime, seekTo, destroy }
+  return { ready, unavailable, rate, play, currentTime, seekTo, skip, setRate, destroy }
 }

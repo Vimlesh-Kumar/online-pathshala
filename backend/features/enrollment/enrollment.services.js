@@ -23,8 +23,16 @@ export const countCourseLessons = async (courseId) => enrollmentRepository.count
 
 /**
  * Mark a lesson complete for an enrollment (idempotent — no duplicate rows).
+ * Resolves to true only the first time a given lesson is completed.
  */
 export const markLessonComplete = async (enrollmentId, lessonId) => enrollmentRepository.markLessonComplete(enrollmentId, lessonId);
+
+/**
+ * Persist / read the playback position of each lesson in a course.
+ */
+export const savePlaybackPosition = async (data) => enrollmentRepository.savePlaybackPosition(data);
+
+export const getPlaybackPositions = async (data) => enrollmentRepository.getPlaybackPositions(data);
 
 /**
  * Recompute and persist the progress percentage + completion flag.

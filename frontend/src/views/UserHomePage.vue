@@ -12,6 +12,10 @@
       </p>
     </section>
 
+    <recent-courses class="mb-6" />
+
+    <learning-momentum v-if="user" class="mb-10" />
+
     <section v-if="user">
       <div class="mb-6 flex flex-col justify-between md:flex-row md:items-end">
         <div>
@@ -123,11 +127,13 @@
 <script>
 import { mapGetters } from 'vuex';
 import AllCourses from '../components/course/AllCourses.vue';
+import LearningMomentum from '../components/learning/LearningMomentum.vue';
+import RecentCourses from '../components/course/RecentCourses.vue';
 import ProgressRing from '../components/support/ProgressRing.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 
 export default {
-  components: { AllCourses, ProgressRing, AppIcon },
+  components: { AllCourses, LearningMomentum, RecentCourses, ProgressRing, AppIcon },
   data() {
     return { recommended: [], recommendReason: 'popular', recommendBasedOn: [], loadingRecommended: true }
   },

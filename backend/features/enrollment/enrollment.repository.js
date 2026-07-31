@@ -37,17 +37,41 @@ export const countCourseLessons = async (courseId) => {
     return row.count;
 };
 
+/**
+ * Returns true when this call is what actually completed the lesson, so
+ * callers can react once (streaks, notifications) instead of on every replay.
+ */
 export const markLessonComplete = async (enrollmentId, lessonId) => {
     const existing = await pool('enroll_progress')
         .select('id')
         .where({ enrollment_id: enrollmentId, lesson_id: lessonId })
         .first();
-    if (!existing) {
-        await pool('enroll_progress').insert({
-            enrollment_id: enrollmentId,
-            lesson_id: lessonId
-        });
-    }
+    if (existing) return false;
+
+    await pool('enroll_progress').insert({
+        enrollment_id: enrollmentId,
+        lesson_id: lessonId
+    });
+    return true;
+};
+
+/**
+ * Remember where the learner stopped watching a lesson (one row per lesson).
+ */
+export const savePlaybackPosition = async ({ userId, courseId, lessonId, positionSeconds }) => {
+    await pool.raw(
+        `INSERT INTO lesson_playback (user_id, course_id, lesson_id, position_seconds)
+         VALUES (?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE position_seconds = VALUES(position_seconds), course_id = VALUES(course_id)`,
+        [userId, courseId, lessonId, positionSeconds]
+    );
+};
+
+export const getPlaybackPositions = async ({ userId, courseId }) => {
+    const rows = await pool('lesson_playback')
+        .select('lesson_id', 'position_seconds', 'updated_at')
+        .where({ user_id: userId, course_id: courseId });
+    return rows;
 };
 
 export const updateProgress = async (enrollmentId, progress, isCompleted) => {

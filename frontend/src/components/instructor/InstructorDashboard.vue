@@ -77,16 +77,19 @@
           </button>
         </div>
       </div>
+
+      <announcement-composer class="mt-6" :courses="courses" />
     </template>
   </div>
 </template>
 
 <script>
 import AppIcon from '@/components/ui/AppIcon.vue'
+import AnnouncementComposer from './AnnouncementComposer.vue'
 
 export default {
   name: 'InstructorDashboard',
-  components: { AppIcon },
+  components: { AppIcon, AnnouncementComposer },
   data() {
     return { loading: true, courses: [], totals: { courses: 0, enrollments: 0, revenue: 0 } }
   },

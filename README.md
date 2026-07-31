@@ -15,6 +15,16 @@ A robust Online Learning Management System (LMS) designed to empower learners an
 - **Enrollment System**: Track your progress and manage enrolled courses.
 - **Interactive Lessons**: Structured course content with sections and video lectures.
 - **Timestamped Notes & Bookmarks**: Take notes while watching — each one is stamped with the exact second of the video. Click any timestamp to jump straight back to that moment, review everything on the **My Notes** page (search across courses, edit, delete) and export a course's notes as a PDF study sheet.
+- **Resume Where You Left Off**: The playhead is checkpointed as you watch, so reopening a lesson picks up at the exact second you stopped — and the curriculum list shows where each lesson was left.
+- **Streaks, XP & Achievements**: A daily learning streak, a 12-week activity heatmap, XP with levels, and ten unlockable badges — all shown on **My Learning**.
+- **Notification Centre**: A header bell for answers to your questions, new course announcements and certificates earned, with unread counts and one-click mark-as-read.
+- **Certificate Verification**: Every certificate carries a public id — anyone can confirm it at `/verify/<id>` without an account.
+- **Player Controls**: Playback speed (0.75×–2×) and 10-second skips, with `←` / `→` and `<` / `>` keyboard shortcuts.
+- **Jump Back In**: The courses you viewed most recently, kept locally in the browser, one click from **My Learning**.
+
+### 🎓 **Instructor Tools**
+- **Instructor Dashboard**: Enrollments, ratings and revenue across your catalog.
+- **Course Announcements**: Post an update to a course you own and every enrolled learner is notified instantly.
 
 ### 🛠️ **Platform & Infrastructure**
 - **Robust API**: RESTful architecture for efficient data handling.

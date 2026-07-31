@@ -11,4 +11,8 @@ router.get('/:id/progress', auth.checkToken, enrollmentController.getCourseProgr
 router.post('/progress', auth.checkToken, enrollmentController.updateLessonProgress);
 router.post('/:id/certificate', auth.checkToken, enrollmentController.issueCertificate);
 
+// Resume playback — where the learner stopped watching each lesson.
+router.post('/playback', auth.checkToken, enrollmentController.savePlaybackPosition);
+router.get('/:id/playback', auth.checkToken, enrollmentController.getPlaybackPositions);
+
 export default router;

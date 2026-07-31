@@ -150,3 +150,9 @@ SELECT false, 0, c.id, u.id
 FROM courses c CROSS JOIN users u
 WHERE u.email = 'tutor@test.com' AND c.id IN (10010, 10011, 10012)
   AND NOT EXISTS (SELECT 1 FROM enrollment e WHERE e.course_id = c.id AND e.user_id = u.id);
+
+-- ...and record them as their courses, so instructor-only actions (posting
+-- announcements) work for the demo account too.
+UPDATE courses
+SET owner_user_id = (SELECT id FROM users WHERE email = 'tutor@test.com')
+WHERE id IN (10010, 10011, 10012);

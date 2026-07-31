@@ -150,9 +150,14 @@ import { toast } from '@/plugins/toast'
 import AppIcon from '@/components/ui/AppIcon.vue';
 import AppField from '@/components/ui/AppField.vue';
 import StarRating from '@/components/ui/StarRating.vue';
+import { useRecentCourses } from '@/composables/useRecentCourses';
 
 export default {
   components: { WishList, AllCourses, CourseReviews, CourseQna, AppIcon, AppField, StarRating },
+  setup() {
+    const { remember } = useRecentCourses()
+    return { rememberCourse: remember }
+  },
   computed: {
     ...mapGetters(['user', 'courseObjectives', 'coursesInCart', 'userCourses']),
     cartCourses() {
@@ -191,6 +196,7 @@ export default {
 
     this.singleCourse = courseResponse.data.data.course
     this.courseAuthor = courseResponse.data.data.tutor
+    if (this.singleCourse) this.rememberCourse(this.singleCourse)
     this.relatedCourses = relatedResponse.data.data || []
 
     this.$store.dispatch('getObjectives', this.courseId);

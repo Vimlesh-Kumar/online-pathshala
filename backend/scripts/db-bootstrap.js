@@ -72,6 +72,25 @@ async function run() {
     await connection.query(schema);
     console.log('✅ Schema applied.');
 
+    // `CREATE TABLE IF NOT EXISTS` leaves existing tables untouched, so columns
+    // added after a database was first created need an explicit migration.
+    const [[{ hasOwnerColumn }]] = await connection.query(
+        `SELECT COUNT(*) AS hasOwnerColumn FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'courses' AND COLUMN_NAME = 'owner_user_id'`,
+        [MYSQL_DATABASE]
+    );
+    if (!hasOwnerColumn) {
+        await connection.query('ALTER TABLE courses ADD COLUMN owner_user_id INT DEFAULT NULL');
+        await connection.query(
+            'ALTER TABLE courses ADD CONSTRAINT fk_courses_owner FOREIGN KEY (owner_user_id) REFERENCES users(id)'
+        );
+        // Best effort: display names are not unique, new courses store the owner directly.
+        await connection.query(
+            'UPDATE courses c JOIN users u ON u.full_name = c.author SET c.owner_user_id = u.id WHERE c.owner_user_id IS NULL'
+        );
+        console.log('✅ Added courses.owner_user_id (backfilled from author names).');
+    }
+
     const seed = await readFile(join(databaseDir, 'seed.sql'), 'utf8');
     await connection.query(seed);
     console.log('✅ Seed data applied.');

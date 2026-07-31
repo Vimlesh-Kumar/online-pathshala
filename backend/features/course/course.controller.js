@@ -40,7 +40,8 @@ export const addCourse = async (req, res) => {
             });
         }
 
-        const result = await courseServices.addCourseInDB(body);
+        // Ownership comes from the token, never from the request body.
+        const result = await courseServices.addCourseInDB({ ...body, owner_user_id: req.user.id });
         await enrollmentServices.enrolling({
             course_id: result.insertId,
             user_id: req.user.id

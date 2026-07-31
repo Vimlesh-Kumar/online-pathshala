@@ -1,4 +1,5 @@
 import * as notesService from './notes.service.js';
+import * as momentumService from '../momentum/momentum.service.js';
 import { sendError, sendSuccess } from '../../utils/apiResponse.js';
 
 const parseId = (value) => {
@@ -72,6 +73,9 @@ export const createNote = async (req, res) => {
         if (!note) {
             return sendError(res, { statusCode: 404, message: 'That lesson is not part of this course.' });
         }
+
+        // Writing notes counts as studying — it keeps the daily streak alive.
+        await momentumService.recordActivity(req.user.id, 'note');
 
         return sendSuccess(res, { statusCode: 201, message: 'Note saved.', data: note });
     } catch (error) {

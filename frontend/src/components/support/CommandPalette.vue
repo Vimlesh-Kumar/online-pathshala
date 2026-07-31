@@ -69,6 +69,7 @@ const STATIC_PAGES = [
   { label: 'Wishlist', path: '/user/wishlist', icon: 'lucide:heart' },
   { label: 'Orders', path: '/user/orders', icon: 'lucide:receipt-text' },
   { label: 'My Notes', path: '/user/notes', icon: 'lucide:notebook-pen' },
+  { label: 'Verify a certificate', path: '/verify', icon: 'lucide:shield-check' },
   { label: 'Add a course', path: '/user/tutor/add-course', icon: 'lucide:square-plus' },
   { label: 'Instructor dashboard', path: '/user/tutor/dashboard', icon: 'lucide:chart-column' },
 ]

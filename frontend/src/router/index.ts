@@ -28,7 +28,9 @@ const routes = [
   { path: '/user/cart', component: cart },
   { path: '/user/wishlist', component: wishlist },
   { path: '/user/orders', component: () => import('@/components/orders/Orders.vue') },
-  { path: '/user/notes', component: () => import('@/components/notes/MyNotes.vue') }
+  { path: '/user/notes', component: () => import('@/components/notes/MyNotes.vue') },
+  // Public — anyone holding a certificate id can check it.
+  { path: '/verify/:key?', component: () => import('@/components/certificates/VerifyCertificate.vue') }
 ]
 
 const router = createRouter({

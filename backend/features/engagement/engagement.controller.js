@@ -1,4 +1,5 @@
 import * as engagement from './engagement.service.js';
+import * as notificationService from '../notification/notification.service.js';
 import { sendError, sendSuccess } from '../../utils/apiResponse.js';
 
 const parseId = (v) => {
@@ -77,6 +78,18 @@ export const postAnswer = async (req, res) => {
             return sendError(res, { statusCode: 400, message: 'A question id and answer text are required.' });
         }
         const id = await engagement.addAnswer(questionId, req.user.id, content.slice(0, 1000));
+
+        // Tell whoever asked — but nobody needs a notification for their own reply.
+        const question = await engagement.getQuestionById(questionId);
+        if (question && question.user_id !== req.user.id) {
+            await notificationService.notify(question.user_id, {
+                type: 'qna-answer',
+                title: 'Your question got an answer',
+                body: question.content,
+                link: `/course/${question.course_id}`
+            });
+        }
+
         return sendSuccess(res, { statusCode: 201, message: 'Answer posted.', data: { id } });
     } catch (err) {
         console.error(err);

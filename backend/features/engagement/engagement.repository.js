@@ -68,6 +68,15 @@ export const addQuestion = async (courseId, userId, content) => {
     return insertId;
 };
 
+export const getQuestionById = async (questionId) => {
+    const row = await pool('qna_questions as q')
+        .select('q.id', 'q.user_id', 'q.course_id', 'q.content', 'c.title as course_title')
+        .join('courses as c', 'c.id', 'q.course_id')
+        .where('q.id', questionId)
+        .first();
+    return row || null;
+};
+
 export const addAnswer = async (questionId, userId, content) => {
     const [insertId] = await pool('qna_answers').insert({
         question_id: questionId,

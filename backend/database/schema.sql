@@ -29,7 +29,11 @@ CREATE TABLE IF NOT EXISTS courses (
     rating DECIMAL(4, 2),
     subtitle VARCHAR(500),
     thumb_url VARCHAR(255),
-    title VARCHAR(255)
+    title VARCHAR(255),
+    -- The tutor who created the course. `author` is only a display name, so it
+    -- cannot be trusted for authorisation (announcements, edits, ...).
+    owner_user_id INT DEFAULT NULL,
+    FOREIGN KEY (owner_user_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS cart (
@@ -166,4 +170,58 @@ CREATE TABLE IF NOT EXISTS certificates (
     certificate_key VARCHAR(50) NOT NULL UNIQUE,
     granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (enrollment_id) REFERENCES enrollment(id)
+);
+
+-- ── Learning: where the learner stopped watching each lesson ──
+CREATE TABLE IF NOT EXISTS lesson_playback (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    course_id INT NOT NULL,
+    lesson_id INT NOT NULL,
+    position_seconds INT NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_lesson_playback (user_id, lesson_id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (course_id) REFERENCES courses(id),
+    FOREIGN KEY (lesson_id) REFERENCES lesson(id),
+    INDEX idx_lesson_playback_course (user_id, course_id)
+);
+
+-- ── Momentum: one row per learner per active day, for streaks and XP ──
+CREATE TABLE IF NOT EXISTS learning_activity (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    activity_date DATE NOT NULL,
+    lessons_completed INT NOT NULL DEFAULT 0,
+    notes_taken INT NOT NULL DEFAULT 0,
+    UNIQUE KEY uniq_learning_activity_day (user_id, activity_date),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- ── Instructor announcements, broadcast to everyone enrolled ──
+CREATE TABLE IF NOT EXISTS course_announcements (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    course_id INT NOT NULL,
+    user_id INT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    content VARCHAR(2000) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (course_id) REFERENCES courses(id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    INDEX idx_course_announcements_course (course_id, created_at)
+);
+
+-- ── In-app notifications ──
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    type VARCHAR(40) NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    body VARCHAR(500) DEFAULT NULL,
+    -- In-app route the notification opens, e.g. /learn/42.
+    link VARCHAR(255) DEFAULT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    INDEX idx_notifications_user (user_id, is_read, created_at)
 );

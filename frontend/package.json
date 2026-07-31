@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "vite",
+    "dev": "vite",
     "icons": "node scripts/build-icons.mjs",
     "build": "npm run icons && vue-tsc --noEmit && vite build",
     "preview": "vite preview",

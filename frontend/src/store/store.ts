@@ -13,6 +13,8 @@ const store = createStore({
             cartCourses: [],
             cartSummary: { itemCount: 0, totalAmount: 0 },
             wishlistCourses: [],
+            notifications: [],
+            unreadNotifications: 0,
             searchQuery: '',
             selectedCategory: ''
         }
@@ -48,6 +50,10 @@ const store = createStore({
         },
         updateWishlistCourses(state, courses) {
             state.wishlistCourses = courses;
+        },
+        updateNotifications(state, { items, unreadCount }) {
+            state.notifications = items;
+            state.unreadNotifications = unreadCount;
         }
     },
 
@@ -171,6 +177,64 @@ const store = createStore({
         async deleteNote(_context, noteId) {
             await axios.delete(`/user/notes/${noteId}`)
         },
+        // ── Resume playback ──
+        async fetchPlaybackPositions(_context, courseId) {
+            const response = await axios.get(`/user/course/${courseId}/playback`)
+            return response.data.data || {}
+        },
+        async savePlaybackPosition(_context, { courseId, lessonId, positionSeconds }) {
+            await axios.post('/user/course/playback', {
+                course_id: courseId,
+                lesson_id: lessonId,
+                position_seconds: positionSeconds
+            })
+        },
+        // ── Momentum: streaks, XP, badges ──
+        async fetchMomentum(_context) {
+            const response = await axios.get('/user/momentum')
+            return response.data.data
+        },
+        // ── Notifications ──
+        async fetchNotifications({ commit }) {
+            try {
+                const response = await axios.get('/user/notifications')
+                const data = response.data.data || { items: [], unreadCount: 0 }
+                commit('updateNotifications', data)
+                return data
+            } catch (error) {
+                commit('updateNotifications', { items: [], unreadCount: 0 })
+                return { items: [], unreadCount: 0 }
+            }
+        },
+        async markNotificationRead({ dispatch }, id) {
+            await axios.post('/user/notifications/read', { id })
+            return dispatch('fetchNotifications')
+        },
+        async markAllNotificationsRead({ dispatch }) {
+            await axios.post('/user/notifications/read', { all: true })
+            return dispatch('fetchNotifications')
+        },
+        // ── Course announcements ──
+        async fetchAnnouncements(_context, courseId) {
+            const response = await axios.get(`/course/${courseId}/announcements`)
+            return response.data.data || []
+        },
+        async fetchMyAnnouncements(_context) {
+            const response = await axios.get('/user/tutor/announcements')
+            return response.data.data || []
+        },
+        async postAnnouncement(_context, { courseId, title, content }) {
+            const response = await axios.post(`/course/${courseId}/announcements`, { title, content })
+            return response.data.data
+        },
+        async deleteAnnouncement(_context, announcementId) {
+            await axios.delete(`/announcements/${announcementId}`)
+        },
+        // ── Certificate verification (public) ──
+        async verifyCertificate(_context, key) {
+            const response = await axios.get(`/certificates/verify/${encodeURIComponent(key)}`)
+            return response.data.data
+        },
         // ── Commerce ──
         async validateCoupon(_context, code) {
             const response = await axios.post('/user/coupon/validate', { code })
@@ -246,7 +310,9 @@ const store = createStore({
         courseObjectives(state: any) { return state.courseObjectives },
         coursesInCart(state: any) { return state.cartCourses },
         cartSummary(state: any) { return state.cartSummary },
-        cartItemCount(state: any) { return state.cartSummary?.itemCount || state.cartCourses.length || 0 }
+        cartItemCount(state: any) { return state.cartSummary?.itemCount || state.cartCourses.length || 0 },
+        notifications(state: any) { return state.notifications },
+        unreadNotifications(state: any) { return state.unreadNotifications }
     }
 })
 

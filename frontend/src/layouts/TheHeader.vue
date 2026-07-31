@@ -89,6 +89,8 @@
           </button>
 
           <template v-if="user">
+            <notification-bell />
+
             <button
               class="relative grid size-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground"
               title="Cart"
@@ -253,6 +255,7 @@
 import { mapGetters } from 'vuex'
 import { useAppTheme } from '@/composables/useAppTheme'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import NotificationBell from '@/components/support/NotificationBell.vue'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -265,6 +268,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 export default {
   components: {
     AppIcon,
+    NotificationBell,
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
