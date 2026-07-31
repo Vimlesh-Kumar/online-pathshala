@@ -36,17 +36,25 @@
       <div class="grid gap-6 md:grid-cols-12">
         <!-- Player -->
         <div class="md:col-span-8">
-          <div class="glass-panel section-card mb-5 overflow-hidden">
+          <div ref="playerCard" class="glass-panel section-card mb-5 overflow-hidden">
             <div class="relative w-full bg-black pt-[56.25%]">
-              <iframe
-                v-if="currentLesson"
-                :src="videoUrl"
-                title="Lesson video"
-                class="absolute inset-0 size-full"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen
-              ></iframe>
+              <!--
+                The player is created through the YouTube IFrame API so notes can
+                read and seek the playhead; `playerHost` is replaced by its iframe.
+                If the API can't load we drop back to a plain embed.
+              -->
+              <div class="absolute inset-0 size-full">
+                <div v-if="!playerUnavailable" ref="playerHost" class="size-full"></div>
+                <iframe
+                  v-else-if="currentLesson"
+                  :src="videoUrl"
+                  title="Lesson video"
+                  class="size-full"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                ></iframe>
+              </div>
             </div>
             <div class="flex flex-wrap items-center justify-between gap-4 p-6">
               <div>
@@ -84,6 +92,16 @@
               </div>
             </div>
           </div>
+
+          <lesson-notes
+            v-if="course && currentLessonId"
+            :key="course.id"
+            class="mb-5"
+            :course-id="course.id"
+            :lesson-id="currentLessonId"
+            :get-timestamp="playerReady ? currentTime : null"
+            @jump="jumpToNote"
+          />
 
           <div v-if="isCompleted" class="flex flex-col gap-6">
             <template v-if="!quizPassed">
@@ -176,8 +194,11 @@
 import axios from 'axios'
 import CourseQuiz from './CourseQuiz.vue'
 import CourseCertificate from './CourseCertificate.vue'
+import LessonNotes from './LessonNotes.vue'
 import ProgressRing from '../support/ProgressRing.vue'
 import { fireConfetti } from '@/utils/confetti'
+import { useYouTubePlayer } from '@/composables/useYouTubePlayer'
+import { toast } from '@/plugins/toast'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import {
   Dialog as DialogRoot,
@@ -191,12 +212,23 @@ export default {
   components: {
     CourseQuiz,
     CourseCertificate,
+    LessonNotes,
     ProgressRing,
     AppIcon,
     DialogRoot,
     DialogContent,
     DialogHeader,
     DialogTitle
+  },
+  setup() {
+    const { ready, unavailable, play, currentTime, seekTo } = useYouTubePlayer()
+    return {
+      playerReady: ready,
+      playerUnavailable: unavailable,
+      playVideo: play,
+      currentTime,
+      seekTo
+    }
   },
   data() {
     return {
@@ -210,8 +242,17 @@ export default {
       currentLessonId: null,
       quizPassed: false,
       certificateKey: null,
-      certModal: false
+      certModal: false,
+      // Video key currently loaded into the player, so a re-render never
+      // restarts a video that is already playing.
+      mountedVideoKey: null,
+      // Position a note asked for, applied when its lesson opens.
+      pendingSeek: 0
     }
+  },
+  watch: {
+    // `post` so the player host element exists in the DOM before we attach.
+    currentLessonId: { handler: 'mountVideo', flush: 'post' }
   },
   computed: {
     userName() {
@@ -264,9 +305,17 @@ export default {
       const progress = await this.$store.dispatch('fetchCourseProgress', courseId)
       this.applyProgress(progress)
 
-      // Resume: first incomplete lesson, else first lesson.
-      const firstIncomplete = this.lessons.find((l) => !this.completedIds.includes(l.id))
-      this.currentLessonId = (firstIncomplete || this.lessons[0])?.id ?? null
+      // A note can deep-link here (?lesson=&t=); otherwise resume at the first
+      // incomplete lesson, else the first lesson.
+      const requestedId = Number(this.$route.query.lesson)
+      const requested = this.lessons.find((l) => l.id === requestedId)
+      if (requested) {
+        this.pendingSeek = Math.max(0, Number(this.$route.query.t) || 0)
+        this.currentLessonId = requested.id
+      } else {
+        const firstIncomplete = this.lessons.find((l) => !this.completedIds.includes(l.id))
+        this.currentLessonId = (firstIncomplete || this.lessons[0])?.id ?? null
+      }
 
       // Check if user has already completed/passed the quiz once (from DB progress payload)
       if (progress && progress.certificateKey) {
@@ -280,6 +329,33 @@ export default {
     }
   },
   methods: {
+    /** Load the current lesson's video, opening it at `pendingSeek` if a note asked for it. */
+    mountVideo() {
+      const key = this.currentLesson?.video_key
+      if (!key) return
+
+      const startSeconds = this.pendingSeek
+      this.pendingSeek = 0
+      if (key === this.mountedVideoKey && !startSeconds) return
+
+      this.mountedVideoKey = key
+      this.playVideo(this.$refs.playerHost || null, key, startSeconds)
+    },
+    /** Replay the moment a note was taken at, switching lessons when needed. */
+    jumpToNote({ lessonId, seconds }) {
+      const targetId = Number(lessonId)
+      const startSeconds = Math.max(0, Number(seconds) || 0)
+
+      if (targetId !== this.currentLessonId) {
+        this.pendingSeek = startSeconds
+        this.currentLessonId = targetId
+      } else if (!this.seekTo(startSeconds)) {
+        toast.info('Give the video a moment to load, then try the timestamp again.')
+        return
+      }
+      // The player host is swapped out for YouTube's iframe, so scroll the card.
+      this.$refs.playerCard?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    },
     async onQuizPassed() {
       this.quizPassed = true
 

@@ -22,6 +22,7 @@ import wishListRouter from './features/wishlist/wishlist.router.js';
 import orderRouter from './features/order/order.router.js';
 import engagementRouter from './features/engagement/engagement.router.js';
 import aiSupportRouter from './features/aiSupport/aiSupport.router.js';
+import notesRouter from './features/notes/notes.router.js';
 import cacheService from './utils/cache.service.js';
 import keyVaultService from './utils/keyVault.service.js';
 
@@ -48,6 +49,7 @@ app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
 app.use('/user', userRouter);
 app.use('/', courseRouter);
+app.use('/user/notes', notesRouter);
 app.use('/user/course', enrollmentRouter);
 app.use('/', objectivesRouter);
 app.use('/course/section', lecturesRouter);

@@ -210,6 +210,13 @@
                     Wishlist
                   </button>
                   <button
+                    v-if="user"
+                    class="rounded-xl px-3 py-2.5 text-left font-semibold transition-colors hover:bg-foreground/5"
+                    @click="$router.push('/user/notes')"
+                  >
+                    My notes
+                  </button>
+                  <button
                     v-if="user?.user_role === 'Tutor'"
                     class="rounded-xl px-3 py-2.5 text-left font-semibold transition-colors hover:bg-foreground/5"
                     @click="$router.push('/user/tutor/add-course')"
@@ -293,6 +300,7 @@ export default {
     accountMenu() {
       const items = [
         { label: 'My learning', icon: 'lucide:layout-dashboard', action: () => this.$router.push('/user') },
+        { label: 'My notes', icon: 'lucide:notebook-pen', action: () => this.$router.push('/user/notes') },
         { label: 'Profile settings', icon: 'lucide:user-cog', action: () => this.$router.push('/user/profile') },
         { label: 'My orders', icon: 'lucide:receipt-text', action: () => this.$router.push('/user/orders') },
         { label: 'Logout', icon: 'lucide:log-out', action: () => this.handleLogoutClick() }

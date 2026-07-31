@@ -14,6 +14,7 @@ A robust Online Learning Management System (LMS) designed to empower learners an
 - **Shopping Cart & Wishlist**: Save favorite courses and manage potential purchases easily.
 - **Enrollment System**: Track your progress and manage enrolled courses.
 - **Interactive Lessons**: Structured course content with sections and video lectures.
+- **Timestamped Notes & Bookmarks**: Take notes while watching — each one is stamped with the exact second of the video. Click any timestamp to jump straight back to that moment, review everything on the **My Notes** page (search across courses, edit, delete) and export a course's notes as a PDF study sheet.
 
 ### 🛠️ **Platform & Infrastructure**
 - **Robust API**: RESTful architecture for efficient data handling.

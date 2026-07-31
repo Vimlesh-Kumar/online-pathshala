@@ -146,6 +146,31 @@ const store = createStore({
             const response = await axios.post(`/user/course/${courseId}/certificate`, { certificateKey })
             return response.data.data
         },
+        // ── Lesson notes ──
+        async fetchCourseNotes(_context, courseId) {
+            const response = await axios.get(`/user/notes/course/${courseId}`)
+            return response.data.data || []
+        },
+        async fetchAllNotes(_context) {
+            const response = await axios.get('/user/notes')
+            return response.data.data || { courses: [], totalNotes: 0 }
+        },
+        async createNote(_context, { courseId, lessonId, timestampSeconds, content }) {
+            const response = await axios.post('/user/notes', {
+                course_id: courseId,
+                lesson_id: lessonId,
+                timestamp_seconds: timestampSeconds,
+                content
+            })
+            return response.data.data
+        },
+        async updateNote(_context, { noteId, content }) {
+            const response = await axios.patch(`/user/notes/${noteId}`, { content })
+            return response.data.data
+        },
+        async deleteNote(_context, noteId) {
+            await axios.delete(`/user/notes/${noteId}`)
+        },
         // ── Commerce ──
         async validateCoupon(_context, code) {
             const response = await axios.post('/user/coupon/validate', { code })

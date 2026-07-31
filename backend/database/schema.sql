@@ -142,6 +142,24 @@ CREATE TABLE IF NOT EXISTS quiz_questions (
     FOREIGN KEY (course_id) REFERENCES courses(id)
 );
 
+-- ── Learning: timestamped lesson notes ──
+CREATE TABLE IF NOT EXISTS lesson_notes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    course_id INT NOT NULL,
+    lesson_id INT NOT NULL,
+    -- Playback position the note was captured at, in whole seconds.
+    timestamp_seconds INT NOT NULL DEFAULT 0,
+    content VARCHAR(2000) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (course_id) REFERENCES courses(id),
+    FOREIGN KEY (lesson_id) REFERENCES lesson(id),
+    INDEX idx_lesson_notes_user_course (user_id, course_id),
+    INDEX idx_lesson_notes_user_updated (user_id, updated_at)
+);
+
 CREATE TABLE IF NOT EXISTS certificates (
     id INT PRIMARY KEY AUTO_INCREMENT,
     enrollment_id INT NOT NULL UNIQUE,
