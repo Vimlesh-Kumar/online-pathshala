@@ -11,18 +11,19 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "db:setup": "node scripts/db-bootstrap.js",
+    "db:schema": "node scripts/db-bootstrap.js --schema-only",
     "catalog:generate": "node scripts/generate-course-catalog.js",
     "db-up-dev": "db-migrate up --config ./database/config/dev.json -e dev",
     "db-down-dev": "db-migrate down --config ./database/config/dev.json -e dev",
     "db-up-prod": "db-migrate up --config ./database/config/dev.json -e prod",
-    "db-down-prod": "db-migrate down --config ./database/config/dev.json -e prod"
+    "db-down-prod": "db-migrate down --config ./database/config/dev.json -e prod",
+    "secrets:check": "node scripts/secrets-doctor.js",
+    "cache:ping": "node scripts/cache-ping.js"
   },
   "keywords": [],
   "author": "Vimlesh Kumar",
   "license": "ISC",
   "dependencies": {
-    "@azure/identity": "^4.0.1",
-    "@azure/keyvault-secrets": "^4.7.0",
     "@vercel/blob": "2.6.1",
     "bcrypt": "6.0.0",
     "body-parser": "2.3.0",

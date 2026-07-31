@@ -1,3 +1,11 @@
 node_modules
+
+# Env files — only *.example variants may be committed.
 .env
+.env.local
+.env.*.local
+!.env.example
+!.env.local.example
+
+# Service-account keys
 googlekey.json

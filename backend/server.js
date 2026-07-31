@@ -1,83 +1,46 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import bodyParser from 'body-parser';
+import { bootstrapSecrets } from './config/secrets.bootstrap.js';
 
-// Load environment-specific .env file
-// Priority: .env.local (local dev) > .env (production)
-const nodeEnv = process.env.NODE_ENV || 'development';
-if (nodeEnv === 'development') {
-  dotenv.config({ path: '.env.local' });
-} else {
-  dotenv.config();
-}
+/**
+ * Boot order matters and is enforced here:
+ *
+ *   1. bootstrapSecrets() — loads .env / .env.local into process.env and validates it.
+ *   2. dynamic import of ./app.js — only now are the routers, database pool and
+ *      services constructed, so they observe fully-populated configuration.
+ *
+ * Using a static `import app from './app.js'` here would hoist the app's imports
+ * above step 1: the database pool would connect and the JWT / blob modules would
+ * capture their constants before any .env file had been read.
+ */
+try {
+  bootstrapSecrets();
 
-import userRouter from './features/user/user.router.js';
-import courseRouter from './features/course/course.router.js';
-import enrollmentRouter from './features/enrollment/enrollment.router.js';
-import objectivesRouter from './features/courseObjectives/courseObjectives.router.js';
-import lecturesRouter from './features/sectionLectures/sectionLectures.router.js';
-import cartRouter from './features/cart/cart.router.js';
-import wishListRouter from './features/wishlist/wishlist.router.js';
-import orderRouter from './features/order/order.router.js';
-import engagementRouter from './features/engagement/engagement.router.js';
-import aiSupportRouter from './features/aiSupport/aiSupport.router.js';
-import notesRouter from './features/notes/notes.router.js';
-import notificationRouter from './features/notification/notification.router.js';
-import momentumRouter from './features/momentum/momentum.router.js';
-import announcementRouter from './features/announcement/announcement.router.js';
-import certificateRouter from './features/certificate/certificate.router.js';
-import cacheService from './utils/cache.service.js';
-import keyVaultService from './utils/keyVault.service.js';
+  const { default: app } = await import('./app.js');
+  const { default: cacheService } = await import('./utils/cache.service.js');
 
-const app = express();
-const PORT = process.env.PORT || process.env.APP_PORT || 5000;
-const NODE_ENV = process.env.NODE_ENV || 'development';
+  const PORT = process.env.PORT || process.env.APP_PORT || 5000;
+  const nodeEnv = process.env.NODE_ENV || 'development';
 
-// Initialize secrets management (Key Vault for production, .env for local)
-if (NODE_ENV === 'production' && process.env.AZURE_KEYVAULT_ENABLED === 'true') {
-  keyVaultService.initialize();
-  console.log('🔐 Using Azure Key Vault for secrets (production mode)');
-} else {
-  console.log('📄 Using environment variables for secrets (development mode)');
-}
-
-app.use(bodyParser.json({ limit: "500mb" }));
-app.use(bodyParser.urlencoded({ limit: "500mb", extended: true }));
-// Allow all origins by default; lock down to the frontend URL by setting CORS_ORIGIN.
-app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
-app.use(express.json());
-
-// Lightweight health check (no DB) — used by Render to confirm the service is up.
-app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
-
-app.use('/user', userRouter);
-app.use('/', courseRouter);
-app.use('/user/notes', notesRouter);
-app.use('/user/notifications', notificationRouter);
-app.use('/user/momentum', momentumRouter);
-app.use('/user/course', enrollmentRouter);
-app.use('/', objectivesRouter);
-app.use('/course/section', lecturesRouter);
-app.use('/', cartRouter);
-app.use('/', wishListRouter);
-app.use('/', orderRouter);
-app.use('/', engagementRouter);
-app.use('/', announcementRouter);
-app.use('/', certificateRouter);
-app.use('/', aiSupportRouter);
-
-app.listen(PORT, async () => {
+  const server = app.listen(PORT, async () => {
     console.log(`🚀 Server is running on PORT: ${PORT}`);
 
-    // Initialize Valkey cache (optional in local dev)
     const cacheReady = await cacheService.initialize();
-    if (!cacheReady) {
-        const nodeEnv = process.env.NODE_ENV || 'development';
-        if (nodeEnv === 'production') {
-            console.error('⚠️  Cache service failed to initialize (production requires working cache)');
-        }
+    if (!cacheReady && nodeEnv === 'production') {
+      console.error('⚠️  Cache service failed to initialize (production requires a working cache)');
     }
-});
+  });
 
-export default app;
+  let shuttingDown = false;
+  const shutdown = async (signal) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`\n${signal} received — shutting down`);
+    await cacheService.close();
+    server.close(() => process.exit(0));
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+} catch (error) {
+  console.error(`\n❌ Startup failed: ${error.message}\n`);
+  process.exit(1);
+}

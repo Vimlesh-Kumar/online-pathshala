@@ -23,7 +23,7 @@
  * Idempotent — if the catalog already has TARGET_TOTAL or more courses,
  * the script exits immediately without inserting anything.
  */
-import 'dotenv/config';
+import '../config/env.js';
 import pool from '../database/database.js';
 
 const TARGET_TOTAL = 10000;

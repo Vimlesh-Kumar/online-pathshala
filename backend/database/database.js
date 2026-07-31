@@ -1,5 +1,5 @@
 import knex from 'knex';
-import 'dotenv/config';
+import '../config/env.js';
 
 const {
     DB_HOST = 'localhost',
