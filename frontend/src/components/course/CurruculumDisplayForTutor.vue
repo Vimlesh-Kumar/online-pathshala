@@ -1,46 +1,53 @@
 <template>
-    <div>
-        <div class="mt-5 text-center">
-            <p class="font-weight-bold" style="font-size:45px; font-family: 'Times New Roman', Times, serif;">Added
-                Curriculum
-            </p>
-        </div>
-        <v-container v-for="section in lectureBySection" :key="section">
-            <v-card width="1100" class="mx-auto pb-10 bg-">
-                <v-card-title class="bg-black mb-5">Section: {{ section[0].section_name }}</v-card-title>
-                <v-container v-for="(lecture, index) in section" :key="index">
-                    <v-sheet class="border true mx-15 pa-5 pb-0">
-                        <h3>Lecture : {{ index + 1 }}</h3>
-                        <v-divider class="my-1"></v-divider>
-                        <v-row>
-                            <v-col md="6" xs="12">
-                                <v-card-text>Lecture Name: {{ lecture.lesson_name }}</v-card-text>
-                                <v-card-text>Lecture Duration: {{ lecture.duration }}</v-card-text>
+    <div class="mx-auto max-w-[1100px] px-4 pt-10 pb-14">
+        <h1 class="app-section-title mb-8 text-center">Added Curriculum</h1>
 
-                            </v-col>
-                            <v-col md="6" xs="12">
-                                <!-- <h1>v</h1> -->
-                                <v-responsive aspect-ratio="16/9">
-                                    <video controls>
-                                        <source>
-                                    </video>
-                                </v-responsive>
-                            </v-col>
-                        </v-row>
-                    </v-sheet>
-                </v-container>
-            </v-card>
-        </v-container>
+        <div
+            v-for="(section, name) in lectureBySection"
+            :key="name"
+            class="glass-panel section-card mb-8 overflow-hidden"
+        >
+            <div class="bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] px-6 py-4">
+                <h2 class="font-display text-lg font-bold text-white">
+                    Section: {{ section[0].section_name }}
+                </h2>
+            </div>
+
+            <div class="p-6">
+                <div
+                    v-for="(lecture, index) in section"
+                    :key="index"
+                    class="mb-5 rounded-[18px] border border-black/10 p-5 last:mb-0 dark:border-white/12"
+                >
+                    <h3 class="font-display font-bold">Lecture : {{ index + 1 }}</h3>
+                    <separator class="my-3" />
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div class="flex flex-col justify-center gap-2 text-muted-foreground">
+                            <p>Lecture Name: <span class="text-foreground">{{ lecture.lesson_name }}</span></p>
+                            <p>Lecture Duration: <span class="text-foreground">{{ lecture.duration }}</span></p>
+                        </div>
+                        <div class="aspect-video overflow-hidden rounded-2xl bg-black/40">
+                            <video controls class="size-full">
+                                <source />
+                            </video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
 import axios from 'axios';
+import { Separator } from '@/components/ui/separator';
+
 export default {
+    components: { Separator },
     data() {
         return {
             courseSections: [],
-            lectureBySection: ''
+            lectureBySection: {}
         }
     },
 
@@ -68,8 +75,6 @@ export default {
                 sections[section_name].push(object)
             }
         }
-
-        console.log(sections)
 
         this.courseSections = data
         this.lectureBySection = sections

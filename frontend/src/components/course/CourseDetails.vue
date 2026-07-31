@@ -1,211 +1,248 @@
 <template>
-    <v-main>
-        <div class="bg-black">
-            <v-container>
-                <v-row>
-                    <v-col cols="8">
-                        <div>
-                            <p style="font-size: 15px;">{{ singleCourse.category }} > {{
-                                singleCourse.title }}
-                            </p>
-                        </div>
-                        <div class="my-1">
-                            <p class="font-weight-bold"
-                                style="font-size:45px; font-family: 'Times New Roman', Times, serif;">{{
-                                    singleCourse.title }}
-                            </p>
-                        </div>
-                        <div>
-                            <p>
-                                {{ singleCourse.subtitle }}
-                            </p>
-                        </div>
-                        <div class="d-flex">
-                            <v-rating :model-value="singleCourse.rating" color="amber" density="compact" half-increments
-                                readonly size="small"></v-rating>
+  <div v-if="!singleCourse" class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
+    <section class="page-intro mb-8 p-6 md:p-10">
+      <div class="skeleton mb-4 h-3.5 w-30"></div>
+      <div class="skeleton mb-3 h-10 w-[70%]"></div>
+      <div class="skeleton h-4.5 w-1/2"></div>
+    </section>
+  </div>
 
-                            <div class="text-amber ms-5">
-                                {{ singleCourse.rating }}
-                            </div>
-                        </div>
-                        <div>
-                            <p style="font-size: 14px;">Created by {{ singleCourse.author }}</p>
-                        </div>
-                    </v-col>
+  <div v-else class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
+    <section class="page-intro mb-8 grid gap-8 p-6 md:grid-cols-12 md:p-10">
+      <div class="md:col-span-7">
+        <div class="eyebrow mb-4">{{ singleCourse.category }}</div>
+        <h1 class="app-section-title mb-4">{{ singleCourse.title }}</h1>
+        <p class="mb-5 text-muted-foreground">{{ singleCourse.subtitle }}</p>
 
-
-                    <v-col cols="4" style="position: fixed; top: 70px; right: 85px; z-index: 1000;">
-                        <div>
-                            <v-sheet class="ms-15 pa-8 border true">
-
-                                <v-card>
-                                    <v-snackbar v-model="showMessage" :timeout="2000" color="pink" class=" justify-end"
-                                        min-width="100px">{{ message
-                                        }}</v-snackbar>
-                                    <!-- <messageDisplay :message="message" v-if="showMessage" class="mb-3"></messageDisplay> -->
-
-
-
-                                    <v-img cover :src="singleCourse.thumb_url"></v-img>
-
-                                    <v-card-title class="font-weight-bold">₹{{ singleCourse.price }}</v-card-title>
-
-                                    <v-row v-if="user?.user_role === 'Tutor' && user.id === courseAuthor?.id"
-                                        :class="'text-center'">
-                                        <v-col>
-                                            <v-btn class="bg-green-darken-4" @click="handleAddCourseLesson">Add Course
-                                                Content</v-btn>
-                                        </v-col>
-                                    </v-row>
-                                    <v-row v-else>
-                                        <div class="d-flex mx-5 my-1 justify-sm-space-between align-center">
-                                            <v-btn v-if="!cartCourses.includes(singleCourse.id)" width="140"
-                                                class="bg-green-lighten-3 align-center" block
-                                                @click="addToCart(singleCourse.id)">Add to
-                                                Cart</v-btn>
-
-                                            <v-btn v-else width="140" class="bg-green" block><router-link to="/user/cart"
-                                                    style="text-decoration: none;">Go to
-                                                    Cart</router-link></v-btn>
-
-                                            <!-- Add to Wishlist -->
-                                            <wish-list :course_id="singleCourse.id" :user="user"></wish-list>
-                                        </div>
-                                    </v-row>
-                                    <v-card-text>
-                                        <h2>This course includes:</h2>
-                                        <v-divider class="my-2"></v-divider>
-                                        <div><span class="mdi mdi-video-outline"></span> Full lifetime access</div>
-                                        <div><span class="mdi mdi-trophy"></span> Certificate of completion</div>
-                                        <div><span class="mdi mdi-cash"></span> 30-Day Money-Back Guarantee</div>
-                                    </v-card-text>
-                                </v-card>
-                            </v-sheet>
-                        </div>
-                    </v-col>
-                </v-row>
-            </v-container>
+        <div class="mb-4 flex flex-wrap items-center gap-4">
+          <div class="metric-pill flex items-center gap-2 px-4 py-3">
+            <star-rating :model-value="Number(singleCourse.rating || 4.5)" :size="16" />
+            <span class="font-bold">{{ singleCourse.rating || 4.5 }}</span>
+          </div>
+          <div class="metric-pill px-4 py-3">{{ singleCourse.enrolled_students || 0 }} learners</div>
+          <div class="metric-pill px-4 py-3">Created by {{ singleCourse.author }}</div>
         </div>
-        <div>
-            <v-container class="my-5">
-                <v-row>
-                    <v-col cols="8">
-                        <v-sheet class="border true px-15">
-                            <v-container>
-                                <h2>What You'll Learn</h2>
-                                <v-divider class="my-3"></v-divider>
-                                <p v-for="objective in courseObjectives" :key="objective"><span
-                                        class="mdi mdi-arrow-right-bold"></span> {{ objective.objective }}</p>
-                            </v-container>
-                        </v-sheet>
+      </div>
 
-                        <v-sheet class="border true px-15 my-10">
-                            <v-container>
-                                <h2>Course Content</h2>
-                            </v-container>
-                        </v-sheet>
-                        <v-sheet class="border true px-15 my-10">
-                            <v-container>
-                                <h2>Student Reviews</h2>
-                                <v-row>
-                                    <v-rating length="1" color="amber" :model-value="1"></v-rating>
-                                    <div class="pt-2 text-amber font-weight-bold" style="font-size: 1.5rem;">
-                                        {{ singleCourse.rating }}
-                                    </div>
-                                </v-row>
+      <div class="md:col-span-5">
+        <div
+          class="glass-panel overflow-hidden rounded-[26px] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+        >
+          <img :src="singleCourse.thumb_url" :alt="singleCourse.title" class="h-65 w-full object-cover" />
+          <div class="p-6">
+            <div class="mb-4 flex items-center justify-between">
+              <div class="gradient-text font-display text-3xl font-black">₹{{ formattedPrice }}</div>
+              <wish-list :course_id="singleCourse.id" :user="user" />
+            </div>
 
-                            </v-container>
-                        </v-sheet>
+            <button
+              v-if="user?.user_role === 'Tutor' && user.id === courseAuthor?.id"
+              class="btn-brand mb-3 w-full"
+              @click="handleAddCourseLesson"
+            >
+              Add course content
+            </button>
 
-                    </v-col>
-                </v-row>
-            </v-container>
+            <template v-else>
+              <button
+                v-if="isEnrolled"
+                class="btn-brand mb-3 w-full"
+                @click="$router.push(`/learn/${singleCourse.id}`)"
+              >
+                <app-icon name="lucide:circle-play" size="18" /> Go to course
+              </button>
+
+              <template v-else>
+                <button class="btn-brand mb-3 w-full" @click="enrollAndLearn(singleCourse.id)">
+                  Enroll for free
+                </button>
+                <button
+                  v-if="!cartCourses.includes(singleCourse.id)"
+                  class="mb-3 w-full rounded-full bg-primary/12 px-6 py-3 font-semibold text-primary transition-colors hover:bg-primary/20"
+                  @click="addToCart(singleCourse.id)"
+                >
+                  Add to cart
+                </button>
+                <button
+                  v-else
+                  class="mb-3 w-full rounded-full border border-black/10 px-6 py-3 font-semibold transition-colors hover:border-primary/50 dark:border-white/15"
+                  @click="$router.push('/user/cart')"
+                >
+                  Go to cart
+                </button>
+              </template>
+            </template>
+
+            <div class="grid gap-3.5 text-muted-foreground">
+              <div v-for="perk in perks" :key="perk.label" class="flex items-center gap-2">
+                <app-icon :name="perk.icon" size="18" />{{ perk.label }}
+              </div>
+            </div>
+          </div>
         </div>
-    </v-main>
+      </div>
+    </section>
+
+    <!-- Full width: there is no sidebar down here, so the old 8-of-12 column
+         left a dead gutter on the right. -->
+    <div>
+      <div>
+        <div class="glass-panel section-card mb-8 p-6">
+          <div class="eyebrow mb-4">What you'll learn</div>
+          <div class="grid md:grid-cols-2">
+            <div
+              v-for="objective in courseObjectives"
+              :key="objective.id"
+              class="flex items-start gap-1.5 py-3.5"
+            >
+              <app-icon name="lucide:circle-check" size="18" class="mt-0.5 text-primary" />
+              <span>{{ objective.objective }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-panel section-card mb-8 p-6">
+          <div class="mb-4 flex items-center gap-2">
+            <app-icon name="lucide:message-circle-question-mark" size="22" class="text-primary" />
+            <div class="eyebrow">Ask about this course</div>
+          </div>
+          <div class="mb-3 flex gap-3">
+            <app-field
+              v-model="courseQuestion"
+              class="flex-1"
+              placeholder="e.g. does this cover functions?"
+              @keyup.enter="askCourse"
+            />
+            <button class="btn-brand shrink-0" :disabled="askingCourse" @click="askCourse">
+              <app-icon v-if="askingCourse" name="lucide:loader-circle" size="18" class="animate-spin" />
+              Ask
+            </button>
+          </div>
+          <div
+            v-if="courseAnswer"
+            class="rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm"
+          >
+            {{ courseAnswer }}
+          </div>
+        </div>
+
+        <course-reviews :course-id="courseId" />
+
+        <course-qna :course-id="courseId" />
+
+        <div class="glass-panel section-card p-6">
+          <div class="eyebrow mb-4">Related courses</div>
+          <all-courses :all-courses="relatedCourses" />
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import axios from 'axios'
 import { mapGetters } from 'vuex';
-// import messageDisplay from '../Message&Error/messageDisplay.vue';
 import WishList from '../wishlist/WishList.vue';
+import AllCourses from './AllCourses.vue';
+import CourseReviews from './CourseReviews.vue';
+import CourseQna from './CourseQna.vue';
+import { toast } from '@/plugins/toast'
+import AppIcon from '@/components/ui/AppIcon.vue';
+import AppField from '@/components/ui/AppField.vue';
+import StarRating from '@/components/ui/StarRating.vue';
+import { useRecentCourses } from '@/composables/useRecentCourses';
 
 export default {
-    components: {
-        // messageDisplay,
-        WishList
+  components: { WishList, AllCourses, CourseReviews, CourseQna, AppIcon, AppField, StarRating },
+  setup() {
+    const { remember } = useRecentCourses()
+    return { rememberCourse: remember }
+  },
+  computed: {
+    ...mapGetters(['user', 'courseObjectives', 'coursesInCart', 'userCourses']),
+    cartCourses() {
+      return this.coursesInCart.map((c) => c.id)
     },
-    computed: {
-        ...mapGetters(['user', 'courseObjectives', 'coursesInCart']),
-        cartCourses() {
-            if (this.coursesInCart) {
-                return this.coursesInCart.map((c) => c.course_id)
-            }
-            return []
-        }
+    isEnrolled() {
+      return this.userCourses.some((c) => c.id === this.singleCourse?.id)
     },
-    data() {
-        return {
-            singleCourse: '',
-            courseAuthor: null,
-            courseId: null,
-            // error: '',
-            message: '',
-            showMessage: false,
-            updatedCousesInCart: this.coursesInCart
-        }
-    },
-    async created() {
-        this.courseId = this.$route.params.id
-
-        const response = await axios.get(`/course/${this.courseId}`)
-        // console.log(response.data.tutorId.id)
-        const course = response.data.course
-        // console.log(course)
-        this.singleCourse = course
-
-
-        const tutorId = response.data.tutorId
-        this.courseAuthor = tutorId
-
-
-
-        this.$store.dispatch('getObjectives', this.courseId);
-        this.$store.dispatch('fetchingUser');
-        this.$store.dispatch('getCartCourses');
-        this.$store.dispatch('getWishlistCourses');
-    },
-    methods: {
-        handleAddCourseLesson() {
-            // console.log(this.)
-            const currentUrl = this.$route.path
-            console.log(currentUrl)
-            this.$router.push(currentUrl + "/objectives")
-            // this.$router.push(`/course/${this.courseId}/objectives`)
-        },
-
-        async addToCart(id) {
-            if (this.user) {
-                if (!this.cartCourses.includes(id)) {
-                    await axios.post('/user/cart', { course_id: id })
-                    this.message = "Course added to cart!"
-                    await this.$store.dispatch('getCartCourses')
-                    this.showMessage = true
-                }
-            } else {
-                this.$router.push('/user/sign-in')
-            }
-        },
+    formattedPrice() {
+      return Number(this.singleCourse?.price || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })
     }
+  },
+  data() {
+    return {
+      singleCourse: null,
+      courseAuthor: null,
+      courseId: null,
+      relatedCourses: [],
+      courseQuestion: '',
+      courseAnswer: '',
+      askingCourse: false,
+      perks: [
+        { label: 'Full lifetime access', icon: 'lucide:video' },
+        { label: 'Certificate of completion', icon: 'lucide:award' },
+        { label: 'Learn on desktop and mobile', icon: 'lucide:smartphone' }
+      ]
+    }
+  },
+  async created() {
+    this.courseId = this.$route.params.id
+
+    const [courseResponse, relatedResponse] = await Promise.all([
+      axios.get(`/course/${this.courseId}`),
+      axios.get(`/course/${this.courseId}/related`)
+    ])
+
+    this.singleCourse = courseResponse.data.data.course
+    this.courseAuthor = courseResponse.data.data.tutor
+    if (this.singleCourse) this.rememberCourse(this.singleCourse)
+    this.relatedCourses = relatedResponse.data.data || []
+
+    this.$store.dispatch('getObjectives', this.courseId);
+    this.$store.dispatch('fetchingUser');
+    this.$store.dispatch('getCartCourses');
+    this.$store.dispatch('getWishlistCourses');
+    this.$store.dispatch('fetchingUserCourses');
+  },
+  methods: {
+    handleAddCourseLesson() {
+      this.$router.push(`${this.$route.path}/objectives`)
+    },
+    async enrollAndLearn(id) {
+      if (!this.user) {
+        this.$router.push('/user/sign-in')
+        return
+      }
+      await this.$store.dispatch('enrollInCourse', id)
+      toast.success("You're enrolled — happy learning!")
+      this.$router.push(`/learn/${id}`)
+    },
+    async askCourse() {
+      if (!this.courseQuestion.trim()) return
+      this.askingCourse = true
+      try {
+        const result = await this.$store.dispatch('askAboutCourse', {
+          courseId: this.courseId,
+          question: this.courseQuestion
+        })
+        this.courseAnswer = result.answer
+      } finally {
+        this.askingCourse = false
+      }
+    },
+    async addToCart(id) {
+      if (!this.user) {
+        this.$router.push('/user/sign-in')
+        return
+      }
+
+      if (!this.cartCourses.includes(id)) {
+        await axios.post('/user/cart', { course_id: id })
+        await this.$store.dispatch('getCartCourses')
+        toast.success('Course added to cart.')
+      }
+    },
+  }
 }
 </script>
-
-<style scoped>
-::v-deep .v-snackbar__wrapper {
-    bottom: unset !important;
-    left: unset !important;
-    transform: unset !important;
-    top: inherit;
-    margin-top: 58px;
-}
-</style>

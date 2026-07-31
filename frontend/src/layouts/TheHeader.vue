@@ -1,119 +1,339 @@
 <template>
-  <v-app-bar flat class="border-b" color="white" elevation="0" height="72">
-    <!-- Logo -->
-    <router-link to="/" class="ml-4 d-flex align-center text-decoration-none">
-      <v-img src="../assets/logof.png" width="160" height="48" contain></v-img>
-    </router-link>
+  <header class="sticky top-0 z-50 w-full px-3 pt-3 md:px-6 md:pt-5">
+    <div class="mx-auto max-w-[1400px]">
+      <div
+        class="flex h-16 items-center gap-2 rounded-full border border-black/5 bg-white/80 px-3 shadow-lg backdrop-blur-xl md:gap-3 md:px-5 dark:border-white/10 dark:bg-[#0e1626]/80"
+      >
+        <router-link to="/" class="flex shrink-0 items-center gap-3 no-underline">
+          <span
+            class="grid size-11 place-items-center rounded-2xl bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] shadow-[0_10px_30px_-8px_rgb(124_58_237_/_0.8)]"
+          >
+            <app-icon name="lucide:graduation-cap" size="24" class="text-white" />
+          </span>
+          <span class="hidden sm:block">
+            <span class="gradient-text block font-display text-[1.1rem] leading-tight font-extrabold">
+              Online Pathshala
+            </span>
+            <span class="block text-[0.72rem] text-muted-foreground">Learn anything, beautifully</span>
+          </span>
+        </router-link>
 
-    <!-- Categories Dropdown (Modern) -->
-    <v-menu open-on-hover transition="slide-y-transition">
-      <template v-slot:activator="{ props }">
-        <v-btn v-bind="props" variant="text" class="ml-4 font-weight-medium text-grey-darken-3">
-          Categories
-          <v-icon end>mdi-chevron-down</v-icon>
-        </v-btn>
-      </template>
-      <v-list density="compact" min-width="200" class="pa-2">
-        <v-list-item
-          v-for="cat in category"
-          :key="cat"
-          @click="handleCategorySelect(cat)"
-          :title="cat"
-          class="rounded-lg"
-          active-color="primary"
-        ></v-list-item>
-      </v-list>
-    </v-menu>
+        <dropdown-menu>
+          <dropdown-menu-trigger as-child>
+            <button
+              class="hidden shrink-0 items-center gap-1 rounded-full px-3 py-2 text-sm font-semibold text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground md:inline-flex"
+            >
+              Categories
+              <app-icon name="lucide:chevron-down" size="16" />
+            </button>
+          </dropdown-menu-trigger>
+          <dropdown-menu-content align="start" class="w-56 rounded-2xl p-2">
+            <dropdown-menu-item
+              v-for="cat in category"
+              :key="cat"
+              class="cursor-pointer rounded-xl px-3 py-2 font-medium"
+              @click="handleCategorySelect(cat)"
+            >
+              {{ cat }}
+            </dropdown-menu-item>
+          </dropdown-menu-content>
+        </dropdown-menu>
 
-    <!-- Modern Search Bar -->
-    <v-spacer></v-spacer>
-    <v-text-field
-      v-model="searchQuery"
-      prepend-inner-icon="mdi-magnify"
-      placeholder="Search for anything"
-      density="compact"
-      variant="solo-filled"
-      class="mx-4 search-bar"
-      hide-details
-      rounded="lg"
-      flat
-      @keyup.enter="handleSearch"
-    ></v-text-field>
-    <v-spacer></v-spacer>
+        <div class="relative mx-1 hidden min-w-0 flex-1 items-center sm:flex md:mx-4">
+          <app-icon
+            name="lucide:search"
+            size="18"
+            class="pointer-events-none absolute left-4 text-muted-foreground"
+          />
+          <input
+            v-model="searchQuery"
+            type="search"
+            aria-label="Search courses"
+            placeholder="Search courses, topics, instructors"
+            class="h-11 w-full rounded-full border border-white/10 bg-foreground/5 pr-16 pl-11 text-sm outline-none transition placeholder:text-muted-foreground focus:border-primary/50 focus:bg-foreground/[0.07] focus:ring-3 focus:ring-primary/20"
+            @keyup.enter="handleSearch"
+          />
+          <button
+            type="button"
+            class="absolute right-3 hidden rounded-full border border-white/15 px-2 py-0.5 text-[0.7rem] font-bold text-muted-foreground transition-colors hover:text-foreground md:block"
+            title="Open command palette"
+            @click.stop="openCommandPalette"
+          >
+            ⌘K
+          </button>
+        </div>
 
-    <!-- Right Side Actions -->
-    <div class="d-flex align-center mr-4">
-      <div v-if="user" class="d-flex align-center">
-        <v-btn v-if="user.user_role === 'Tutor'" variant="text" class="mr-2 text-primary font-weight-bold" @click="handleAddCourse">
-          Instructor
-        </v-btn>
-        
-        <v-btn icon variant="text" class="text-grey-darken-2">
-          <v-badge :content="cartCount" color="red" offset-x="2" offset-y="2" v-if="cartCount > 0">
-            <router-link to="/user/cart" class="text-inherit"><v-icon>mdi-cart-outline</v-icon></router-link>
-          </v-badge>
-          <router-link v-else to="/user/cart" class="text-inherit"><v-icon>mdi-cart-outline</v-icon></router-link>
-        </v-btn>
+        <div class="ml-auto flex items-center gap-1 sm:ml-0">
+          <div class="hidden items-center lg:flex">
+            <button
+              class="rounded-full px-3 py-2 text-sm font-semibold text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground"
+              @click="$router.push('/courses/all')"
+            >
+              Explore
+            </button>
+            <button
+              v-if="user?.user_role === 'Tutor'"
+              class="rounded-full px-3 py-2 text-sm font-semibold text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground"
+              @click="$router.push('/user/tutor/add-course')"
+            >
+              Teach
+            </button>
+          </div>
 
-        <v-btn icon variant="text" class="text-grey-darken-2">
-          <router-link to="/user/wishlist" class="text-inherit"><v-icon>mdi-heart-outline</v-icon></router-link>
-        </v-btn>
+          <button
+            class="grid size-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground"
+            :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            @click="toggleTheme"
+          >
+            <app-icon :name="isDark ? 'lucide:sun' : 'lucide:moon'" size="20" />
+          </button>
 
-        <v-menu transition="scale-transition">
-          <template v-slot:activator="{ props }">
-            <v-avatar color="primary" class="ml-4 cursor-pointer" v-bind="props">
-              <span class="text-white text-uppercase">{{ user.full_name?.charAt(0) }}</span>
-            </v-avatar>
+          <template v-if="user">
+            <notification-bell />
+
+            <button
+              class="relative grid size-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground"
+              title="Cart"
+              @click="$router.push('/user/cart')"
+            >
+              <app-icon name="lucide:shopping-cart" size="20" />
+              <span
+                v-if="cartCount > 0"
+                class="absolute top-0.5 right-0.5 grid min-w-4.5 place-items-center rounded-full bg-primary px-1 text-[0.65rem] font-bold text-primary-foreground"
+              >
+                {{ cartCount }}
+              </span>
+            </button>
+
+            <button
+              class="hidden size-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground sm:grid"
+              title="Wishlist"
+              @click="$router.push('/user/wishlist')"
+            >
+              <app-icon name="lucide:heart" size="20" />
+            </button>
+
+            <dropdown-menu>
+              <dropdown-menu-trigger as-child>
+                <button
+                  class="ml-1 grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] font-extrabold text-white uppercase shadow-[0_10px_30px_-10px_rgb(124_58_237_/_0.9)]"
+                  title="Account"
+                >
+                  <img
+                    v-if="user.avatar_url"
+                    :src="user.avatar_url"
+                    alt=""
+                    class="size-full object-cover"
+                  />
+                  <span v-else>{{ user.full_name?.charAt(0) }}</span>
+                </button>
+              </dropdown-menu-trigger>
+
+              <dropdown-menu-content align="end" class="w-64 rounded-2xl p-2">
+                <div class="px-3 py-2">
+                  <div class="truncate font-bold">{{ user.full_name }}</div>
+                  <div class="truncate text-sm text-muted-foreground">{{ user.email }}</div>
+                </div>
+                <dropdown-menu-separator />
+                <dropdown-menu-item
+                  v-for="item in accountMenu"
+                  :key="item.label"
+                  class="cursor-pointer gap-3 rounded-xl px-3 py-2 font-medium"
+                  @click="item.action()"
+                >
+                  <app-icon :name="item.icon" size="18" class="text-muted-foreground" />
+                  {{ item.label }}
+                </dropdown-menu-item>
+              </dropdown-menu-content>
+            </dropdown-menu>
           </template>
-          <v-list class="mt-2 pa-2 rounded-lg" min-width="200">
-            <v-list-item class="mb-2">
-              <v-list-item-title class="font-weight-bold">{{ user.full_name }}</v-list-item-title>
-              <v-list-item-subtitle>{{ user.email }}</v-list-item-subtitle>
-            </v-list-item>
-            <v-divider class="mb-2"></v-divider>
-            <v-list-item @click="$router.push('/user/profile')" prepend-icon="mdi-account-outline">Profile</v-list-item>
-            <v-list-item @click="handleLogoutClick" prepend-icon="mdi-logout" class="text-red">Logout</v-list-item>
-          </v-list>
-        </v-menu>
-      </div>
 
-      <!-- Login/Signup for Guest -->
-      <div v-else class="d-flex align-center">
-        <v-btn variant="outlined" color="primary" class="mr-2 rounded-lg" @click="$router.push('/user/sign-in')">Log in</v-btn>
-        <v-btn color="primary" class="rounded-lg shadow-sm" @click="$router.push('/user/sign-up')">Sign up</v-btn>
+          <template v-else>
+            <button
+              class="rounded-full px-3 py-2 text-sm font-semibold text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground"
+              @click="$router.push('/user/sign-in')"
+            >
+              Log in
+            </button>
+            <button
+              class="rounded-full bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] px-5 py-2.5 text-sm font-bold text-white shadow-[0_12px_30px_-10px_rgb(124_58_237_/_0.9)] transition-transform hover:-translate-y-0.5"
+              @click="$router.push('/user/sign-up')"
+            >
+              Sign up
+            </button>
+          </template>
+
+          <!-- Mobile: search + categories live behind this sheet. -->
+          <sheet>
+            <sheet-trigger as-child>
+              <button
+                class="grid size-10 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/5 sm:hidden"
+                title="Menu"
+              >
+                <app-icon name="lucide:menu" size="22" />
+              </button>
+            </sheet-trigger>
+            <sheet-content side="right" class="w-[88vw] max-w-sm">
+              <sheet-header>
+                <sheet-title class="gradient-text font-display text-xl font-extrabold">
+                  Online Pathshala
+                </sheet-title>
+              </sheet-header>
+
+              <div class="flex flex-col gap-6 overflow-y-auto px-4 pb-8">
+                <div class="relative flex items-center">
+                  <app-icon
+                    name="lucide:search"
+                    size="18"
+                    class="pointer-events-none absolute left-4 text-muted-foreground"
+                  />
+                  <input
+                    v-model="searchQuery"
+                    type="search"
+                    aria-label="Search courses"
+                    placeholder="Search courses"
+                    class="h-11 w-full rounded-full border border-white/10 bg-foreground/5 pr-4 pl-11 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
+                    @keyup.enter="handleSearch"
+                  />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <button
+                    class="rounded-xl px-3 py-2.5 text-left font-semibold transition-colors hover:bg-foreground/5"
+                    @click="$router.push('/courses/all')"
+                  >
+                    Explore courses
+                  </button>
+                  <button
+                    v-if="user"
+                    class="rounded-xl px-3 py-2.5 text-left font-semibold transition-colors hover:bg-foreground/5"
+                    @click="$router.push('/user/wishlist')"
+                  >
+                    Wishlist
+                  </button>
+                  <button
+                    v-if="user"
+                    class="rounded-xl px-3 py-2.5 text-left font-semibold transition-colors hover:bg-foreground/5"
+                    @click="$router.push('/user/notes')"
+                  >
+                    My notes
+                  </button>
+                  <button
+                    v-if="user?.user_role === 'Tutor'"
+                    class="rounded-xl px-3 py-2.5 text-left font-semibold transition-colors hover:bg-foreground/5"
+                    @click="$router.push('/user/tutor/add-course')"
+                  >
+                    Teach on Pathshala
+                  </button>
+                </div>
+
+                <div>
+                  <div class="mb-2 px-3 text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                    Categories
+                  </div>
+                  <div class="flex flex-wrap gap-2 px-3">
+                    <button
+                      v-for="cat in category"
+                      :key="cat"
+                      class="rounded-full border border-white/12 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-foreground/5"
+                      @click="handleCategorySelect(cat)"
+                    >
+                      {{ cat }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </sheet-content>
+          </sheet>
+        </div>
       </div>
     </div>
-  </v-app-bar>
+  </header>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
+import { useAppTheme } from '@/composables/useAppTheme'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import NotificationBell from '@/components/support/NotificationBell.vue'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
 export default {
+  components: {
+    AppIcon,
+    NotificationBell,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger
+  },
+  setup() {
+    const { isDark, toggleTheme } = useAppTheme()
+    return { isDark, toggleTheme }
+  },
   data() {
     return {
       searchQuery: '',
-      cartCount: 0,
       searchTimeout: null
     }
   },
+  created() {
+    // Keep the header's auth state correct on any direct page load / refresh.
+    if (!this.user && localStorage.getItem('token')) {
+      this.$store.dispatch('fetchingUser')
+    }
+  },
   computed: {
-    ...mapGetters(['user', 'category'])
+    ...mapGetters(['user', 'category', 'cartItemCount']),
+    cartCount() {
+      return this.cartItemCount || 0
+    },
+    accountMenu() {
+      const items = [
+        { label: 'My learning', icon: 'lucide:layout-dashboard', action: () => this.$router.push('/user') },
+        { label: 'My notes', icon: 'lucide:notebook-pen', action: () => this.$router.push('/user/notes') },
+        { label: 'Profile settings', icon: 'lucide:user-cog', action: () => this.$router.push('/user/profile') },
+        { label: 'My orders', icon: 'lucide:receipt-text', action: () => this.$router.push('/user/orders') },
+        { label: 'Logout', icon: 'lucide:log-out', action: () => this.handleLogoutClick() }
+      ]
+      if (this.user?.user_role === 'Tutor') {
+        items.splice(1, 0, {
+          label: 'Instructor dashboard',
+          icon: 'lucide:chart-column',
+          action: () => this.$router.push('/user/tutor/dashboard')
+        })
+      }
+      return items
+    }
   },
   watch: {
-    searchQuery(newVal) {
-      if (this.searchTimeout) clearTimeout(this.searchTimeout)
-      this.searchTimeout = setTimeout(() => {
-        if (newVal.trim()) {
-          this.handleSearch()
-        }
-      }, 600)
-    },
     '$route.query.q': {
       immediate: true,
-      handler(newVal) {
-        if (newVal) this.searchQuery = newVal
+      handler(newValue) {
+        this.searchQuery = newValue || ''
       }
+    },
+    searchQuery(value) {
+      if (this.searchTimeout) clearTimeout(this.searchTimeout)
+
+      this.searchTimeout = setTimeout(() => {
+        if (value?.trim() && this.$route.path !== '/courses/all') {
+          this.handleSearch()
+        }
+      }, 500)
     }
   },
   methods: {
@@ -122,16 +342,17 @@ export default {
       await this.$store.dispatch('fetchingUser')
       this.$router.push('/')
     },
-    handleAddCourse() {
-      this.$router.push('/user/tutor/add-course')
-    },
     handleCategorySelect(category) {
       this.$store.dispatch('setSelectedCategory', category)
-      this.$router.push({ path: '/courses/all', query: { category: category } })
+      this.$router.push({ path: '/courses/all', query: { category } })
     },
     handleSearch() {
-      this.$store.dispatch('setSearchQuery', this.searchQuery)
-      this.$router.push({ path: '/courses/all', query: { q: this.searchQuery } })
+      const trimmed = this.searchQuery.trim()
+      this.$store.dispatch('setSearchQuery', trimmed)
+      this.$router.push({ path: '/courses/all', query: trimmed ? { q: trimmed } : {} })
+    },
+    openCommandPalette() {
+      window.dispatchEvent(new CustomEvent('open-command-palette'))
     }
   },
   beforeUnmount() {
@@ -139,28 +360,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.search-bar {
-  max-width: 600px;
-}
-
-.search-bar :deep(.v-field__outline) {
-  --v-field-border-opacity: 0.1;
-}
-
-.v-btn {
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-.text-inherit {
-  color: inherit;
-  text-decoration: none;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-</style>
-

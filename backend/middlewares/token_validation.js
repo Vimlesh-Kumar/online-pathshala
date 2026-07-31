@@ -1,26 +1,32 @@
 import jwt from 'jsonwebtoken';
+import { sendError } from '../utils/apiResponse.js';
+
 const SECRET_KEY = process.env.JWT_SECRET || "MYSECRETKEYFORJWT";
 
 const auth = {
+    /**
+     * Validate bearer tokens and attach the decoded user payload to the request.
+     */
     checkToken(req, res, next) {
         let token = req.get("authorization");
         if (token && token.startsWith('Bearer ')) {
             token = token.slice(7);
             jwt.verify(token, SECRET_KEY, (err, decoded) => {
                 if (err) {
-                    return res.status(403).json({
+                    return sendError(res, {
+                        statusCode: 403,
                         message: "Invalid token.",
-                        token: "Invalid"
+                        errors: { token: 'Invalid' }
                     });
                 } else {
-                    // Decoded contains { id, email, role } based on my update in controller
                     req.user = decoded;
                     next();
                 }
             });
         } else {
-            return res.status(403).json({
-                message: "Access denied! Unauthorized user."
+            return sendError(res, {
+                statusCode: 403,
+                message: "Access denied. Unauthorized user."
             });
         }
     }

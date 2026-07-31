@@ -1,55 +1,48 @@
 <template>
-    <v-main>
-        <v-container>
-            <div class="d-flex justify-center py-3">
-                <h1>Curriculum</h1>
+    <div class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
+        <h1 class="app-section-title mb-6 text-center">Curriculum</h1>
+
+        <div class="glass-panel section-card mx-auto max-w-[1000px] p-6">
+            <div class="flex flex-col items-center gap-4 md:flex-row md:justify-between">
+                <h2 class="font-display text-xl font-bold">Section {{ sectionCount }}:</h2>
+                <app-field
+                    v-model="sectionName"
+                    class="w-full md:max-w-100"
+                    label="Section Name"
+                    placeholder="Introduction"
+                />
+                <button class="btn-brand shrink-0" @click="handleEditSection">Edit Section</button>
             </div>
-            <div>
-                <v-sheet class="border true bg-blue-grey-lighten-5 mx-auto" max-width="1000">
 
-
-
-                    <v-container>
-                        <div class="d-flex align-center justify-md-space-around">
-                            <h2>Section {{ sectionCount }}:</h2>
-                            <v-sheet width="400">
-                                <v-text-field label="Section Name" variant="solo" placeholder="Introduction"
-                                    v-model="sectionName" hide-details="auto"></v-text-field>
-                            </v-sheet>
-
-                            <v-btn class="bg-blue" @click="handleEditSection">Edit Section</v-btn>
-                        </div>
-                        <div class="mx-14 my-5" v-if="addLectureform === false">
-                            <!-- <v-icon>mdi-delete-alert</v-icon> -->
-                            <!-- <v-sheet class="border true"> -->
-                            <v-btn @click="addLectureform = true"> <v-icon>mdi-plus</v-icon>Lecture</v-btn>
-                            <!-- </v-sheet> -->
-                        </div>
-
-                        <!-- Lecture Adding -->
-                        <div v-if="addLectureform === true">
-                            <v-divider class="my-3"></v-divider>
-                            <CourseSectionLesson :sectionName="sectionName" :sectionWithLectures="sectionsWithLectures">
-                            </CourseSectionLesson>
-                        </div>
-
-                        <!-- Curriculum Display -->
-                        
-                    </v-container>
-                </v-sheet>
+            <div v-if="addLectureform === false" class="mt-6 flex justify-center">
+                <button
+                    class="inline-flex items-center gap-2 rounded-full bg-primary/12 px-6 py-3 font-semibold text-primary transition-colors hover:bg-primary/20"
+                    @click="addLectureform = true"
+                >
+                    <app-icon name="lucide:plus" size="18" /> Lecture
+                </button>
             </div>
-            <CurruculumDisplay></CurruculumDisplay>
 
-        </v-container>
-    </v-main>
+            <!-- Lecture Adding -->
+            <div v-if="addLectureform === true">
+                <separator class="my-5" />
+                <CourseSectionLesson :sectionName="sectionName" :sectionWithLectures="sectionsWithLectures">
+                </CourseSectionLesson>
+            </div>
+        </div>
+
+        <CurruculumDisplay></CurruculumDisplay>
+    </div>
 </template>
 
 <script>
 import axios from 'axios';
-// import axios from 'axios';
 import { mapGetters } from 'vuex';
 import CourseSectionLesson from './CourseSectionLesson.vue';
 import CurruculumDisplay from './CurruculumDisplayForTutor.vue';
+import AppField from '@/components/ui/AppField.vue';
+import AppIcon from '@/components/ui/AppIcon.vue';
+import { Separator } from '@/components/ui/separator';
 
 export default {
     data() {
@@ -64,17 +57,18 @@ export default {
     },
     components: {
         CourseSectionLesson,
-        CurruculumDisplay
+        CurruculumDisplay,
+        AppField,
+        AppIcon,
+        Separator
     },
 
     computed: {
         ...mapGetters(['user'])
     },
-    
+
     async created() {
         await this.$store.dispatch('fetchingUser');
-
-
 
         const currentUrl = this.$route.path;
         const url = currentUrl.split("/");
@@ -86,16 +80,13 @@ export default {
             }
         })
         this.sectionLectures = response.data.allsectionLecturesDetails
-        console.log(response)
     },
 
     methods: {
         async handleEditSection() {
             this.editSection = true;
             this.addLectureform = true;
-            // const response=await axios.get()
             const allLectures = this.sectionLectures
-            console.log(allLectures)
 
             this.sectionName = allLectures[0].section_name
             this.sectionsWithLectures = allLectures

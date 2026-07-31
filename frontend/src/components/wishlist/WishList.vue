@@ -1,56 +1,55 @@
 <template>
-    <v-btn icon class="mx-4">
-        <v-icon v-if="!wishlistCoursesId.includes(course_id)" @click="addToWishlist(course_id)"
-            color="red">mdi-heart-outline</v-icon>
-        <v-icon v-else @click="removeFromWishlist(course_id)" color="red">mdi-heart</v-icon>
-    </v-btn>
+  <button
+    class="grid size-10 shrink-0 place-items-center rounded-full text-[#f43f5e] transition-colors hover:bg-[#f43f5e]/10"
+    :aria-label="isWished ? 'Remove from wishlist' : 'Add to wishlist'"
+    @click="isWished ? removeFromWishlist(course_id) : addToWishlist(course_id)"
+  >
+    <app-icon name="lucide:heart" size="20" :filled="isWished" />
+  </button>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import { toast } from '@/plugins/toast'
+import AppIcon from '@/components/ui/AppIcon.vue'
+
 export default {
+  components: { AppIcon },
+  props: ['course_id', 'user'],
+  computed: {
+    ...mapState(['wishlistCourses']),
+    wishlistCoursesId() {
+      return this.wishlistCourses ? this.wishlistCourses.map((w) => w.id) : []
+    },
+    isWished() {
+      return this.wishlistCoursesId.includes(this.course_id)
+    }
+  },
+  methods: {
+    /**
+     * Save a course to the user's wishlist.
+     */
+    async addToWishlist(course_id) {
+      if (!this.user) {
+        this.$router.push('/user/sign-in')
+        return
+      }
 
-    props: ['course_id', 'user',],
-
-    computed: {
-        ...mapState(['wishlistCourses']),
-
-        wishlistCoursesId() {
-            if (this.wishlistCourses) {
-                return this.wishlistCourses.map((w) => w.id)
-            }
-            return []
-        }
+      if (!this.wishlistCoursesId.includes(course_id)) {
+        await this.$store.dispatch('addToWishlist', course_id)
+        await this.$store.dispatch('getWishlistCourses')
+        toast.success('Added to wishlist.')
+      }
     },
 
-    methods: {
-
-        /***
-         * Handle Add to wihslist button
-         * taking course id as a parameter
-         */
-        async addToWishlist(course_id) {
-            if (this.user) {
-                if (!this.wishlistCoursesId.includes(course_id)) {
-                    await this.$store.dispatch('addToWishlist', course_id)
-                    await this.$store.dispatch('getWishlistCourses')
-                }
-                else
-                    this.showWishlistOutlined = false
-            }
-            else {
-                this.$router.push('/user/sign-in')
-            }
-        },
-
-        /***
-         * Handle remove course from wishlist icon & 
-         * taking course_id(Number) as a parameter
-         */
-        async removeFromWishlist(course_id) {
-            await this.$store.dispatch('removeFromWishlist', course_id)
-            await this.$store.dispatch('getWishlistCourses')
-        }
+    /**
+     * Remove a course from the user's wishlist.
+     */
+    async removeFromWishlist(course_id) {
+      await this.$store.dispatch('removeFromWishlist', course_id)
+      await this.$store.dispatch('getWishlistCourses')
+      toast.info('Removed from wishlist.')
     }
+  }
 }
 </script>

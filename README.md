@@ -14,11 +14,22 @@ A robust Online Learning Management System (LMS) designed to empower learners an
 - **Shopping Cart & Wishlist**: Save favorite courses and manage potential purchases easily.
 - **Enrollment System**: Track your progress and manage enrolled courses.
 - **Interactive Lessons**: Structured course content with sections and video lectures.
+- **Timestamped Notes & Bookmarks**: Take notes while watching — each one is stamped with the exact second of the video. Click any timestamp to jump straight back to that moment, review everything on the **My Notes** page (search across courses, edit, delete) and export a course's notes as a PDF study sheet.
+- **Resume Where You Left Off**: The playhead is checkpointed as you watch, so reopening a lesson picks up at the exact second you stopped — and the curriculum list shows where each lesson was left.
+- **Streaks, XP & Achievements**: A daily learning streak, a 12-week activity heatmap, XP with levels, and ten unlockable badges — all shown on **My Learning**.
+- **Notification Centre**: A header bell for answers to your questions, new course announcements and certificates earned, with unread counts and one-click mark-as-read.
+- **Certificate Verification**: Every certificate carries a public id — anyone can confirm it at `/verify/<id>` without an account.
+- **Player Controls**: Playback speed (0.75×–2×) and 10-second skips, with `←` / `→` and `<` / `>` keyboard shortcuts.
+- **Jump Back In**: The courses you viewed most recently, kept locally in the browser, one click from **My Learning**.
+
+### 🎓 **Instructor Tools**
+- **Instructor Dashboard**: Enrollments, ratings and revenue across your catalog.
+- **Course Announcements**: Post an update to a course you own and every enrolled learner is notified instantly.
 
 ### 🛠️ **Platform & Infrastructure**
 - **Robust API**: RESTful architecture for efficient data handling.
 - **Database Migrations**: Version-controlled database schema using `db-migrate`.
-- **Responsive Design**: Mobile-first approach using Vuetify 3 components.
+- **Responsive Design**: Mobile-first approach built on Tailwind CSS utilities, with a dark-first theme and a light mode toggle.
 
 ---
 
@@ -27,7 +38,10 @@ A robust Online Learning Management System (LMS) designed to empower learners an
 **Frontend:**
 - **Vue 3**: The Progressive JavaScript Framework.
 - **Vite**: Next-generation frontend tooling.
-- **Vuetify 3**: Material Design component library.
+- **Tailwind CSS v4**: Utility-first styling with a dark-first design-token layer.
+- **shadcn-vue (reka-ui)**: Accessible, copy-in component primitives — dialogs, selects, tabs, pagination.
+- **Inspira UI (motion-v)**: Animated hero, card and text components for the marketing surfaces.
+- **Iconify + Lucide**: Icons bundled offline as a generated subset (`npm run icons`).
 - **Vuex/Vue Router**: Official state management and routing.
 - **Axios**: Promised-based HTTP client for API communication.
 
@@ -56,26 +70,39 @@ cd online-pathshala
 ```bash
 cd backend
 npm install
-# Configure your .env file based on .env.example
-npm dev
+cp .env.example .env      # then fill in your values
+npm run db:setup          # creates all tables + seeds demo courses & users
+npm run dev
 ```
 
 ### 3. Frontend Setup
 ```bash
 cd frontend
 npm install
-# Configure your .env file
+cp .env.example .env      # VITE_API_URL=http://localhost:8000/ for local
 npm start
 ```
 
+### Demo accounts (seeded by `db:setup`)
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@test.com` | `Test@1234` |
+| Student | `student@test.com` | `Test@1234` |
+| Tutor | `tutor@test.com` | `Test@1234` |
+
 ---
 
-## 🚢 DEPLOYMENT RECOMMENDATIONS
+## 🚢 DEPLOYMENT — 100% Free
 
-For an "Always-On" experience (no sleep delay), we recommend:
-1. **Frontend**: Vercel (Free)
-2. **Backend**: Vercel Serverless Functions or Railway (Free trial)
-3. **Database**: Aiven (Free MySQL)
+Full step-by-step guide: **[DEPLOY.md](DEPLOY.md)**
+
+| Piece | Service | Cost |
+|-------|---------|------|
+| Frontend (Vue SPA) | **Vercel** | Free |
+| Backend (Express API) | **Render** | Free |
+| Database | **Aiven for MySQL** | Free |
+
+Config files are included: `render.yaml` (backend) and `frontend/vercel.json` (frontend).
 
 ---
 

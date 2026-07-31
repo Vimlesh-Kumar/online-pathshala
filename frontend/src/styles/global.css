@@ -1,0 +1,214 @@
+/**
+ * Online Pathshala — shared component classes.
+ *
+ * Design tokens live in `tailwind.css`, which is imported first. This file
+ * holds the handful of multi-property patterns (glass surfaces, brand CTA,
+ * scroll-reveal, skeletons) that would be noisy to repeat as utility strings
+ * on every screen.
+ */
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Ambient mesh background painted behind the whole app */
+.app-shell {
+  background:
+    radial-gradient(60rem 60rem at 110% -10%, rgba(124, 58, 237, 0.18), transparent 55%),
+    radial-gradient(50rem 50rem at -10% 10%, rgba(6, 182, 212, 0.16), transparent 55%),
+    radial-gradient(40rem 40rem at 50% 120%, rgba(244, 63, 94, 0.10), transparent 60%),
+    var(--app-bg);
+}
+
+.app-main {
+  min-height: calc(100vh - 160px);
+}
+
+h1, h2, h3 {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+}
+
+/* ── Typography helpers ─────────────────────────────── */
+.app-section-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(1.9rem, 3vw, 3rem);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-strong);
+}
+
+.gradient-text {
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ── Surfaces ───────────────────────────────────────── */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+}
+
+.section-card {
+  border-radius: var(--r-lg);
+}
+
+/* Page header band. Deliberately light — a heavy glass slab with a shadow read
+   as dated next to the card grid it sits above. */
+.page-intro {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--glass-bg), transparent);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-xl);
+}
+
+/* Hairline brand accent along the top edge. */
+.page-intro::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--brand-2), var(--brand-3), transparent);
+  opacity: 0.7;
+}
+
+/* ── Pills / eyebrows / badges ──────────────────────── */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 15px;
+  border-radius: var(--r-pill);
+  background: var(--grad-primary-soft);
+  border: 1px solid var(--glass-border);
+  color: var(--brand-2);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dark .eyebrow { color: #c4b5fd; }
+
+.metric-pill {
+  border-radius: var(--r-md);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  color: var(--text-strong);
+}
+
+/* ── Brand button — primary CTA across the app ──────── */
+.btn-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--r-pill);
+  background: var(--grad-primary);
+  color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+  box-shadow: 0 14px 34px -12px rgba(124, 58, 237, 0.9);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.btn-brand:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+.btn-brand:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Hover-lift interaction ─────────────────────────── */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Gentle drift, used by the hero's floating badges. */
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(2rem, -1.5rem) scale(1.08); }
+  66% { transform: translate(-1.5rem, 1rem) scale(0.96); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-lift, .btn-brand { transition: none; }
+}
+
+/* ── Scroll-reveal (v-reveal directive) ─────────────── */
+.reveal-init {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-init.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-init { opacity: 1; transform: none; transition: none; }
+}
+
+/* ── Skeleton shimmer (loading placeholders) ────────── */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── Animated progress ring ──────────────────────────── */
+.progress-ring circle {
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Page transition ─────────────────────────────────── */
+.page-fade-enter-active, .page-fade-leave-active { transition: opacity 0.22s ease, transform 0.22s ease; }
+.page-fade-enter-from { opacity: 0; transform: translateY(10px); }
+.page-fade-leave-to { opacity: 0; transform: translateY(-6px); }
+
+/* ── Back-to-top button ──────────────────────────────── */
+.back-to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 100px;
+  z-index: 1900;
+}
+.back-to-top-enter-active, .back-to-top-leave-active { transition: all 0.25s ease; }
+.back-to-top-enter-from, .back-to-top-leave-to { opacity: 0; transform: translateY(16px) scale(0.9); }

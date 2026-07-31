@@ -1,22 +1,21 @@
 {
   "name": "online-pathshala",
   "private": true,
-  "workspaces": [
-    "frontend",
-    "backend"
-  ],
   "scripts": {
-    "start": "npm run start --workspace=backend",
-    "dev": "concurrently \"npm run start --workspace=frontend\" \"npm run start --workspace=backend\"",
-    "client": "npm run start --workspace=frontend",
-    "server": "npm run start --workspace=backend",
+    "start": "npm run start --prefix backend",
+    "dev": "concurrently \"npm run start --prefix frontend\" \"npm run start --prefix backend\"",
+    "client": "npm run start --prefix frontend",
+    "server": "npm run start --prefix backend",
     "c": "cd frontend && npm install",
     "b": "cd backend && npm install",
     "nodePackage": "concurrently  \"npm run c\" \"npm run b\"",
-    "build": "npm run build --workspace=frontend"
+    "build": "npm run build --prefix frontend"
   },
   "dependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "9.2.1"
+  },
+  "overrides": {
+    "shell-quote": "1.8.4"
   },
   "engines": {
     "node": ">=20.0.0"
