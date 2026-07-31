@@ -1,15 +1,18 @@
 /**
  * One-command database bootstrap.
  *
- *   npm run db:setup
+ *   npm run db:setup     schema + demo seed data
+ *   npm run db:schema    schema only — for a database that already has real data
  *
- * Reads DB_* from the environment (.env locally, or the host's env vars in
- * production) and applies database/schema.sql followed by database/seed.sql.
- * Both files are idempotent, so this is safe to run on every deploy.
+ * Reads DB_* from the environment (.env / .env.local locally, or the host's env
+ * vars in production) and applies database/schema.sql followed by
+ * database/seed.sql. Everything is `CREATE TABLE IF NOT EXISTS` / `INSERT IGNORE`,
+ * so existing tables and rows are never touched: re-running only fills in what is
+ * missing. That is how new tables reach a database that is already in use.
  *
  * Works against local MySQL and hosted providers (Aiven, TiDB, ...) alike.
  */
-import 'dotenv/config';
+import '../config/env.js';
 import mysql from 'mysql2/promise';
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -30,6 +33,10 @@ const {
 } = process.env;
 
 const isLocal = DB_HOST === 'localhost' || DB_HOST === '127.0.0.1';
+
+// Demo courses/users are useful on a fresh database and unwanted on one that
+// already holds real data.
+const schemaOnly = process.argv.slice(2).includes('--schema-only');
 
 function resolveSsl() {
     if (DB_CA_CERT) {
@@ -91,9 +98,13 @@ async function run() {
         console.log('✅ Added courses.owner_user_id (backfilled from author names).');
     }
 
-    const seed = await readFile(join(databaseDir, 'seed.sql'), 'utf8');
-    await connection.query(seed);
-    console.log('✅ Seed data applied.');
+    if (schemaOnly) {
+        console.log('⏭️  Seed data skipped (--schema-only).');
+    } else {
+        const seed = await readFile(join(databaseDir, 'seed.sql'), 'utf8');
+        await connection.query(seed);
+        console.log('✅ Seed data applied.');
+    }
 
     const [[{ courses }]] = await connection.query('SELECT COUNT(*) AS courses FROM courses');
     const [[{ users }]] = await connection.query('SELECT COUNT(*) AS users FROM users');

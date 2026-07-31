@@ -1,7 +1,7 @@
 import * as userService from './user.services.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import 'dotenv/config';
+import '../../config/env.js';
 import { sendError, sendSuccess } from '../../utils/apiResponse.js';
 import { uploadFile, downloadFile, deleteFile, listFiles } from '../../utils/blob.service.js';
 import { Readable } from 'stream';

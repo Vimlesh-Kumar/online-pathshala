@@ -1,5 +1,5 @@
 import { put, del, list, head, get } from '@vercel/blob';
-import 'dotenv/config';
+import '../config/env.js';
 
 const token = process.env.BLOB_READ_WRITE_TOKEN;
 
