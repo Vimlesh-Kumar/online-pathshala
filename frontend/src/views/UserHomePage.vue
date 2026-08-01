@@ -1,18 +1,25 @@
 <template>
   <div class="mx-auto max-w-[1400px] px-4 pt-10 pb-14">
-    <section v-if="user" class="page-intro mb-10 p-6 md:p-10">
-      <div class="eyebrow mb-4">{{ user.user_role === 'Student' ? 'My Learning' : 'Tutor Dashboard' }}</div>
-      <h1 class="app-section-title mb-3">
-        {{ user.user_role === 'Student' ? `Welcome back, ${user.full_name}` : `Manage your courses, ${user.full_name}` }}
-      </h1>
-      <p class="text-muted-foreground">
-        {{ user.user_role === 'Student'
-          ? 'Pick up where you left off, revisit saved courses, and keep your learning queue clean.'
-          : 'Review your published catalog and jump back into course creation without leaving the main workflow.' }}
-      </p>
-    </section>
+    <profile-header class="mb-10" />
 
     <recent-courses class="mb-6" />
+
+    <nav v-if="user?.user_role === 'Student'" class="mb-6 grid gap-3 sm:grid-cols-3">
+      <button
+        v-for="link in learningLinks"
+        :key="link.path"
+        class="flex items-center gap-3 rounded-2xl border border-black/5 bg-white/70 p-4 text-left shadow-sm backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-white/5"
+        @click="$router.push(link.path)"
+      >
+        <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary">
+          <app-icon :name="link.icon" size="20" />
+        </span>
+        <span>
+          <span class="block font-bold">{{ link.label }}</span>
+          <span class="block text-xs text-muted-foreground">{{ link.hint }}</span>
+        </span>
+      </button>
+    </nav>
 
     <learning-momentum v-if="user" class="mb-10" />
 
@@ -130,12 +137,23 @@ import AllCourses from '../components/course/AllCourses.vue';
 import LearningMomentum from '../components/learning/LearningMomentum.vue';
 import RecentCourses from '../components/course/RecentCourses.vue';
 import ProgressRing from '../components/support/ProgressRing.vue';
+import ProfileHeader from '../components/users/ProfileHeader.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 
 export default {
-  components: { AllCourses, LearningMomentum, RecentCourses, ProgressRing, AppIcon },
+  components: { AllCourses, LearningMomentum, RecentCourses, ProgressRing, ProfileHeader, AppIcon },
   data() {
-    return { recommended: [], recommendReason: 'popular', recommendBasedOn: [], loadingRecommended: true }
+    return {
+      recommended: [],
+      recommendReason: 'popular',
+      recommendBasedOn: [],
+      loadingRecommended: true,
+      learningLinks: [
+        { label: 'Flashcards', hint: 'Review what is due today', icon: 'lucide:layers', path: '/user/flashcards' },
+        { label: 'Study goals', hint: 'Your weekly plan', icon: 'lucide:target', path: '/user/goals' },
+        { label: 'Leaderboard', hint: 'Compete this week', icon: 'lucide:trophy', path: '/user/leaderboard' }
+      ]
+    }
   },
   computed: {
     ...mapGetters(['user', 'allCourses', 'userCourses']),

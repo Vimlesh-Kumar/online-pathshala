@@ -36,6 +36,10 @@ export const SECRET_REGISTRY = [
   // ── AI support (Groq) ─────────────────────────────────────────
   { envVar: 'GROQ_API_KEY', required: false },
 
+  // Optional: enriches YouTube channel links on the profile page. Video links
+  // work without it (public oEmbed); channels are API-only.
+  { envVar: 'YOUTUBE_API_KEY', required: false },
+
   // ── Google Drive (lecture uploads) ────────────────────────────
   { envVar: 'GOOGLE_CREDENTIALS', required: false },
   { envVar: 'GDRIVE_FOLDER_ID', required: false },

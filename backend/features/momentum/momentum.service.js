@@ -1,7 +1,7 @@
 import * as momentumRepository from './momentum.repository.js';
 
-/** XP awarded per lifetime action. */
-const XP = Object.freeze({ lesson: 10, note: 4, certificate: 100, review: 5 });
+/** XP awarded per lifetime action. Shared with the leaderboard so both agree. */
+export const XP = Object.freeze({ lesson: 10, note: 4, certificate: 100, review: 5, card: 2, practice: 8 });
 /** XP needed to move up a level. */
 const XP_PER_LEVEL = 500;
 /** Days shown in the activity heatmap (12 weeks). */
@@ -74,6 +74,8 @@ const buildBadges = ({ totals, streak, best }) => {
         { id: 'critic', label: 'Fair critic', icon: 'lucide:star', hint: 'Review 3 courses', value: totals.reviews, target: 3 },
         { id: 'scholar', label: 'Scholar', icon: 'lucide:award', hint: 'Earn your first certificate', value: totals.certificates, target: 1 },
         { id: 'graduate', label: 'Triple graduate', icon: 'lucide:graduation-cap', hint: 'Earn 3 certificates', value: totals.certificates, target: 3 },
+        { id: 'recall-rookie', label: 'Total recall', icon: 'lucide:layers-2', hint: 'Review 50 flashcards', value: totals.cards, target: 50 },
+        { id: 'quiz-whiz', label: 'Quiz whiz', icon: 'lucide:brain', hint: 'Take 5 practice quizzes', value: totals.practice, target: 5 },
         { id: 'streak-3', label: 'Warming up', icon: 'lucide:flame', hint: 'Study 3 days in a row', value: best, target: 3 },
         { id: 'streak-7', label: 'Week strong', icon: 'lucide:calendar-check', hint: 'Study 7 days in a row', value: best, target: 7 },
         { id: 'streak-30', label: 'Unstoppable', icon: 'lucide:trophy', hint: 'Study 30 days in a row', value: best, target: 30 }
@@ -99,10 +101,21 @@ export const getMomentum = async (userId) => {
     ]);
 
     const byKey = new Map();
+    // Lifetime review counts only exist as per-day counters, so they are summed
+    // from the same rows the heatmap is built from rather than re-queried.
+    let cardsReviewed = 0;
     for (const day of days) {
         const date = day.activity_date instanceof Date ? day.activity_date : new Date(day.activity_date);
-        byKey.set(dayKey(date), (Number(day.lessons_completed) || 0) + (Number(day.notes_taken) || 0));
+        cardsReviewed += Number(day.cards_reviewed) || 0;
+        byKey.set(
+            dayKey(date),
+            (Number(day.lessons_completed) || 0) +
+            (Number(day.notes_taken) || 0) +
+            (Number(day.cards_reviewed) || 0) +
+            (Number(day.quizzes_taken) || 0)
+        );
     }
+    totals.cards = cardsReviewed;
 
     const sortedKeys = [...byKey.keys()].sort((a, b) => a.localeCompare(b));
     const activeKeys = new Set(sortedKeys);
@@ -113,7 +126,9 @@ export const getMomentum = async (userId) => {
         totals.lessons * XP.lesson +
         totals.notes * XP.note +
         totals.certificates * XP.certificate +
-        totals.reviews * XP.review;
+        totals.reviews * XP.review +
+        totals.cards * XP.card +
+        totals.practice * XP.practice;
 
     const badges = buildBadges({ totals, streak, best });
 
