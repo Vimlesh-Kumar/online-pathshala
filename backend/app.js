@@ -49,12 +49,30 @@ const allowedOrigins = (process.env.CORS_ORIGIN || '')
   .map((value) => value.trim().replace(/\/+$/, ''))
   .filter(Boolean);
 
+console.log(
+  allowedOrigins.length === 0
+    ? '🌐 CORS: CORS_ORIGIN is unset — reflecting every origin (development default)'
+    : `🌐 CORS: allowing ${allowedOrigins.join(', ')}`
+);
+
 app.use(cors({
   origin: allowedOrigins.length === 0
     ? true
-    // A same-origin or server-to-server request sends no Origin header at all;
-    // rejecting those would break curl, health checks and the service worker.
-    : (origin, callback) => callback(null, !origin || allowedOrigins.includes(origin)),
+    : (origin, callback) => {
+        // A same-origin or server-to-server request sends no Origin header at all;
+        // rejecting those would break curl, health checks and the service worker.
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+
+        // cors() answers a rejected origin by sending *no* CORS headers at all —
+        // not even `Vary: Origin`. The browser then reports the generic "No
+        // 'Access-Control-Allow-Origin' header is present", which looks identical
+        // to the server being misrouted or down, while curl keeps working and the
+        // log says nothing. Name the origin that was turned away.
+        console.warn(
+          `🚫 CORS: rejected origin ${origin} — CORS_ORIGIN allows ${allowedOrigins.join(', ')}`
+        );
+        return callback(null, false);
+      },
 }));
 app.use(express.json());
 
