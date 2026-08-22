@@ -9,7 +9,7 @@
 import { bootstrapSecrets } from '../config/secrets.bootstrap.js';
 
 try {
-  bootstrapSecrets();
+  await bootstrapSecrets();
 } catch (error) {
   console.error(`\n❌ Bootstrap failed: ${error.message}\n`);
   process.exit(1);

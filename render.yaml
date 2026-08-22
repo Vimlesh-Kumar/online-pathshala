@@ -1,7 +1,15 @@
 # Render blueprint for the Online Pathshala backend (free tier).
 # Deploy: Render Dashboard → New → Blueprint → pick this repo.
-# The DB_* and JWT_SECRET values are marked `sync: false`, so Render will
-# prompt you to enter them in the dashboard (never commit real secrets).
+#
+# Infisical is the only source of secrets in production. The host carries just
+# the machine identity that reads it — the client id and client secret — and the
+# two values that say which project and environment to read. Everything else
+# (DB_*, JWT_SECRET, VALKEY_*, CORS_ORIGIN, GROQ_API_KEY, …) is fetched at boot
+# from the Infisical project below. See backend/SECRETS_SETUP.md.
+#
+# Deliberately no per-secret entries here: a variable set on Render wins over
+# Infisical, so leaving them out is what keeps the secret manager authoritative
+# and rotation a one-place edit.
 services:
   - type: web
     name: online-pathshala-api
@@ -15,21 +23,15 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DB_HOST
+
+      # ── Infisical machine identity (the only secrets on the host) ──
+      - key: INFISICAL_CLIENT_ID
         sync: false
-      - key: DB_PORT
+      - key: INFISICAL_CLIENT_SECRET
         sync: false
-      - key: DB_USER
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
-      - key: MYSQL_DATABASE
-        sync: false
-      - key: DB_CA_CERT
-        sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: CORS_ORIGIN
-        sync: false
-      - key: GROQ_API_KEY
-        sync: false
+
+      # ── Which project / environment to read (not secret) ──
+      - key: INFISICAL_PROJECT_ID
+        value: a37b412f-4c12-48a0-9857-d9fa40d3a6c9
+      - key: INFISICAL_ENVIRONMENT
+        value: prod

@@ -67,6 +67,13 @@
 
     <!-- Achievements -->
     <div>
+      <!--
+        Badge icons arrive from the API, so the icon-subset generator (which scans
+        source files for `prefix:name`) cannot see them. They are listed here so
+        `npm run icons` bundles them: lucide:play lucide:layers lucide:notebook-pen
+        lucide:compass lucide:star lucide:award lucide:graduation-cap lucide:flame
+        lucide:calendar-check lucide:trophy lucide:layers-2 lucide:brain
+      -->
       <div class="mb-3 flex items-center justify-between">
         <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           Achievements

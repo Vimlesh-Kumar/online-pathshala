@@ -17,6 +17,11 @@ import notificationRouter from './features/notification/notification.router.js';
 import momentumRouter from './features/momentum/momentum.router.js';
 import announcementRouter from './features/announcement/announcement.router.js';
 import certificateRouter from './features/certificate/certificate.router.js';
+import flashcardsRouter from './features/flashcards/flashcards.router.js';
+import practiceRouter from './features/practice/practice.router.js';
+import goalsRouter from './features/goals/goals.router.js';
+import socialRouter from './features/social/social.router.js';
+import linkPreviewRouter from './features/linkPreview/linkPreview.router.js';
 
 /**
  * NOTE: this module must only ever be imported *after* `bootstrapSecrets()` has
@@ -39,6 +44,10 @@ app.use('/', courseRouter);
 app.use('/user/notes', notesRouter);
 app.use('/user/notifications', notificationRouter);
 app.use('/user/momentum', momentumRouter);
+app.use('/user/flashcards', flashcardsRouter);
+app.use('/user/goals', goalsRouter);
+app.use('/user/social', socialRouter);
+app.use('/user/links', linkPreviewRouter);
 app.use('/user/course', enrollmentRouter);
 app.use('/', objectivesRouter);
 app.use('/course/section', lecturesRouter);
@@ -46,6 +55,7 @@ app.use('/', cartRouter);
 app.use('/', wishListRouter);
 app.use('/', orderRouter);
 app.use('/', engagementRouter);
+app.use('/', practiceRouter);
 app.use('/', announcementRouter);
 app.use('/', certificateRouter);
 app.use('/', aiSupportRouter);

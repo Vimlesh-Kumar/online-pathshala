@@ -12,7 +12,7 @@
  *
  * Works against local MySQL and hosted providers (Aiven, TiDB, ...) alike.
  */
-import '../config/env.js';
+import { bootstrapSecrets } from '../config/secrets.bootstrap.js';
 import mysql from 'mysql2/promise';
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -20,6 +20,11 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const databaseDir = join(__dirname, '..', 'database');
+
+// Top-level await, so the credentials below are read *after* configuration has
+// resolved — including secrets pulled from Infisical. The cache is irrelevant to
+// a schema migration, so its production requirement is waived here.
+await bootstrapSecrets({ requireCache: false });
 
 const {
     DB_HOST = 'localhost',

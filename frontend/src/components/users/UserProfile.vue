@@ -167,15 +167,16 @@
             </p>
 
             <form novalidate @submit.prevent="saveProfile">
-              <app-field
-                v-for="link in socialFields"
-                :key="link.key"
-                v-model="profileForm[link.key]"
-                class="mb-4"
-                :label="link.label"
-                :icon="link.icon"
-                :placeholder="link.placeholder"
-              />
+              <div v-for="link in socialFields" :key="link.key" class="mb-4">
+                <app-field
+                  v-model="profileForm[link.key]"
+                  :label="link.label"
+                  :icon="link.icon"
+                  :placeholder="link.placeholder"
+                />
+                <!-- Reads the real profile behind the link: name, avatar, bio, counts. -->
+                <social-link-preview :url="profileForm[link.key]" />
+              </div>
 
               <div class="mt-6 flex justify-end">
                 <button type="submit" class="btn-brand px-8" :disabled="savingProfile">
@@ -245,6 +246,7 @@ import axios from 'axios';
 import { toast } from '../../plugins/toast';
 import AppField from '@/components/ui/AppField.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
+import SocialLinkPreview from '@/components/users/SocialLinkPreview.vue';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -259,6 +261,7 @@ export default {
   components: {
     AppField,
     AppIcon,
+    SocialLinkPreview,
     Separator,
     Tabs,
     TabsContent,

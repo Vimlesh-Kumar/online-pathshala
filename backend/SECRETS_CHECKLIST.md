@@ -35,37 +35,44 @@ Expected on startup:
 
 ---
 
-## Deployment
+## Deployment (Infisical only)
 
-Set these in the host's environment settings — never commit a `.env` file:
+Infisical is the sole source of secrets in production — with no machine identity
+the server refuses to boot. Two credentials go on the host:
 
 ```text
-NODE_ENV=production
-JWT_SECRET=
-DB_HOST=
-DB_PORT=
-DB_USER=
-DB_PASSWORD=
-MYSQL_DATABASE=
-VALKEY_URI=rediss://default:<password>@<host>:<port>
-CORS_ORIGIN=https://your-frontend-domain
+INFISICAL_CLIENT_ID=<machine identity client id>
+INFISICAL_CLIENT_SECRET=<machine identity client secret>
 ```
 
-Optional, per feature: `DB_CA_CERT`, `BLOB_READ_WRITE_TOKEN`, `BLOB_STORE_ID`,
-`GROQ_API_KEY`, `GOOGLE_CREDENTIALS`, `GDRIVE_FOLDER_ID`.
+`render.yaml` pins the other three (`NODE_ENV=production`,
+`INFISICAL_PROJECT_ID`, `INFISICAL_ENVIRONMENT=prod`). Everything else —
+`JWT_SECRET`, `DB_*`, `VALKEY_*`, `CORS_ORIGIN` and the optional per-feature keys
+— is loaded from the Infisical project at boot. Fill in `infisical.sample.env`
+and import it; full steps in [SECRETS_SETUP.md](./SECRETS_SETUP.md).
 
 - [ ] `NODE_ENV=production` is set — this makes missing configuration fatal instead of a warning
+- [ ] The machine identity has **read** access to the `prod` environment
+- [ ] **No application secrets are set on Render.** A host variable wins over
+      Infisical, so a leftover `DB_PASSWORD` there would shadow the one you rotate
+- [ ] Boot log shows `Source : Infisical (...)` and a non-zero secret count
 - [ ] `npm run secrets:check` exits 0 with the production environment loaded
 - [ ] `CORS_ORIGIN` points at the real frontend domain, not `*`
+- [ ] `infisical.env` was deleted locally after importing, and is not in git
 - [ ] No secret values appear anywhere in the repository
 
 ---
 
 ## Rotating a credential
 
-1. Rotate at the source (Aiven console, Vercel dashboard, Groq console).
-2. Update the value in `.env.local` and in the host's environment settings.
-3. Restart, then verify with `npm run secrets:check` and `npm run cache:ping`.
+1. Rotate at the source (database provider console, Vercel dashboard, Groq console).
+2. Update the value in Infisical (and in `.env.local` for local development).
+3. Restart the service — the host's environment never changes.
+4. Verify with `npm run secrets:check` and `npm run cache:ping`.
+
+To rotate the Infisical machine identity itself, issue a new client secret in
+**Access Control → Machine Identities**, update `INFISICAL_CLIENT_SECRET` on the
+host, and revoke the old one.
 
 A credential that has ever been committed is compromised — rotate it rather than
 just deleting the line, since it stays in git history.
@@ -78,6 +85,10 @@ just deleting the line, since it stays in git history.
 | --- | --- |
 | `Missing required configuration` on boot | A required var is unset or still a placeholder — run `npm run secrets:check` |
 | `Valkey connection is not configured` | Set `VALKEY_URI`, or all of `VALKEY_HOST` + `VALKEY_PORT` + `VALKEY_PASSWORD` |
-| `WRONGPASS` | Wrong Valkey password — re-copy from the Aiven console |
+| `WRONGPASS` | Wrong Valkey password — re-copy it from your cache provider's console |
 | `Access denied for user` | Wrong `DB_USER` / `DB_PASSWORD` |
 | Values in `.env.local` seem ignored | A real environment variable of the same name wins over the file — check your shell exports |
+| `Could not load secrets from Infisical: ... 401 Invalid credentials` | Wrong `INFISICAL_CLIENT_ID` / `INFISICAL_CLIENT_SECRET`, or the client secret was revoked |
+| `Infisical returned no secrets for environment "prod"` | Wrong environment **slug**, wrong `INFISICAL_SECRET_PATH`, or the machine identity lacks read access to that path |
+| Infisical values seem ignored | A variable of the same name is set on the host — the host always wins. Delete it from Render → Environment |
+| `Infisical is the source of secrets in production, but its machine identity is not configured` | `INFISICAL_CLIENT_ID` / `INFISICAL_CLIENT_SECRET` / `INFISICAL_PROJECT_ID` are not all set on the host |

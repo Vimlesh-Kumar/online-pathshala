@@ -8,6 +8,7 @@ import './styles/global.css';
 import httpInterceptor from './interceptor';
 import store from './store/store'
 import router from './router'
+import { setupPwa } from './utils/pwa'
 
 // Components
 import App from './App.vue'
@@ -23,5 +24,7 @@ httpInterceptor(router);
 registerPlugins(app)
 app.use(store)
 
+// Service worker, install prompt and online/offline tracking.
+setupPwa()
 
 app.mount('#app')

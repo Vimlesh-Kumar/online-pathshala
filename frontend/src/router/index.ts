@@ -29,6 +29,9 @@ const routes = [
   { path: '/user/wishlist', component: wishlist },
   { path: '/user/orders', component: () => import('@/components/orders/Orders.vue') },
   { path: '/user/notes', component: () => import('@/components/notes/MyNotes.vue') },
+  { path: '/user/flashcards', component: () => import('@/components/flashcards/FlashcardsPage.vue') },
+  { path: '/user/goals', component: () => import('@/components/learning/StudyGoals.vue') },
+  { path: '/user/leaderboard', component: () => import('@/components/learning/LeaderboardPage.vue') },
   // Public — anyone holding a certificate id can check it.
   { path: '/verify/:key?', component: () => import('@/components/certificates/VerifyCertificate.vue') }
 ]

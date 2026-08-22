@@ -194,6 +194,95 @@ const store = createStore({
             const response = await axios.get('/user/momentum')
             return response.data.data
         },
+        // ── Profile link previews ──
+        async fetchLinkPreviews(_context, urls: string[]) {
+            const response = await axios.post('/user/links/preview', { urls })
+            return response.data.data?.previews || []
+        },
+        // ── Flashcards: spaced repetition ──
+        async fetchFlashcardDecks(_context) {
+            const response = await axios.get('/user/flashcards')
+            return response.data.data || { summary: { total: 0, due: 0, mastered: 0 }, decks: [] }
+        },
+        async generateFlashcardDeck(_context, courseId) {
+            const response = await axios.post('/user/flashcards/generate', { course_id: courseId })
+            return response.data.data
+        },
+        async fetchDueFlashcards(_context, courseId) {
+            const response = await axios.get('/user/flashcards/due', {
+                params: courseId ? { course_id: courseId } : {}
+            })
+            return response.data.data || { cards: [], summary: { total: 0, due: 0, mastered: 0 } }
+        },
+        async reviewFlashcard(_context, { cardId, rating }) {
+            const response = await axios.post(`/user/flashcards/${cardId}/review`, { rating })
+            return response.data.data
+        },
+        async createFlashcard(_context, { courseId, lessonId, front, back }) {
+            const response = await axios.post('/user/flashcards', {
+                course_id: courseId,
+                lesson_id: lessonId,
+                front,
+                back
+            })
+            return response.data.data
+        },
+        async deleteFlashcard(_context, cardId) {
+            await axios.delete(`/user/flashcards/${cardId}`)
+        },
+        // ── AI practice quizzes ──
+        async fetchPracticeRound(_context, { courseId, lessonId = null, refresh = false }) {
+            const response = await axios.get(`/course/${courseId}/practice`, {
+                params: { ...(lessonId ? { lesson_id: lessonId } : {}), ...(refresh ? { refresh: 'true' } : {}) }
+            })
+            return response.data.data
+        },
+        async submitPracticeRound(_context, { courseId, lessonId = null, answers }) {
+            const response = await axios.post(`/course/${courseId}/practice/submit`, {
+                lesson_id: lessonId,
+                answers
+            })
+            return response.data.data
+        },
+        async fetchPracticeHistory(_context, courseId) {
+            const response = await axios.get(`/course/${courseId}/practice/history`)
+            return response.data.data || { stats: {}, attempts: [] }
+        },
+        // ── Study goals & weekly planner ──
+        async fetchStudyPlan(_context) {
+            const response = await axios.get('/user/goals')
+            return response.data.data
+        },
+        async saveStudyGoal(_context, { weeklyLessons, weeklyDays, planDays, remindersOn }) {
+            const response = await axios.put('/user/goals', {
+                weekly_lessons: weeklyLessons,
+                weekly_days: weeklyDays,
+                plan_days: planDays,
+                reminders_on: remindersOn
+            })
+            return response.data.data
+        },
+        // ── Leaderboard & peer challenges ──
+        async fetchLeaderboard(_context) {
+            const response = await axios.get('/user/social/leaderboard')
+            return response.data.data
+        },
+        async saveLeaderboardPrefs(_context, { optIn, alias }) {
+            const response = await axios.put('/user/social/leaderboard/prefs', { opt_in: optIn, alias })
+            return response.data.data
+        },
+        async fetchChallenges(_context) {
+            const response = await axios.get('/user/social/challenges')
+            return response.data.data || { challenges: [] }
+        },
+        async createChallenge(_context, { email, metric, days }) {
+            const response = await axios.post('/user/social/challenges', { email, metric, days })
+            return response.data.data
+        },
+        async respondToChallenge(_context, { challengeId, accept }) {
+            const response = await axios.post(`/user/social/challenges/${challengeId}/respond`, { accept })
+            return response.data.data
+        },
         // ── Notifications ──
         async fetchNotifications({ commit }) {
             try {

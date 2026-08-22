@@ -254,6 +254,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { useAppTheme } from '@/composables/useAppTheme'
+import { clearApiCache } from '@/utils/pwa'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import NotificationBell from '@/components/support/NotificationBell.vue'
 import {
@@ -305,6 +306,9 @@ export default {
       const items = [
         { label: 'My learning', icon: 'lucide:layout-dashboard', action: () => this.$router.push('/user') },
         { label: 'My notes', icon: 'lucide:notebook-pen', action: () => this.$router.push('/user/notes') },
+        { label: 'Flashcards', icon: 'lucide:layers', action: () => this.$router.push('/user/flashcards') },
+        { label: 'Study goals', icon: 'lucide:target', action: () => this.$router.push('/user/goals') },
+        { label: 'Leaderboard', icon: 'lucide:trophy', action: () => this.$router.push('/user/leaderboard') },
         { label: 'Profile settings', icon: 'lucide:user-cog', action: () => this.$router.push('/user/profile') },
         { label: 'My orders', icon: 'lucide:receipt-text', action: () => this.$router.push('/user/orders') },
         { label: 'Logout', icon: 'lucide:log-out', action: () => this.handleLogoutClick() }
@@ -339,6 +343,8 @@ export default {
   methods: {
     async handleLogoutClick() {
       localStorage.removeItem('token')
+      // Cached API responses belong to the learner who just left.
+      await clearApiCache()
       await this.$store.dispatch('fetchingUser')
       this.$router.push('/')
     },

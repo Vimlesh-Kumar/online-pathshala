@@ -1,11 +1,14 @@
 node_modules
 
-# Env files — only *.example variants may be committed.
+# Env files — only *.example / *.sample variants may be committed.
 .env
 .env.local
 .env.*.local
 !.env.example
 !.env.local.example
+
+# The filled-in copy of infisical.sample.env, ready to upload. Real values.
+infisical.env
 
 # Service-account keys
 googlekey.json

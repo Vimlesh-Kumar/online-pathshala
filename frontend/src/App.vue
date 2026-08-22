@@ -13,6 +13,7 @@
     <toast-stack></toast-stack>
     <back-to-top></back-to-top>
     <command-palette></command-palette>
+    <app-status-bar></app-status-bar>
   </div>
 </template>
 
@@ -23,6 +24,7 @@
   import ToastStack from './components/support/ToastStack.vue'
   import BackToTop from './components/support/BackToTop.vue'
   import CommandPalette from './components/support/CommandPalette.vue'
+  import AppStatusBar from './components/support/AppStatusBar.vue'
   export default{
     components:{
       TheHeader,
@@ -30,7 +32,8 @@
       SupportChat,
       ToastStack,
       BackToTop,
-      CommandPalette
+      CommandPalette,
+      AppStatusBar
     }
   }
 </script>

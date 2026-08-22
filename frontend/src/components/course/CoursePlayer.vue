@@ -137,6 +137,13 @@
             @jump="jumpToNote"
           />
 
+          <practice-quiz
+            v-if="course && currentLessonId"
+            class="mb-5"
+            :course-id="course.id"
+            :lesson-id="currentLessonId"
+          />
+
           <div v-if="isCompleted" class="flex flex-col gap-6">
             <template v-if="!quizPassed">
               <div
@@ -240,6 +247,7 @@ import CourseQuiz from './CourseQuiz.vue'
 import CourseCertificate from './CourseCertificate.vue'
 import CourseAnnouncements from './CourseAnnouncements.vue'
 import LessonNotes from './LessonNotes.vue'
+import PracticeQuiz from './PracticeQuiz.vue'
 import ProgressRing from '../support/ProgressRing.vue'
 import { fireConfetti } from '@/utils/confetti'
 import { useYouTubePlayer } from '@/composables/useYouTubePlayer'
@@ -265,6 +273,7 @@ export default {
     CourseCertificate,
     CourseAnnouncements,
     LessonNotes,
+    PracticeQuiz,
     ProgressRing,
     AppIcon,
     DialogRoot,

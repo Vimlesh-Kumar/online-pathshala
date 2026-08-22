@@ -97,6 +97,17 @@ const pool = knex({
             );
             console.log(`✅ Courses table altered; owners backfilled (${backfilled[0]?.affectedRows ?? 0} rows).`);
         }
+
+        // Flashcard reviews and practice quizzes also count towards a streak.
+        // `CREATE TABLE IF NOT EXISTS` never adds columns to an existing table,
+        // so databases created before those features need them added here.
+        const hasCardsReviewed = await pool.schema.hasColumn('learning_activity', 'cards_reviewed');
+        if (!hasCardsReviewed) {
+            console.log('Adding review counters to learning_activity table...');
+            await pool.raw('ALTER TABLE learning_activity ADD COLUMN cards_reviewed INT NOT NULL DEFAULT 0');
+            await pool.raw('ALTER TABLE learning_activity ADD COLUMN quizzes_taken INT NOT NULL DEFAULT 0');
+            console.log('✅ learning_activity table altered with review counters.');
+        }
     } catch (err) {
         console.error('❌ Database connection or schema migration failed:', err.message);
     }
