@@ -110,19 +110,20 @@ Full step-by-step guide: **[DEPLOY.md](DEPLOY.md)**
 | Piece | Service | Cost |
 |-------|---------|------|
 | Frontend (Vue SPA) | **Vercel** | Free |
-| Backend (Express API) | **Render** | Free |
+| Backend (Express API) | **Railway** | Free |
 | Database | **Aiven for MySQL** | Free |
 | Cache | **Aiven for Valkey** | Free |
 | Secrets | **Infisical** | Free |
 
-Config files are included: `render.yaml` (backend) and `frontend/vercel.json` (frontend).
+The backend runs at <https://online-pathshala-production.up.railway.app>.
+`frontend/vercel.json` holds the SPA rewrite rules.
 
 **Secrets** live in an [Infisical](https://app.infisical.com) project, and in
 production that is the *only* source — the backend refuses to boot without it.
-Two credentials sit on the host, `INFISICAL_CLIENT_ID` and
-`INFISICAL_CLIENT_SECRET`; the project and environment are pinned in
-`render.yaml`, and everything else is fetched at boot, so rotating a credential
-never means editing a hosting dashboard. Fill in `backend/infisical.sample.env`
+Four variables sit on the host — `NODE_ENV`, `INFISICAL_CLIENT_ID`,
+`INFISICAL_CLIENT_SECRET` and `INFISICAL_PROJECT_ID` — and everything else is
+fetched at boot, so rotating a credential never means editing a hosting
+dashboard. Fill in `backend/infisical.sample.env`
 and import it in one go; full walkthrough in
 **[backend/SECRETS_SETUP.md](backend/SECRETS_SETUP.md)**. Local development needs
 none of it — `.env.local` works as before.
