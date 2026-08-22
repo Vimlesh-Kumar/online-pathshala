@@ -92,6 +92,13 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
    Re-run this after any release that adds tables, or the server logs
    `Database connection or schema migration failed` on boot.
 
+   New tables are handled by `schema.sql` (`CREATE TABLE IF NOT EXISTS`). To
+   **alter an existing table** (add a column/index), drop an ordered file in
+   `backend/database/migrations/` — `db:schema`/`db:setup` apply each one exactly
+   once, tracked in a `schema_migrations` table. Migrations are additive and
+   never re-run, so re-running the command is always safe on prod. See
+   `backend/database/migrations/README.md`.
+
 6. Confirm it is healthy: `curl https://<your-app>.up.railway.app/health` → `{"status":"ok"}`.
 
 ## 3. Frontend — Vercel

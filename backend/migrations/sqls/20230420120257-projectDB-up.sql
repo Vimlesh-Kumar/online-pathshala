@@ -97,7 +97,7 @@ create table IF NOT EXISTS course_objectives(
     FOREIGN KEY(course_id) REFERENCES courses(id)
 );
 
-INSERT INTO users(full_name,email,password,user_role) VALUES('Test Admin','admin@test.com','$2b$10$0Wj/MmXpVOWEDiqA7WgY2.rWCUADDrKLZmJ4aGWtZvCMbTLbOSE.C','Admin'),('Test Student','student@test.com','$2b$10$Y43eTtQyTcCzilM3QO.s8eqqJKLS5c1VoWxuPGYg7PWgKej.mQMrK','Student'),('Test Tutor','tutor@test.com','$2b$10$ZaTklmXHQHZKfv9fO7j6FOtVVu9TjTbzRPqd646yUYK3DPhz40xne','Tutor');
+INSERT INTO users(full_name,email,password,user_role) VALUES('Test Admin','admin@test.com','$2b$10$tvyWXLNdUaSj68emJVYUF.4Eh65vsQbevgt/YtMNQJntnOqo5T/Gq','Admin'),('Test Student','student@test.com','$2b$10$2m7LHysaBoHokx4Fb0P16.DFJpaWJ3neJJOUQ7Wy8bfVriEKNGtjC','Student'),('Test Tutor','tutor@test.com','$2b$10$pQb.FxTr2AGoZhzkQS9Q3eqPMrdsmRwFgHmbafR/1A/wgTsf34TxC','Tutor') ON DUPLICATE KEY UPDATE password=VALUES(password),full_name=VALUES(full_name),user_role=VALUES(user_role);
 
 INSERT INTO `courses` (`id`, `author`, `category`, `price`, `rating`, `subtitle`, `thumb_url`, `title`)
     VALUES (10010, 'Vimlesh Kumar', 'Development', '1117.99', '4.50',
