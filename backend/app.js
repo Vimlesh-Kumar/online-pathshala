@@ -32,11 +32,33 @@ const app = express();
 
 app.use(bodyParser.json({ limit: "500mb" }));
 app.use(bodyParser.urlencoded({ limit: "500mb", extended: true }));
-// Allow all origins by default; lock down to the frontend URL by setting CORS_ORIGIN.
-app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
+/**
+ * Allowed browser origins.
+ *
+ * CORS_ORIGIN accepts a comma-separated list, because one deployment routinely
+ * has several legitimate origins: the custom domain, the *.vercel.app domain it
+ * aliases, and a per-commit preview URL. Passing the raw string to cors() would
+ * only ever match one of them, and the other two fail in the browser while
+ * curl keeps working — which makes the fault look like anything but CORS.
+ *
+ * Unset means "reflect whatever origin asked", i.e. wide open, which is the
+ * right default for local development only.
+ */
+const allowedOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map((value) => value.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
+app.use(cors({
+  origin: allowedOrigins.length === 0
+    ? true
+    // A same-origin or server-to-server request sends no Origin header at all;
+    // rejecting those would break curl, health checks and the service worker.
+    : (origin, callback) => callback(null, !origin || allowedOrigins.includes(origin)),
+}));
 app.use(express.json());
 
-// Lightweight health check (no DB) — used by Render to confirm the service is up.
+// Lightweight health check (no DB) — used by the host to confirm the service is up.
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
 app.use('/user', userRouter);
