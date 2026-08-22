@@ -14,12 +14,13 @@
  */
 import { bootstrapSecrets } from '../config/secrets.bootstrap.js';
 import mysql from 'mysql2/promise';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const databaseDir = join(__dirname, '..', 'database');
+const migrationsDir = join(databaseDir, 'migrations');
 
 // Top-level await, so the credentials below are read *after* configuration has
 // resolved — including secrets pulled from Infisical. The cache is irrelevant to
@@ -53,6 +54,50 @@ function resolveSsl() {
     return undefined;
 }
 
+/**
+ * Apply ordered, run-once SQL migrations from database/migrations/.
+ *
+ * Every *.sql file is run in filename order; each success is recorded in a
+ * schema_migrations table so it is never applied twice. Migrations are additive
+ * (ALTER ... ADD, CREATE ...) — nothing here drops data, so this is safe on
+ * production and idempotent across redeploys.
+ */
+async function runMigrations(connection) {
+    await connection.query(
+        `CREATE TABLE IF NOT EXISTS schema_migrations (
+            filename VARCHAR(255) PRIMARY KEY,
+            applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`
+    );
+
+    let entries;
+    try {
+        entries = await readdir(migrationsDir);
+    } catch (err) {
+        if (err.code === 'ENOENT') return; // no migrations folder yet
+        throw err;
+    }
+
+    const files = entries.filter((f) => f.endsWith('.sql')).sort((a, b) => a.localeCompare(b));
+    if (files.length === 0) return;
+
+    const [applied] = await connection.query('SELECT filename FROM schema_migrations');
+    const done = new Set(applied.map((r) => r.filename));
+
+    let ran = 0;
+    for (const file of files) {
+        if (done.has(file)) continue;
+        const sql = await readFile(join(migrationsDir, file), 'utf8');
+        await connection.query(sql);
+        await connection.query('INSERT INTO schema_migrations (filename) VALUES (?)', [file]);
+        console.log(`✅ Migration applied: ${file}`);
+        ran++;
+    }
+    if (ran === 0) {
+        console.log('⏭️  Migrations up to date.');
+    }
+}
+
 async function run() {
     if (!MYSQL_DATABASE) {
         throw new Error('MYSQL_DATABASE is not set. Configure your .env (or host env vars) first.');
@@ -84,24 +129,10 @@ async function run() {
     await connection.query(schema);
     console.log('✅ Schema applied.');
 
-    // `CREATE TABLE IF NOT EXISTS` leaves existing tables untouched, so columns
-    // added after a database was first created need an explicit migration.
-    const [[{ hasOwnerColumn }]] = await connection.query(
-        `SELECT COUNT(*) AS hasOwnerColumn FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'courses' AND COLUMN_NAME = 'owner_user_id'`,
-        [MYSQL_DATABASE]
-    );
-    if (!hasOwnerColumn) {
-        await connection.query('ALTER TABLE courses ADD COLUMN owner_user_id INT DEFAULT NULL');
-        await connection.query(
-            'ALTER TABLE courses ADD CONSTRAINT fk_courses_owner FOREIGN KEY (owner_user_id) REFERENCES users(id)'
-        );
-        // Best effort: display names are not unique, new courses store the owner directly.
-        await connection.query(
-            'UPDATE courses c JOIN users u ON u.full_name = c.author SET c.owner_user_id = u.id WHERE c.owner_user_id IS NULL'
-        );
-        console.log('✅ Added courses.owner_user_id (backfilled from author names).');
-    }
+    // `CREATE TABLE IF NOT EXISTS` leaves existing tables untouched, so changes
+    // to tables that already exist (new columns, indexes) live as ordered,
+    // run-once files in database/migrations/ — applied here.
+    await runMigrations(connection);
 
     if (schemaOnly) {
         console.log('⏭️  Seed data skipped (--schema-only).');
