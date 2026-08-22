@@ -55,23 +55,20 @@ Only **three** values live on the host. Everything else lives in Infisical.
 
 ### 3. Set the credentials on the host
 
-Render → your service → **Environment**:
+Railway → your service → **Variables** (any host works the same way):
 
 ```text
+NODE_ENV=production
 INFISICAL_CLIENT_ID=<machine identity client id>
 INFISICAL_CLIENT_SECRET=<machine identity client secret>
-```
-
-`render.yaml` already pins the rest, so a Blueprint deploy only prompts for those two:
-
-```yaml
-NODE_ENV=production
 INFISICAL_PROJECT_ID=a37b412f-4c12-48a0-9857-d9fa40d3a6c9
-INFISICAL_ENVIRONMENT=prod
 ```
+
+`INFISICAL_ENVIRONMENT` defaults to `prod` whenever `NODE_ENV=production`, so it
+is only needed for a staging deployment.
 
 That is the entire host configuration — and it should stay that way. Adding
-`DB_PASSWORD` or `JWT_SECRET` to Render does not supplement Infisical, it
+`DB_PASSWORD` or `JWT_SECRET` to the host does not supplement Infisical, it
 *overrides* it (row 1 of the precedence table), so the value people rotate in
 Infisical would silently stop being the one in use.
 

@@ -5,11 +5,11 @@ This app runs entirely on free tiers:
 | Piece | Service | Free tier |
 |-------|---------|-----------|
 | Database | **Aiven for MySQL** | Free plan (keeps your MySQL code as-is) |
-| Backend (Express API) | **Render** | Free web service |
+| Backend (Express API) | **Railway** | Free trial / hobby |
 | Frontend (Vue SPA) | **Vercel** | Hobby (free) |
+| Secrets | **Infisical** | Free |
 
-> ⚠️ Free Render web services **sleep after ~15 min idle**; the first request then
-> takes ~50s to wake up. That is normal and costs nothing.
+Live backend: <https://online-pathshala-production.up.railway.app>
 
 ---
 
@@ -57,37 +57,42 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
 ---
 
-## 2. Backend — Render
-
-**Option A — Blueprint (uses `render.yaml`):**
+## 2. Backend — Railway
 
 1. Push this repo to GitHub.
-2. Render Dashboard → **New** → **Blueprint** → select the repo.
-3. Render reads `render.yaml` and creates the `online-pathshala-api` web service.
+2. Railway → **New Project** → **Deploy from GitHub repo** → select the repo, branch `main`.
+3. Start command: `npm run start --prefix backend` (Railway injects its own `PORT`).
 4. Secrets come from Infisical — production will not boot without it. Put every
    value in the Infisical project first (fill in `backend/infisical.sample.env`
-   and import it), then answer Render's two prompts:
+   and import it), then set these four on the service under **Variables**:
 
    | Key | Value |
    |-----|-------|
+   | `NODE_ENV` | `production` |
    | `INFISICAL_CLIENT_ID` | machine identity client id |
    | `INFISICAL_CLIENT_SECRET` | machine identity client secret |
+   | `INFISICAL_PROJECT_ID` | `a37b412f-4c12-48a0-9857-d9fa40d3a6c9` |
 
-   `INFISICAL_PROJECT_ID`, `INFISICAL_ENVIRONMENT` and `NODE_ENV` are already
-   pinned in `render.yaml`, so there is nothing else to type. `DB_*`,
-   `JWT_SECRET`, `VALKEY_*`, `CORS_ORIGIN` and `GROQ_API_KEY` are deliberately
-   *not* Render variables: anything set there would win over Infisical and
-   quietly become the real configuration.
+   `INFISICAL_ENVIRONMENT` defaults to `prod` when `NODE_ENV=production`, so it is
+   optional. Do **not** add `DB_*`, `JWT_SECRET`, `VALKEY_*`, `CORS_ORIGIN` or
+   `GROQ_API_KEY` here: a host variable wins over Infisical and would quietly
+   become the real configuration.
 
    Full walkthrough: [backend/SECRETS_SETUP.md](backend/SECRETS_SETUP.md).
 
-**Option B — Manual:** New → Web Service → repo → set **Root Directory** = `backend`,
-**Build** = `npm install`, **Start** = `npm start`, then add `NODE_ENV=production`,
-`INFISICAL_PROJECT_ID`, `INFISICAL_ENVIRONMENT=prod` and the two credentials above.
+5. Apply the schema to the production database once, from your machine:
 
-5. Deploy. Confirm it's healthy: open `https://<your-api>.onrender.com/health` → `{"status":"ok"}`.
+   ```bash
+   cd backend
+   NODE_ENV=production INFISICAL_CLIENT_ID=… INFISICAL_CLIENT_SECRET=… \
+     INFISICAL_PROJECT_ID=a37b412f-4c12-48a0-9857-d9fa40d3a6c9 \
+     npm run db:schema        # CREATE TABLE IF NOT EXISTS only — never touches existing data
+   ```
 
----
+   Re-run this after any release that adds tables, or the server logs
+   `Database connection or schema migration failed` on boot.
+
+6. Confirm it is healthy: `curl https://<your-app>.up.railway.app/health` → `{"status":"ok"}`.
 
 ## 3. Frontend — Vercel
 
@@ -97,7 +102,7 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
    | Key | Value |
    |-----|-------|
-   | `VITE_API_URL` | `https://<your-api>.onrender.com/` (trailing slash!) |
+   | `VITE_API_URL` | `https://online-pathshala-production.up.railway.app/` (trailing slash!) |
 
 4. Deploy. Copy the resulting `*.vercel.app` URL.
 

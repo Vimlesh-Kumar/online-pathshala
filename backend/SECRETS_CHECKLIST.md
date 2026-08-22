@@ -38,22 +38,23 @@ Expected on startup:
 ## Deployment (Infisical only)
 
 Infisical is the sole source of secrets in production — with no machine identity
-the server refuses to boot. Two credentials go on the host:
+the server refuses to boot. Four variables go on the host:
 
 ```text
+NODE_ENV=production
 INFISICAL_CLIENT_ID=<machine identity client id>
 INFISICAL_CLIENT_SECRET=<machine identity client secret>
+INFISICAL_PROJECT_ID=a37b412f-4c12-48a0-9857-d9fa40d3a6c9
 ```
 
-`render.yaml` pins the other three (`NODE_ENV=production`,
-`INFISICAL_PROJECT_ID`, `INFISICAL_ENVIRONMENT=prod`). Everything else —
+Everything else —
 `JWT_SECRET`, `DB_*`, `VALKEY_*`, `CORS_ORIGIN` and the optional per-feature keys
 — is loaded from the Infisical project at boot. Fill in `infisical.sample.env`
 and import it; full steps in [SECRETS_SETUP.md](./SECRETS_SETUP.md).
 
 - [ ] `NODE_ENV=production` is set — this makes missing configuration fatal instead of a warning
 - [ ] The machine identity has **read** access to the `prod` environment
-- [ ] **No application secrets are set on Render.** A host variable wins over
+- [ ] **No application secrets are set on the host.** A host variable wins over
       Infisical, so a leftover `DB_PASSWORD` there would shadow the one you rotate
 - [ ] Boot log shows `Source : Infisical (...)` and a non-zero secret count
 - [ ] `npm run secrets:check` exits 0 with the production environment loaded
@@ -90,5 +91,5 @@ just deleting the line, since it stays in git history.
 | Values in `.env.local` seem ignored | A real environment variable of the same name wins over the file — check your shell exports |
 | `Could not load secrets from Infisical: ... 401 Invalid credentials` | Wrong `INFISICAL_CLIENT_ID` / `INFISICAL_CLIENT_SECRET`, or the client secret was revoked |
 | `Infisical returned no secrets for environment "prod"` | Wrong environment **slug**, wrong `INFISICAL_SECRET_PATH`, or the machine identity lacks read access to that path |
-| Infisical values seem ignored | A variable of the same name is set on the host — the host always wins. Delete it from Render → Environment |
+| Infisical values seem ignored | A variable of the same name is set on the host — the host always wins. Delete it from the host's Variables page |
 | `Infisical is the source of secrets in production, but its machine identity is not configured` | `INFISICAL_CLIENT_ID` / `INFISICAL_CLIENT_SECRET` / `INFISICAL_PROJECT_ID` are not all set on the host |

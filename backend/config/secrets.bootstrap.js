@@ -123,7 +123,7 @@ export async function bootstrapSecrets({ requireCache = true } = {}) {
     throw new Error(
       'Infisical is the source of secrets in production, but its machine identity is not configured.\n' +
       `  Missing: ${missing.join(', ')}\n` +
-      '  Set them on the host (Render → Environment). See backend/SECRETS_SETUP.md.'
+      '  Set them on the host (Railway → Variables). See backend/SECRETS_SETUP.md.'
     );
   }
 
