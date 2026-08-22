@@ -24,6 +24,11 @@ export const SECRET_REGISTRY = [
   // ── Authentication ────────────────────────────────────────────
   { envVar: 'JWT_SECRET', required: true },
 
+  // ── Browser access ────────────────────────────────────────────
+  // Comma-separated list of the exact frontend origins (scheme + host, no path).
+  // Optional, but leaving it unset in production reflects *every* origin back.
+  { envVar: 'CORS_ORIGIN', required: false },
+
   // ── Database (MySQL) ──────────────────────────────────────────
   { envVar: 'DB_HOST', required: true },
   { envVar: 'DB_PORT', required: false },
