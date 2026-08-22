@@ -3,16 +3,18 @@ import { bootstrapSecrets } from './config/secrets.bootstrap.js';
 /**
  * Boot order matters and is enforced here:
  *
- *   1. bootstrapSecrets() — loads .env / .env.local into process.env and validates it.
+ *   1. bootstrapSecrets() — resolves configuration from the host environment,
+ *      Infisical and the .env files, then validates it. This is awaited because
+ *      fetching from the secret manager is a network call.
  *   2. dynamic import of ./app.js — only now are the routers, database pool and
  *      services constructed, so they observe fully-populated configuration.
  *
  * Using a static `import app from './app.js'` here would hoist the app's imports
  * above step 1: the database pool would connect and the JWT / blob modules would
- * capture their constants before any .env file had been read.
+ * capture their constants before any configuration had been read.
  */
 try {
-  bootstrapSecrets();
+  await bootstrapSecrets();
 
   const { default: app } = await import('./app.js');
   const { default: cacheService } = await import('./utils/cache.service.js');

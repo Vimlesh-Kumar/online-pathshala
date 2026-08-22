@@ -1,12 +1,24 @@
 /**
  * The single source of truth for every configuration value the backend needs.
  *
- * All values come from the environment: `.env.local` in development, `.env` (or the
- * host's real environment variables) everywhere else. `secrets.bootstrap.js` loads
- * them and validates this list at startup.
+ * Where the values come from, highest precedence first:
+ *   1. the host's own environment variables
+ *   2. Infisical, when a machine identity is configured (see INFISICAL_* below)
+ *   3. `.env.local` (development), then `.env`
+ *
+ * In production only (2) is a real source: every entry below is expected to live
+ * in Infisical, and boot fails if the machine identity is missing. (1) stays as a
+ * break-glass override for a single value; (3) is the local-development path.
+ *
+ * `secrets.bootstrap.js` resolves them in that order and validates this list at
+ * startup.
  *
  *   required: true  -> boot fails in production if the value is missing
  *   required: false -> optional feature; a missing value only logs a warning
+ *
+ * NOTE: the INFISICAL_* entries below are deliberately *not* part of this list.
+ * They are the credentials used to fetch everything else, so they have to exist
+ * before a fetch can happen — they belong on the host, never inside Infisical.
  */
 export const SECRET_REGISTRY = [
   // ── Authentication ────────────────────────────────────────────
@@ -20,9 +32,9 @@ export const SECRET_REGISTRY = [
   { envVar: 'MYSQL_DATABASE', required: true },
   { envVar: 'DB_CA_CERT', required: false },
 
-  // ── Cache (Aiven Valkey) ──────────────────────────────────────
+  // ── Cache (Valkey) ────────────────────────────────────────────
   // Either supply the whole Service URI (`rediss://default:pw@host:port`, which is
-  // what the Aiven console hands you) or the individual parts. See VALKEY_REQUIREMENT.
+  // what a hosted provider hands you) or the individual parts. See VALKEY_REQUIREMENT.
   { envVar: 'VALKEY_URI', required: false },
   { envVar: 'VALKEY_HOST', required: false },
   { envVar: 'VALKEY_PORT', required: false },
@@ -44,6 +56,30 @@ export const SECRET_REGISTRY = [
   { envVar: 'GOOGLE_CREDENTIALS', required: false },
   { envVar: 'GDRIVE_FOLDER_ID', required: false },
 ];
+
+/**
+ * The bootstrap credentials for Infisical itself.
+ *
+ * These are the only values that live on the host in production; every entry in
+ * SECRET_REGISTRY above comes from Infisical. In development, set none of them
+ * and the app reads `.env.local` / `.env` exactly as it always has.
+ */
+export const INFISICAL_VARS = [
+  { envVar: 'INFISICAL_CLIENT_ID', bootstrap: true, hint: 'Machine identity client id (Universal Auth)' },
+  { envVar: 'INFISICAL_CLIENT_SECRET', bootstrap: true, hint: 'Machine identity client secret' },
+  { envVar: 'INFISICAL_PROJECT_ID', bootstrap: true, hint: 'Project id, from Project Settings' },
+  { envVar: 'INFISICAL_ENVIRONMENT', hint: 'Environment slug (dev / staging / prod)' },
+  { envVar: 'INFISICAL_SECRET_PATH', hint: 'Folder path, defaults to /' },
+  { envVar: 'INFISICAL_API_URL', hint: 'Only for a self-hosted Infisical instance' },
+];
+
+/**
+ * The three values a fetch cannot happen without. Production refuses to boot
+ * unless all of them are set; the rest of INFISICAL_VARS have defaults.
+ */
+export const INFISICAL_BOOTSTRAP_VARS = INFISICAL_VARS
+  .filter(({ bootstrap }) => bootstrap)
+  .map(({ envVar }) => envVar);
 
 /**
  * Cross-field rule: a Valkey connection can be described two equivalent ways.

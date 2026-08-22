@@ -64,22 +64,26 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 1. Push this repo to GitHub.
 2. Render Dashboard → **New** → **Blueprint** → select the repo.
 3. Render reads `render.yaml` and creates the `online-pathshala-api` web service.
-4. When prompted, fill in the env vars (they are `sync: false` so nothing is committed):
+4. Secrets come from Infisical — production will not boot without it. Put every
+   value in the Infisical project first (fill in `backend/infisical.sample.env`
+   and import it), then answer Render's two prompts:
 
    | Key | Value |
    |-----|-------|
-   | `DB_HOST` | Aiven host |
-   | `DB_PORT` | Aiven port |
-   | `DB_USER` | `avnadmin` |
-   | `DB_PASSWORD` | Aiven password |
-   | `MYSQL_DATABASE` | `defaultdb` |
-   | `DB_CA_CERT` | paste the full contents of `ca.pem` |
-   | `JWT_SECRET` | the random string you generated |
-   | `CORS_ORIGIN` | your Vercel URL (add after step 3) |
-   | `GROQ_API_KEY` | *(optional)* free key from [console.groq.com/keys](https://console.groq.com/keys) — powers real AI support; omit and it falls back to the free rule-based engine |
+   | `INFISICAL_CLIENT_ID` | machine identity client id |
+   | `INFISICAL_CLIENT_SECRET` | machine identity client secret |
+
+   `INFISICAL_PROJECT_ID`, `INFISICAL_ENVIRONMENT` and `NODE_ENV` are already
+   pinned in `render.yaml`, so there is nothing else to type. `DB_*`,
+   `JWT_SECRET`, `VALKEY_*`, `CORS_ORIGIN` and `GROQ_API_KEY` are deliberately
+   *not* Render variables: anything set there would win over Infisical and
+   quietly become the real configuration.
+
+   Full walkthrough: [backend/SECRETS_SETUP.md](backend/SECRETS_SETUP.md).
 
 **Option B — Manual:** New → Web Service → repo → set **Root Directory** = `backend`,
-**Build** = `npm install`, **Start** = `npm start`, then add the same env vars.
+**Build** = `npm install`, **Start** = `npm start`, then add `NODE_ENV=production`,
+`INFISICAL_PROJECT_ID`, `INFISICAL_ENVIRONMENT=prod` and the two credentials above.
 
 5. Deploy. Confirm it's healthy: open `https://<your-api>.onrender.com/health` → `{"status":"ok"}`.
 
@@ -101,8 +105,8 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
 ## 4. Connect the two
 
-1. In **Render**, set `CORS_ORIGIN` to your Vercel URL and redeploy (optional but recommended;
-   omit it to allow all origins).
+1. In **Infisical** (`prod` environment), set `CORS_ORIGIN` to your Vercel URL and
+   restart the Render service (optional but recommended; omit it to allow all origins).
 2. Visit your Vercel URL and log in with a demo account:
 
    | Role | Email | Password |

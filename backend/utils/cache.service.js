@@ -5,9 +5,9 @@ import { isUsable } from '../config/secrets.registry.js';
  * Valkey (Redis-compatible) cache client, targeting Aiven in deployed environments.
  *
  * Credentials are read straight from process.env: by the time this module is
- * imported, `bootstrapSecrets()` has already populated VALKEY_* from either
- * Azure Key Vault or the local .env file. This service no longer talks to
- * Key Vault itself.
+ * imported, `bootstrapSecrets()` has already populated VALKEY_* from the host
+ * environment, Infisical or the local .env files. This service never talks to
+ * a secret manager itself.
  */
 class CacheService {
   #client = null;
@@ -97,7 +97,7 @@ class CacheService {
     // A remote host with no credentials at all can never authenticate — don't try.
     if (!isLocalHost && !options.url && !isUsable(options.password)) {
       console.warn(`⏭️  Skipping Valkey: ${host} needs a password but VALKEY_PASSWORD is not set`);
-      console.warn('   💡 Set VALKEY_URI or VALKEY_PASSWORD in .env.local, or add it to Key Vault');
+      console.warn('   💡 Set VALKEY_URI or VALKEY_PASSWORD in .env.local, or add it to Infisical');
       return false;
     }
 
@@ -125,7 +125,7 @@ class CacheService {
         console.error(`❌ Valkey error: ${description}`);
 
         if (this.#isAuthFailure) {
-          console.error('   💡 Check VALKEY_URI / VALKEY_PASSWORD against the Aiven console');
+          console.error('   💡 Check VALKEY_URI / VALKEY_PASSWORD against your cache provider (and Infisical)');
         }
       });
 
@@ -147,7 +147,7 @@ class CacheService {
         // The credential hint was already printed by the error handler; suggesting a
         // local server here would just be wrong advice.
         if (!this.#isAuthFailure) {
-          console.log('   💡 Run a local one with `redis-server`, or point VALKEY_HOST at Aiven');
+          console.log('   💡 Run a local one with `redis-server`, or point VALKEY_HOST at your hosted cache');
         }
       }
       return false;

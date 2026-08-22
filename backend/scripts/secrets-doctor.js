@@ -8,7 +8,12 @@
  * Values are never printed — only a masked fingerprint.
  */
 import { bootstrapSecrets } from '../config/secrets.bootstrap.js';
-import { SECRET_REGISTRY, VALKEY_REQUIREMENT, isUsable } from '../config/secrets.registry.js';
+import {
+  SECRET_REGISTRY,
+  INFISICAL_VARS,
+  VALKEY_REQUIREMENT,
+  isUsable,
+} from '../config/secrets.registry.js';
 
 function mask(value) {
   if (!isUsable(value)) return '—';
@@ -24,17 +29,41 @@ const fromRealEnv = new Set(
 
 let result;
 try {
-  result = bootstrapSecrets();
+  result = await bootstrapSecrets();
 } catch (error) {
   console.error(`\n❌ ${error.message}\n`);
   process.exit(1);
+}
+
+// Which of the three sources supplied each value, for the SOURCE column.
+const fromInfisical = new Set();
+if (result.infisical?.used) {
+  for (const { envVar } of SECRET_REGISTRY) {
+    if (!fromRealEnv.has(envVar) && isUsable(process.env[envVar])) fromInfisical.add(envVar);
+  }
+}
+
+console.log('   Secret manager:');
+for (const { envVar, hint } of INFISICAL_VARS) {
+  const present = isUsable(process.env[envVar]);
+  console.log(`     ${present ? '✅' : '➖'} ${envVar.padEnd(26)} ${present ? mask(process.env[envVar]) : hint}`);
+}
+if (result.infisical?.used) {
+  console.log(`     → ${result.infisical.count} secrets loaded from Infisical\n`);
+} else if (result.infisical?.error) {
+  console.log(`     → configured, but the fetch failed: ${result.infisical.error}`);
+  console.log('       falling back to environment variables and .env files\n');
+} else {
+  console.log('     → not configured; using environment variables and .env files\n');
 }
 
 const rows = SECRET_REGISTRY.map(({ envVar, required }) => {
   const value = process.env[envVar];
   const present = isUsable(value);
   let source = '—';
-  if (present) source = fromRealEnv.has(envVar) ? 'environment' : 'env file';
+  if (present && fromRealEnv.has(envVar)) source = 'environment';
+  else if (present && fromInfisical.has(envVar)) source = 'infisical';
+  else if (present) source = 'env file';
 
   let status = '➖';
   if (present) status = '✅';
