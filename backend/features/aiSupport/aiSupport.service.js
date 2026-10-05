@@ -1,6 +1,7 @@
 import * as aiSupportRepository from './aiSupport.repository.js';
 import * as groq from './groq.service.js';
 import { FAQ_ENTRIES, findAnswer as findFaqAnswer } from './faq.data.js';
+import cacheService from '../../utils/cache.service.js';
 
 // Grounding text for the general support chatbot: the whole FAQ set, sent as
 // context so Groq answers using facts about THIS app instead of guessing.
@@ -240,4 +241,218 @@ export const getRecommendationsForUser = async (userId, limit = 8) => {
     const results = await aiSupportRepository.getInterestCourses(categories, userId, limit);
 
     return { courses: results, reason: 'interests', basedOn: categories.slice(0, 3) };
+};
+
+// ── AI study tutor ──────────────────────────────────────────────────────────
+
+/** Turns of conversation history sent upstream — enough for follow-ups, bounded for tokens. */
+const TUTOR_HISTORY_TURNS = 12;
+const TUTOR_MESSAGE_MAX = 2000;
+/** Big courses would otherwise flood the prompt with their whole lesson list. */
+const TUTOR_OUTLINE_LESSONS = 80;
+
+const TUTOR_SYSTEM_PROMPT = 'You are a friendly, patient study tutor inside Online Pathshala, helping a learner ' +
+    'who is taking the course described below. Explain ideas clearly with short, concrete examples. ' +
+    'Keep answers under about 180 words unless the learner asks for more depth. ' +
+    'Format with simple Markdown only: **bold**, `inline code`, fenced code blocks and "-" bullet lists — ' +
+    'no headings, tables, images or links. ' +
+    'The course outline tells you what this course covers; use your general knowledge to teach those topics, ' +
+    "but never claim the course or instructor said something that isn't in the outline. " +
+    'When asked to quiz the learner, ask one question at a time and wait for their answer before giving feedback. ' +
+    'If a request has nothing to do with learning, politely steer back to the course.';
+
+/**
+ * Keep only well-formed user/assistant turns, trimmed and capped, ending on
+ * the learner's question. Returns null when there is no question to answer.
+ *
+ * @param {unknown} raw - the `messages` array from the request body
+ * @returns {Array<{role: 'user'|'assistant', content: string}>|null}
+ */
+export const sanitizeTutorHistory = (raw) => {
+    if (!Array.isArray(raw)) return null;
+
+    const history = raw
+        .filter((m) => m && (m.role === 'user' || m.role === 'assistant'))
+        .map((m) => ({ role: m.role, content: String(m.content ?? '').trim().slice(0, TUTOR_MESSAGE_MAX) }))
+        .filter((m) => m.content)
+        .slice(-TUTOR_HISTORY_TURNS);
+
+    if (!history.length || history[history.length - 1].role !== 'user') return null;
+    return history;
+};
+
+/**
+ * Everything the tutor is grounded on for one course, or null if the course
+ * doesn't exist. Loaded before streaming starts so a bad course id can still
+ * get a normal 404 response.
+ */
+export const loadTutorContext = async (courseId, lessonId) => {
+    const course = await aiSupportRepository.getCourseDetails(courseId);
+    if (!course) return null;
+
+    const [objectives, lessons] = await Promise.all([
+        aiSupportRepository.getCourseObjectives(courseId),
+        aiSupportRepository.getCourseLessons(courseId)
+    ]);
+    const currentLesson = lessons.find((l) => l.id === lessonId) || null;
+
+    return { course, objectives, lessons, currentLesson };
+};
+
+const buildTutorSystemMessage = ({ course, objectives, lessons, currentLesson }) => {
+    const outline = lessons.slice(0, TUTOR_OUTLINE_LESSONS).map(formatLessonLine).join('\n');
+    return [
+        TUTOR_SYSTEM_PROMPT,
+        `Course: ${course.title} (${course.category}) by ${course.author}`,
+        `Description: ${course.subtitle || '(none)'}`,
+        objectives.length ? `Learning objectives:\n${objectives.map(formatObjectiveLine).join('\n')}` : '',
+        outline ? `Course outline:\n${outline}` : '',
+        currentLesson
+            ? `The learner is currently on the lesson "${currentLesson.lesson_name}" in the section "${currentLesson.section_name}". ` +
+              'Assume questions are about this lesson unless they say otherwise.'
+            : ''
+    ].filter(Boolean).join('\n\n');
+};
+
+/**
+ * Stream the tutor's reply as text chunks.
+ *
+ * Uses Groq when configured. If Groq is unconfigured or fails before saying
+ * anything, the learner still gets the rule-based course-content answer, so
+ * the tutor never just goes silent. If the stream breaks partway through, the
+ * partial answer is kept and a short note says it was cut off.
+ *
+ * @param {object} context - from loadTutorContext()
+ * @param {Array<{role: string, content: string}>} history - from sanitizeTutorHistory()
+ * @param {AbortSignal} [abortSignal] - fires when the learner disconnects
+ * @returns {AsyncGenerator<string>}
+ */
+export async function* streamTutorReply(context, history, abortSignal) {
+    const question = history[history.length - 1].content;
+    const fallback = () => answerCourseQuestionRuleBased(
+        context.course, context.objectives, context.lessons, question
+    );
+
+    if (!groq.isConfigured()) {
+        yield fallback();
+        return;
+    }
+
+    let saidAnything = false;
+    try {
+        const stream = groq.chatStream(
+            [{ role: 'system', content: buildTutorSystemMessage(context) }, ...history],
+            { temperature: 0.5, maxTokens: 700, abortSignal }
+        );
+        for await (const delta of stream) {
+            saidAnything = true;
+            yield delta;
+        }
+    } catch (err) {
+        if (abortSignal?.aborted) return;
+        console.warn('[aiSupport] Tutor stream failed:', err.message);
+        if (saidAnything) {
+            yield '\n\n_(The tutor got cut off — ask again to continue.)_';
+        } else {
+            yield fallback();
+        }
+    }
+}
+
+// ── "Why you'd like this" for recommendations ───────────────────────────────
+
+/** How long an explained set of recommendations is reused before asking Groq again. */
+const REASONS_CACHE_SECONDS = 6 * 60 * 60;
+const REASON_MAX = 140;
+
+/**
+ * Deterministic one-liners built from the same signals the ranking uses —
+ * the always-available path when Groq is unconfigured or fails.
+ */
+const explainRuleBased = (courses, interestCategories) => {
+    const reasons = {};
+    for (const course of courses) {
+        const rating = Number(course.avg_rating || 0);
+        const learners = Number(course.enrolled_students || 0);
+        if (interestCategories.includes(course.category)) {
+            reasons[course.id] = `More ${course.category}, which you've been exploring.`;
+        } else if (rating >= 4) {
+            reasons[course.id] = `Rated ${rating.toFixed(1)}★${learners ? ` by ${learners} learners` : ''}.`;
+        } else {
+            reasons[course.id] = `A popular pick in ${course.category}.`;
+        }
+    }
+    return reasons;
+};
+
+const explainWithGroq = async (courses, interestCategories, enrolledTitles) => {
+    const learnerProfile = [
+        interestCategories.length ? `Interested in: ${interestCategories.join(', ')}` : 'New learner, no history yet.',
+        enrolledTitles.length ? `Already taking: ${enrolledTitles.map((t) => `"${t}"`).join(', ')}` : ''
+    ].filter(Boolean).join('\n');
+
+    const catalog = courses
+        .map((c) => `${c.id}: "${c.title}" [${c.category}] — ${c.subtitle || 'no description'}`)
+        .join('\n');
+
+    const raw = await groq.chatComplete([
+        {
+            role: 'system',
+            content: 'You explain course recommendations on a learning site. For each course, write ONE short, ' +
+                'specific sentence (max 18 words) telling this learner why it suits them — connect it to what ' +
+                'they already study when you can. Address them as "you". No hype words like "amazing". ' +
+                'Reply with ONLY a JSON object mapping each course id (as a string) to its sentence.'
+        },
+        { role: 'user', content: `Learner:\n${learnerProfile}\n\nRecommended courses:\n${catalog}` }
+    ], { json: true, temperature: 0.6, maxTokens: 900 });
+
+    const parsed = JSON.parse(raw);
+    const reasons = {};
+    for (const course of courses) {
+        const text = parsed[String(course.id)];
+        if (typeof text === 'string' && text.trim()) {
+            reasons[course.id] = text.trim().slice(0, REASON_MAX);
+        }
+    }
+    if (!Object.keys(reasons).length) throw new Error('Groq returned no usable reasons.');
+    return reasons;
+};
+
+/**
+ * One-line "why you'd like this" for each recommended course. The course ids
+ * come from the client, but every fact used (titles, categories, ratings) is
+ * re-read from the database, so a client can't inject text into the prompt.
+ *
+ * @param {number} userId
+ * @param {number[]} courseIds - the recommendations currently on screen
+ * @returns {Promise<{reasons: Record<number, string>, source: 'ai'|'basic'}>}
+ */
+export const explainRecommendations = async (userId, courseIds) => {
+    const [courses, interestRows] = await Promise.all([
+        aiSupportRepository.getCoursesByIds(courseIds),
+        aiSupportRepository.getCategoryWeights(userId)
+    ]);
+    if (!courses.length) return { reasons: {}, source: 'basic' };
+
+    const interestCategories = interestRows.map((r) => r.category);
+    const ruleBased = explainRuleBased(courses, interestCategories);
+
+    if (groq.isConfigured()) {
+        const cacheKey = `ai:rec-reasons:${userId}:${courses.map((c) => c.id).sort((a, b) => a - b).join(',')}`;
+        try {
+            const cached = await cacheService.get(cacheKey);
+            let reasons = cached ? JSON.parse(cached) : null;
+            if (!reasons) {
+                const enrolledTitles = await aiSupportRepository.getEnrolledCourseTitles(userId);
+                reasons = await explainWithGroq(courses, interestCategories, enrolledTitles);
+                await cacheService.set(cacheKey, reasons, REASONS_CACHE_SECONDS);
+            }
+            // Groq may skip a course; fill any gaps so every card gets a line.
+            return { reasons: { ...ruleBased, ...reasons }, source: 'ai' };
+        } catch (err) {
+            console.warn('[aiSupport] Groq recommendation reasons failed, using rule-based:', err.message);
+        }
+    }
+
+    return { reasons: ruleBased, source: 'basic' };
 };

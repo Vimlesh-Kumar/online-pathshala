@@ -8,6 +8,7 @@
       v-else
       :key="course.id"
       :course="course"
+      :reason="reasons[course.id] || ''"
       @toggle-wishlist="handleWishlist"
     />
   </div>
@@ -31,6 +32,11 @@ export default {
     skeletonCount: {
       type: Number,
       default: 8
+    },
+    /** Optional course id -> recommendation reason, passed through to each card. */
+    reasons: {
+      type: Object,
+      default: () => ({})
     }
   },
   emits: ['toggle-wishlist'],

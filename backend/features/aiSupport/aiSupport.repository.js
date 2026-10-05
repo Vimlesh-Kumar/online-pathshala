@@ -15,8 +15,9 @@ export const getCourseObjectives = async (courseId) => {
 
 export const getCourseLessons = async (courseId) => {
     return pool('lesson')
-        .select('lesson_name', 'section_name', 'duration')
-        .where({ course_id: courseId });
+        .select('id', 'lesson_name', 'section_name', 'duration')
+        .where({ course_id: courseId })
+        .orderBy('id', 'asc');
 };
 
 export const getCategoryWeights = async (userId) => {
@@ -61,4 +62,28 @@ export const getInterestCourses = async (categories, userId, limit) => {
         .orderBy('enrolled_students', 'desc')
         .orderBy('c.id', 'desc')
         .limit(limit);
+};
+
+/** Titles of the courses a user is enrolled in, newest enrollment first. */
+export const getEnrolledCourseTitles = async (userId, limit = 10) => {
+    return pool('enrollment as e')
+        .join('courses as c', 'c.id', 'e.course_id')
+        .where('e.user_id', userId)
+        .orderBy('e.id', 'desc')
+        .limit(limit)
+        .pluck('c.title');
+};
+
+/** The listing fields needed to explain why each of these courses was recommended. */
+export const getCoursesByIds = async (courseIds) => {
+    return pool('courses as c')
+        .select(
+            'c.id',
+            'c.title',
+            'c.subtitle',
+            'c.category',
+            pool.raw('(SELECT COUNT(*) FROM enrollment e2 WHERE e2.course_id = c.id) AS enrolled_students'),
+            pool.raw('COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.course_id = c.id), c.rating) AS avg_rating')
+        )
+        .whereIn('c.id', courseIds);
 };

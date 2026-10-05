@@ -50,7 +50,19 @@
                 {{ group.notes.length }} note{{ group.notes.length === 1 ? '' : 's' }}
               </p>
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
+              <button
+                class="inline-flex items-center gap-2 rounded-full bg-linear-135 from-[#7c3aed] via-[#6366f1] to-[#06b6d4] px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_26px_-14px_rgb(124_58_237_/_0.9)] transition-opacity disabled:opacity-60"
+                :disabled="summaries[group.courseId]?.loading"
+                @click="summarize(group)"
+              >
+                <app-icon
+                  :name="summaries[group.courseId]?.loading ? 'lucide:loader-circle' : 'lucide:sparkles'"
+                  size="16"
+                  :class="summaries[group.courseId]?.loading ? 'animate-spin' : ''"
+                />
+                {{ summaries[group.courseId]?.data ? 'Refresh summary' : 'Summarize' }}
+              </button>
               <button
                 class="inline-flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm font-semibold transition-colors hover:border-primary/50 dark:border-white/15"
                 @click="exportPdf(group)"
@@ -64,6 +76,44 @@
                 <app-icon name="lucide:circle-play" size="16" /> Continue
               </button>
             </div>
+          </div>
+
+          <!-- AI study summary -->
+          <div
+            v-if="summaries[group.courseId]?.data"
+            class="mb-5 rounded-2xl border border-primary/20 bg-primary/[0.06] p-5"
+          >
+            <div class="mb-2 flex items-center gap-2">
+              <app-icon name="lucide:sparkles" size="16" class="text-primary" />
+              <span class="text-xs font-extrabold tracking-widest text-primary uppercase">
+                {{ summaries[group.courseId].data.source === 'ai' ? 'AI study summary' : 'Notes digest' }}
+              </span>
+              <button
+                class="ml-auto grid size-7 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
+                title="Hide summary"
+                @click="summaries[group.courseId] = null"
+              >
+                <app-icon name="lucide:x" size="15" />
+              </button>
+            </div>
+            <p class="mb-3 text-sm leading-relaxed">{{ summaries[group.courseId].data.summary }}</p>
+            <ul class="grid gap-1.5 text-sm">
+              <li
+                v-for="(point, i) in summaries[group.courseId].data.keyPoints"
+                :key="i"
+                class="flex gap-2"
+              >
+                <app-icon name="lucide:check" size="16" class="mt-0.5 shrink-0 text-primary" />
+                <span>{{ point }}</span>
+              </li>
+            </ul>
+            <p
+              v-if="summaries[group.courseId].data.reviewNext?.length"
+              class="mt-3 text-xs text-muted-foreground"
+            >
+              <span class="font-semibold text-foreground">Worth revisiting:</span>
+              {{ summaries[group.courseId].data.reviewNext.join(' · ') }}
+            </p>
           </div>
 
           <div class="flex flex-col gap-3">
@@ -159,6 +209,8 @@ export default {
       editingId: null,
       editDraft: '',
       busyId: null,
+      // courseId -> { loading, data } for the AI summary of that course's notes.
+      summaries: {},
     }
   },
   computed: {
@@ -247,6 +299,18 @@ export default {
         this.busyId = null
       }
     },
+    async summarize(group) {
+      const previous = this.summaries[group.courseId]?.data || null
+      this.summaries[group.courseId] = { loading: true, data: previous }
+      try {
+        const data = await this.$store.dispatch('summarizeCourseNotes', group.courseId)
+        this.summaries[group.courseId] = { loading: false, data }
+      } catch (error) {
+        console.error(error)
+        this.summaries[group.courseId] = { loading: false, data: previous }
+        toast.error(error?.response?.data?.message || 'Could not summarize your notes.')
+      }
+    },
     /** Export one course's notes as a printable study sheet. */
     exportPdf(group) {
       const doc = new jsPDF({ unit: 'pt', format: 'a4' })
@@ -273,6 +337,29 @@ export default {
         y,
       )
       y += 26
+
+      const summary = this.summaries[group.courseId]?.data
+      if (summary) {
+        doc.setFont('helvetica', 'bold').setFontSize(13).setTextColor(20)
+        doc.text('Summary', marginX, y)
+        y += 18
+        doc.setFont('helvetica', 'normal').setFontSize(11)
+        const summaryLines = [
+          ...doc.splitTextToSize(summary.summary, textWidth),
+          '',
+          ...summary.keyPoints.flatMap((point) => doc.splitTextToSize(`•  ${point}`, textWidth)),
+        ]
+        for (const line of summaryLines) {
+          nextLine(16)
+          doc.text(line, marginX, y)
+          y += 16
+        }
+        y += 18
+        nextLine(30)
+        doc.setFont('helvetica', 'bold').setFontSize(13)
+        doc.text('Notes', marginX, y)
+        y += 20
+      }
 
       for (const note of group.notes) {
         nextLine(48)

@@ -46,6 +46,13 @@
         <p class="mt-1.5 line-clamp-2 min-h-[2.6rem] text-[0.86rem] leading-relaxed text-muted-foreground">
           {{ course.subtitle }}
         </p>
+        <p
+          v-if="reason"
+          class="mt-2.5 flex items-start gap-1.5 rounded-xl bg-primary/[0.07] px-2.5 py-1.5 text-[0.78rem] leading-snug text-primary"
+        >
+          <app-icon name="lucide:sparkles" size="13" class="mt-0.5 shrink-0" />
+          <span class="line-clamp-2">{{ reason }}</span>
+        </p>
 
         <div class="mt-3 flex flex-wrap items-center gap-2">
           <span
@@ -122,6 +129,8 @@ export default {
   props: {
     course: { type: Object, required: true },
     wished: { type: Boolean, default: false },
+    /** Optional "why you'd like this" line, shown on recommended courses. */
+    reason: { type: String, default: '' },
   },
   emits: ['toggle-wishlist'],
   data() {

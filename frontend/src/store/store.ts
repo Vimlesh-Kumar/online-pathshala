@@ -383,6 +383,52 @@ const store = createStore({
         async fetchRecommendations(_context) {
             const response = await axios.get('/user/recommendations')
             return response.data.data
+        },
+        async explainRecommendations(_context, courseIds: number[]) {
+            const response = await axios.post('/user/recommendations/explain', { courseIds })
+            return response.data.data
+        },
+        async summarizeCourseNotes(_context, courseId) {
+            const response = await axios.post(`/user/notes/course/${courseId}/summary`)
+            return response.data.data
+        },
+        /**
+         * Stream the AI study tutor's reply, calling `onChunk` as text arrives.
+         * Uses fetch rather than axios because axios can't read a response body
+         * incrementally in the browser. Resolves with the full reply.
+         */
+        async streamStudyTutor(_context, { courseId, lessonId, messages, onChunk, signal }) {
+            const token = localStorage.getItem('token')
+            // Join like axios does, so a base URL with a path prefix (or none) still works.
+            const base = String(axios.defaults.baseURL || '').replace(/\/+$/, '')
+            const response = await fetch(`${base}/user/study-tutor/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { Authorization: `Bearer ${token}` })
+                },
+                body: JSON.stringify({ courseId, lessonId, messages }),
+                signal
+            })
+
+            if (!response.ok || !response.body) {
+                const body = await response.json().catch(() => null)
+                const error: any = new Error(body?.message || 'The tutor is unavailable right now.')
+                error.status = response.status
+                throw error
+            }
+
+            const reader = response.body.getReader()
+            const decoder = new TextDecoder()
+            let reply = ''
+            for (;;) {
+                const { done, value } = await reader.read()
+                if (done) break
+                const text = decoder.decode(value, { stream: true })
+                reply += text
+                onChunk?.(text)
+            }
+            return reply
         }
     },
 

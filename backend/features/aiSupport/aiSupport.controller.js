@@ -79,3 +79,74 @@ export const getRecommendations = async (req, res) => {
         return sendError(res, { statusCode: 500, message: 'Unable to fetch recommendations.' });
     }
 };
+
+/**
+ * AI study tutor: streams a reply as plain text chunks so the learner sees
+ * it being written. Grounded in the course outline and current lesson.
+ * Validation errors are normal JSON responses; once streaming starts, any
+ * failure is handled inside the stream (see streamTutorReply).
+ */
+export const studyTutorChat = async (req, res) => {
+    const courseId = Number.parseInt(req.body?.courseId, 10);
+    const lessonId = Number.parseInt(req.body?.lessonId, 10) || null;
+    const history = aiSupport.sanitizeTutorHistory(req.body?.messages);
+    if (!Number.isInteger(courseId) || courseId <= 0 || !history) {
+        return sendError(res, { statusCode: 400, message: 'A valid course id and a question are required.' });
+    }
+
+    let context;
+    try {
+        context = await aiSupport.loadTutorContext(courseId, lessonId);
+    } catch (err) {
+        console.error(err);
+        return sendError(res, { statusCode: 500, message: 'The tutor is unavailable right now.' });
+    }
+    if (!context) {
+        return sendError(res, { statusCode: 404, message: 'Course not found.' });
+    }
+
+    // If the learner leaves mid-answer, stop generating (and spending quota).
+    const disconnected = new AbortController();
+    res.on('close', () => {
+        if (!res.writableFinished) disconnected.abort();
+    });
+
+    res.status(200).set({
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        // Stops reverse proxies (nginx, Render) from buffering the stream into one chunk.
+        'X-Accel-Buffering': 'no'
+    });
+    res.flushHeaders();
+
+    try {
+        for await (const chunk of aiSupport.streamTutorReply(context, history, disconnected.signal)) {
+            if (disconnected.signal.aborted) break;
+            res.write(chunk);
+        }
+    } catch (err) {
+        console.error(err);
+    } finally {
+        res.end();
+    }
+};
+
+/**
+ * One-line "why you'd like this" for the recommendations on screen.
+ */
+export const explainRecommendations = async (req, res) => {
+    try {
+        const raw = Array.isArray(req.body?.courseIds) ? req.body.courseIds : [];
+        const courseIds = [...new Set(raw.map((id) => Number.parseInt(id, 10)))]
+            .filter((id) => Number.isInteger(id) && id > 0)
+            .slice(0, 12);
+        if (!courseIds.length) {
+            return sendError(res, { statusCode: 400, message: 'At least one course id is required.' });
+        }
+        const result = await aiSupport.explainRecommendations(req.user.id, courseIds);
+        return sendSuccess(res, { message: 'Reasons generated.', data: result });
+    } catch (err) {
+        console.error(err);
+        return sendError(res, { statusCode: 500, message: 'Unable to explain recommendations.' });
+    }
+};

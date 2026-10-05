@@ -125,6 +125,14 @@
             </div>
           </div>
 
+          <study-tutor
+            v-if="course"
+            class="mb-5"
+            :course-id="course.id"
+            :lesson-id="currentLessonId"
+            :lesson-name="currentLesson?.lesson_name || ''"
+          />
+
           <course-announcements v-if="course" :course-id="course.id" class="mb-5" />
 
           <lesson-notes
@@ -248,6 +256,7 @@ import CourseCertificate from './CourseCertificate.vue'
 import CourseAnnouncements from './CourseAnnouncements.vue'
 import LessonNotes from './LessonNotes.vue'
 import PracticeQuiz from './PracticeQuiz.vue'
+import StudyTutor from './StudyTutor.vue'
 import ProgressRing from '../support/ProgressRing.vue'
 import { fireConfetti } from '@/utils/confetti'
 import { useYouTubePlayer } from '@/composables/useYouTubePlayer'
@@ -274,6 +283,7 @@ export default {
     CourseAnnouncements,
     LessonNotes,
     PracticeQuiz,
+    StudyTutor,
     ProgressRing,
     AppIcon,
     DialogRoot,

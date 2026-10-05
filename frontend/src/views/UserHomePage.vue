@@ -115,6 +115,7 @@
         v-if="loadingRecommended || recommended.length"
         :all-courses="recommended"
         :loading="loadingRecommended"
+        :reasons="recommendReasons"
       />
       <div v-else class="glass-panel section-card p-6 text-center">
         <p class="text-muted-foreground">
@@ -148,6 +149,8 @@ export default {
       recommendReason: 'popular',
       recommendBasedOn: [],
       loadingRecommended: true,
+      // course id -> one-line "why you'd like this", filled in after the grid shows.
+      recommendReasons: {},
       learningLinks: [
         { label: 'Flashcards', hint: 'Review what is due today', icon: 'lucide:layers', path: '/user/flashcards' },
         { label: 'Study goals', hint: 'Your weekly plan', icon: 'lucide:target', path: '/user/goals' },
@@ -178,6 +181,23 @@ export default {
       this.recommendBasedOn = rec.basedOn || []
     }
     this.loadingRecommended = false
+    this.loadRecommendReasons()
+  },
+  methods: {
+    /** Not awaited by created(): the cards render first and the reasons appear once ready. */
+    async loadRecommendReasons() {
+      if (!this.recommended.length) return
+      try {
+        const result = await this.$store.dispatch(
+          'explainRecommendations',
+          this.recommended.map((course) => course.id)
+        )
+        this.recommendReasons = result.reasons || {}
+      } catch (error) {
+        // Purely decorative — the recommendations are still useful without reasons.
+        console.error(error)
+      }
+    }
   },
 }
 </script>

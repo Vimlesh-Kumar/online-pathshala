@@ -78,3 +78,84 @@ export const chatComplete = async (messages, options = {}) => {
     if (!text) throw new Error('Groq returned an empty response.');
     return text;
 };
+
+/**
+ * Stream a chat completion from Groq, yielding text deltas as they arrive.
+ *
+ * Only the wait for the first response is bounded by the 12s timeout — once
+ * tokens are flowing a long answer is allowed to finish. An `abortSignal`
+ * (e.g. the learner closing the tab) stops the upstream request too, so an
+ * abandoned answer stops spending the free-tier quota.
+ *
+ * @param {Array<{role: 'system'|'user'|'assistant', content: string}>} messages
+ * @param {{temperature?: number, maxTokens?: number, abortSignal?: AbortSignal}} [options]
+ * @returns {AsyncGenerator<string>}
+ * @throws before the first delta when the key is missing or Groq rejects the request
+ */
+export async function* chatStream(messages, options = {}) {
+    if (!isConfigured()) {
+        throw new Error('GROQ_API_KEY is not configured.');
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    const onCallerAbort = () => controller.abort();
+    options.abortSignal?.addEventListener('abort', onCallerAbort);
+
+    try {
+        let response;
+        try {
+            response = await fetch(GROQ_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${process.env.GROQ_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: DEFAULT_MODEL,
+                    messages,
+                    temperature: options.temperature ?? 0.4,
+                    max_tokens: options.maxTokens ?? 700,
+                    stream: true
+                }),
+                signal: controller.signal
+            });
+        } finally {
+            clearTimeout(timeout);
+        }
+
+        if (!response.ok) {
+            const errorBody = await response.text().catch(() => '');
+            throw new Error(`Groq API error ${response.status}: ${errorBody.slice(0, 300)}`);
+        }
+
+        // Groq streams OpenAI-style server-sent events: `data: {json}` lines,
+        // terminated by `data: [DONE]`. A network chunk can end mid-line, so
+        // the trailing partial line is carried over to the next chunk.
+        const decoder = new TextDecoder();
+        let buffered = '';
+        for await (const chunk of response.body) {
+            buffered += decoder.decode(chunk, { stream: true });
+            const lines = buffered.split('\n');
+            buffered = lines.pop();
+
+            for (const line of lines) {
+                const payload = line.trim();
+                if (!payload.startsWith('data:')) continue;
+                const data = payload.slice(5).trim();
+                if (data === '[DONE]') return;
+
+                let parsed;
+                try {
+                    parsed = JSON.parse(data);
+                } catch {
+                    continue;
+                }
+                const delta = parsed.choices?.[0]?.delta?.content;
+                if (delta) yield delta;
+            }
+        }
+    } finally {
+        options.abortSignal?.removeEventListener('abort', onCallerAbort);
+    }
+}

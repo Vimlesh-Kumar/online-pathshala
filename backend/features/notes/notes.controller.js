@@ -129,3 +129,25 @@ export const deleteNote = async (req, res) => {
         return sendError(res, { statusCode: 500, message: 'Unable to delete note.' });
     }
 };
+
+/**
+ * AI study summary of the user's notes in one course.
+ */
+export const summarizeCourseNotes = async (req, res) => {
+    try {
+        const courseId = parseId(req.params.courseId);
+        if (!courseId) {
+            return sendError(res, { statusCode: 400, message: 'A valid course id is required.' });
+        }
+
+        const summary = await notesService.summarizeCourseNotes({ userId: req.user.id, courseId });
+        if (!summary) {
+            return sendError(res, { statusCode: 404, message: 'You have no notes in this course yet.' });
+        }
+
+        return sendSuccess(res, { message: 'Summary generated.', data: summary });
+    } catch (error) {
+        console.error(error);
+        return sendError(res, { statusCode: 500, message: 'Unable to summarize your notes.' });
+    }
+};
