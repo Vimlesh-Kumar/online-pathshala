@@ -151,3 +151,22 @@ export const summarizeCourseNotes = async (req, res) => {
         return sendError(res, { statusCode: 500, message: 'Unable to summarize your notes.' });
     }
 };
+
+/**
+ * Tidy a note draft (spelling, grammar, bullets) without saving it.
+ */
+export const tidyNote = async (req, res) => {
+    try {
+        const content = parseContent(req.body?.content);
+        if (!content) {
+            return sendError(res, { statusCode: 400, message: 'Write something first, then tidy it up.' });
+        }
+        const lessonName = String(req.body?.lesson_name ?? '').trim().slice(0, 200);
+
+        const result = await notesService.tidyNote(content, lessonName);
+        return sendSuccess(res, { message: 'Note tidied.', data: result });
+    } catch (error) {
+        console.error(error);
+        return sendError(res, { statusCode: 500, message: 'Unable to tidy this note.' });
+    }
+};

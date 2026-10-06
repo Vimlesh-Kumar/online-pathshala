@@ -87,3 +87,44 @@ export const getCoursesByIds = async (courseIds) => {
         )
         .whereIn('c.id', courseIds);
 };
+
+/** Escape LIKE wildcards so a search term is matched literally. */
+const likeEscape = (term) => term.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+
+/**
+ * Courses matching any of the keywords, best match first: a keyword in the
+ * title counts more than one in the subtitle, and the suggested category adds
+ * a smaller boost (and lets category-only searches return something).
+ */
+export const searchByKeywords = async (keywords, category, limit) => {
+    const patterns = keywords.map((k) => `%${likeEscape(k)}%`);
+    if (!patterns.length && !category) return [];
+
+    const scoreParts = [];
+    const bindings = [];
+    for (const pattern of patterns) {
+        scoreParts.push('(CASE WHEN c.title LIKE ? THEN 3 ELSE 0 END) + (CASE WHEN c.subtitle LIKE ? THEN 1 ELSE 0 END)');
+        bindings.push(pattern, pattern);
+    }
+    if (category) {
+        scoreParts.push('(CASE WHEN c.category = ? THEN 2 ELSE 0 END)');
+        bindings.push(category);
+    }
+
+    return pool('courses as c')
+        .select(
+            'c.*',
+            pool.raw('(SELECT COUNT(*) FROM enrollment e WHERE e.course_id = c.id) AS enrolled_students'),
+            pool.raw(`(${scoreParts.join(' + ')}) AS match_score`, bindings)
+        )
+        .where((builder) => {
+            for (const pattern of patterns) {
+                builder.orWhere('c.title', 'like', pattern).orWhere('c.subtitle', 'like', pattern);
+            }
+            if (category) builder.orWhere('c.category', category);
+        })
+        .orderBy('match_score', 'desc')
+        .orderBy('c.rating', 'desc')
+        .orderBy('c.id', 'desc')
+        .limit(limit);
+};

@@ -342,6 +342,10 @@ const store = createStore({
             const response = await axios.get(`/course/${courseId}/reviews`)
             return response.data.data
         },
+        async fetchReviewHighlights(_context, courseId) {
+            const response = await axios.get(`/course/${courseId}/reviews/highlights`)
+            return response.data.data
+        },
         async postReview(_context, { courseId, rating, content }) {
             await axios.post(`/course/${courseId}/reviews`, { rating, content })
         },
@@ -386,6 +390,14 @@ const store = createStore({
         },
         async explainRecommendations(_context, courseIds: number[]) {
             const response = await axios.post('/user/recommendations/explain', { courseIds })
+            return response.data.data
+        },
+        async smartSearch(_context, query) {
+            const response = await axios.get('/courses/smart-search', { params: { q: query } })
+            return response.data.data
+        },
+        async tidyNote(_context, { content, lessonName }) {
+            const response = await axios.post('/user/notes/tidy', { content, lesson_name: lessonName })
             return response.data.data
         },
         async summarizeCourseNotes(_context, courseId) {

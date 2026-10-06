@@ -13,14 +13,22 @@ import { sendError } from '../../utils/apiResponse.js';
 const hitsByKey = new Map();
 
 /**
+ * Behind a hosting proxy `req.ip` is the proxy itself, which would put every
+ * anonymous visitor in one bucket. The first X-Forwarded-For hop is the client.
+ * It can be spoofed, which is acceptable for a soft guard like this one.
+ */
+const clientIp = (req) => req.get('x-forwarded-for')?.split(',')[0].trim() || req.ip;
+
+/**
  * Express middleware allowing `limit` requests per user per `windowMs`.
- * Must run after auth.checkToken so `req.user.id` is set.
+ * Signed-in routes are limited per account (run it after auth.checkToken);
+ * public routes fall back to the caller's IP address.
  *
  * @param {string} bucket - name shared by the routes that draw on one budget
  * @param {{limit: number, windowMs: number}} options
  */
 export const aiQuota = (bucket, { limit, windowMs }) => (req, res, next) => {
-    const key = `${bucket}:${req.user?.id}`;
+    const key = `${bucket}:${req.user?.id ? `user:${req.user.id}` : `ip:${clientIp(req)}`}`;
     const now = Date.now();
     const recent = (hitsByKey.get(key) || []).filter((at) => now - at < windowMs);
 

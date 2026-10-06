@@ -150,3 +150,21 @@ export const explainRecommendations = async (req, res) => {
         return sendError(res, { statusCode: 500, message: 'Unable to explain recommendations.' });
     }
 };
+
+/**
+ * "Describe what you want to learn" search, used when a plain keyword search
+ * finds nothing.
+ */
+export const smartSearch = async (req, res) => {
+    try {
+        const query = String(req.query?.q || '').trim().slice(0, 300);
+        if (!query) {
+            return sendError(res, { statusCode: 400, message: 'Tell us what you want to learn.' });
+        }
+        const result = await aiSupport.smartSearch(query);
+        return sendSuccess(res, { message: 'Search results fetched.', data: result });
+    } catch (err) {
+        console.error(err);
+        return sendError(res, { statusCode: 500, message: 'Unable to search right now.' });
+    }
+};

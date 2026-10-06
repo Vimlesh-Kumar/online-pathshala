@@ -13,6 +13,12 @@ router.post(
     aiQuota('notes-summary', { limit: 10, windowMs: 10 * 60 * 1000 }),
     notesController.summarizeCourseNotes
 );
+router.post(
+    '/tidy',
+    auth.checkToken,
+    aiQuota('notes-tidy', { limit: 30, windowMs: 10 * 60 * 1000 }),
+    notesController.tidyNote
+);
 router.post('/', auth.checkToken, notesController.createNote);
 router.patch('/:noteId', auth.checkToken, notesController.updateNote);
 router.delete('/:noteId', auth.checkToken, notesController.deleteNote);

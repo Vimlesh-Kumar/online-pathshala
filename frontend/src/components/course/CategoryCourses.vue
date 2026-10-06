@@ -129,9 +129,34 @@
       <all-courses v-if="loading" :all-courses="[]" :loading="true" />
 
       <template v-else-if="courses.length > 0">
+        <!-- Shown when an exact search found nothing and we searched by meaning instead. -->
+        <div
+          v-if="smartMatch"
+          class="mb-6 flex flex-wrap items-start gap-3 rounded-2xl border border-primary/20 bg-primary/[0.06] p-4"
+        >
+          <app-icon name="lucide:compass" size="20" class="mt-0.5 shrink-0 text-primary" />
+          <div class="min-w-0 flex-1 text-sm">
+            <p>
+              Nothing is titled “{{ localSearchQuery }}”, so here are courses for what you described:
+              <strong>{{ smartMatch.topic || smartMatch.keywords.join(', ') }}</strong>
+              <template v-if="smartMatch.category">in {{ smartMatch.category }}</template>.
+            </p>
+            <div v-if="smartMatch.keywords.length" class="mt-2 flex flex-wrap gap-1.5">
+              <span
+                v-for="keyword in smartMatch.keywords"
+                :key="keyword"
+                class="rounded-full bg-foreground/[0.06] px-2.5 py-0.5 text-xs text-muted-foreground"
+              >
+                {{ keyword }}
+              </span>
+            </div>
+          </div>
+        </div>
+
         <all-courses :all-courses="courses" />
 
         <pagination
+          v-if="!smartMatch"
           v-slot="{ page: currentPage }"
           v-model:page="page"
           class="mt-10"
@@ -170,7 +195,9 @@
       >
         <app-icon name="lucide:search-x" size="60" class="mx-auto mb-4 text-primary" />
         <h2 class="mb-3 font-display text-2xl font-bold">No courses matched your filters.</h2>
-        <p class="mb-6 text-muted-foreground">Try a broader search or switch to another category.</p>
+        <p class="mb-6 text-muted-foreground">
+          Try fewer words, or describe what you want to learn — like “I want to build a website”.
+        </p>
         <button class="btn-brand mx-auto" @click="resetFilters">Clear filters</button>
       </div>
     </section>
@@ -240,7 +267,9 @@ export default {
       localCategory: 'All',
       showMoreFilters: false,
       priceRange: [0, 5000],
-      minRating: 0
+      minRating: 0,
+      // Set when results come from the meaning-based search: { topic, keywords, category }.
+      smartMatch: null
     }
   },
   computed: {
@@ -306,6 +335,13 @@ export default {
         const response = await axios.get(url, { params })
         this.courses = response.data.data || []
         this.total = response.data.meta?.total || 0
+        this.smartMatch = null
+
+        // A sentence like "I want to build websites" never matches a title word
+        // for word — rather than a dead end, search for what it means.
+        if (!this.courses.length && this.localSearchQuery && this.localCategory === 'All' && this.page === 1) {
+          await this.searchByMeaning()
+        }
       } catch (error) {
         console.error('Error fetching courses:', error)
         this.courses = []
@@ -313,6 +349,26 @@ export default {
       } finally {
         this.loading = false
         window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    },
+    async searchByMeaning() {
+      try {
+        const result = await this.$store.dispatch('smartSearch', this.localSearchQuery)
+        // The meaning search doesn't take filters, so apply the active ones here.
+        const [minPrice, maxPrice] = this.priceRange
+        const courses = (result.courses || []).filter(
+          (c) =>
+            Number(c.price || 0) >= minPrice &&
+            Number(c.price || 0) <= maxPrice &&
+            Number(c.rating || 0) >= this.minRating
+        )
+        if (!courses.length) return
+        this.courses = courses
+        this.total = courses.length
+        this.smartMatch = result.interpretation
+      } catch (error) {
+        // Not fatal: the normal "no results" state is still shown.
+        console.error('Smart search failed:', error)
       }
     },
     handleSortChange() {

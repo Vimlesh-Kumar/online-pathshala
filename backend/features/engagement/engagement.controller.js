@@ -25,6 +25,23 @@ export const listReviews = async (req, res) => {
     }
 };
 
+/**
+ * "What learners are saying" summary for the course page.
+ * Data is null (not an error) when there are too few reviews to summarise.
+ */
+export const reviewHighlights = async (req, res) => {
+    try {
+        const courseId = parseId(req.params.id);
+        if (!courseId) return sendError(res, { statusCode: 400, message: 'Invalid course id.' });
+
+        const highlights = await engagement.getReviewHighlights(courseId);
+        return sendSuccess(res, { message: 'Review highlights fetched.', data: highlights });
+    } catch (err) {
+        console.error(err);
+        return sendError(res, { statusCode: 500, message: 'Unable to summarize reviews.' });
+    }
+};
+
 export const postReview = async (req, res) => {
     try {
         const courseId = parseId(req.params.id);

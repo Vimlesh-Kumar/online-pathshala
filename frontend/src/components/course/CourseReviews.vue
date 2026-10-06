@@ -9,6 +9,47 @@
       </div>
     </div>
 
+    <!-- What learners are saying -->
+    <div
+      v-if="highlights"
+      class="mb-6 rounded-[18px] border border-black/5 bg-foreground/[0.03] p-5 dark:border-white/10"
+    >
+      <div class="mb-2 text-xs font-extrabold tracking-widest text-muted-foreground uppercase">
+        What learners are saying
+      </div>
+      <p class="mb-3 leading-relaxed font-semibold">{{ highlights.headline }}</p>
+
+      <div v-if="highlights.liked.length || highlights.watchOut.length" class="grid gap-4 sm:grid-cols-2">
+        <div v-if="highlights.liked.length">
+          <div class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+            <app-icon name="lucide:thumbs-up" size="15" /> People liked
+          </div>
+          <ul class="grid gap-1 text-sm text-muted-foreground">
+            <li v-for="point in highlights.liked" :key="point">{{ point }}</li>
+          </ul>
+        </div>
+        <div v-if="highlights.watchOut.length">
+          <div class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-amber-600 dark:text-amber-400">
+            <app-icon name="lucide:info" size="15" /> Worth knowing
+          </div>
+          <ul class="grid gap-1 text-sm text-muted-foreground">
+            <li v-for="point in highlights.watchOut" :key="point">{{ point }}</li>
+          </ul>
+        </div>
+      </div>
+
+      <blockquote
+        v-if="highlights.quote"
+        class="border-l-2 border-primary/40 pl-3 text-sm text-muted-foreground italic"
+      >
+        “{{ highlights.quote.text }}” — {{ highlights.quote.author }}
+      </blockquote>
+
+      <p v-if="highlights.source === 'ai'" class="mt-3 text-[0.7rem] text-muted-foreground">
+        Summarised from {{ stats.count }} reviews by AI, so it may miss some details.
+      </p>
+    </div>
+
     <!-- Write a review -->
     <div
       v-if="user"
@@ -73,7 +114,14 @@ export default {
   components: { AppField, AppIcon, StarRating },
   props: { courseId: { type: [Number, String], required: true } },
   data() {
-    return { reviews: [], stats: { count: 0, average: 0 }, myRating: 0, myContent: '', submitting: false }
+    return {
+      reviews: [],
+      stats: { count: 0, average: 0 },
+      highlights: null,
+      myRating: 0,
+      myContent: '',
+      submitting: false
+    }
   },
   computed: {
     ...mapGetters(['user']),
@@ -89,6 +137,20 @@ export default {
       const data = await this.$store.dispatch('fetchReviews', this.courseId)
       this.reviews = data.reviews
       this.stats = data.stats
+      this.loadHighlights()
+    },
+    /** Loaded after the reviews so a slow summary never holds up the list. */
+    async loadHighlights() {
+      if (this.reviews.length < 3) {
+        this.highlights = null
+        return
+      }
+      try {
+        this.highlights = await this.$store.dispatch('fetchReviewHighlights', this.courseId)
+      } catch (error) {
+        // Optional extra — the reviews themselves are already on screen.
+        console.error(error)
+      }
     },
     async submit() {
       if (!this.myRating) return

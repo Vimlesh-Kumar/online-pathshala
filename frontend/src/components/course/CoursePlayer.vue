@@ -129,18 +129,23 @@
             v-if="course"
             class="mb-5"
             :course-id="course.id"
+            :course-title="course.title"
             :lesson-id="currentLessonId"
             :lesson-name="currentLesson?.lesson_name || ''"
+            :get-timestamp="playerReady ? currentTime : null"
+            @note-saved="$refs.lessonNotes?.addNote($event)"
           />
 
           <course-announcements v-if="course" :course-id="course.id" class="mb-5" />
 
           <lesson-notes
             v-if="course && currentLessonId"
+            ref="lessonNotes"
             :key="course.id"
             class="mb-5"
             :course-id="course.id"
             :lesson-id="currentLessonId"
+            :lesson-name="currentLesson?.lesson_name || ''"
             :get-timestamp="playerReady ? currentTime : null"
             @jump="jumpToNote"
           />

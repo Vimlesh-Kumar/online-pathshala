@@ -49,7 +49,7 @@
             v-model="searchQuery"
             type="search"
             aria-label="Search courses"
-            placeholder="Search courses, topics, instructors"
+            placeholder="What do you want to learn today?"
             class="h-11 w-full rounded-full border border-white/10 bg-foreground/5 pr-16 pl-11 text-sm outline-none transition placeholder:text-muted-foreground focus:border-primary/50 focus:bg-foreground/[0.07] focus:ring-3 focus:ring-primary/20"
             @keyup.enter="handleSearch"
           />
@@ -191,7 +191,7 @@
                     v-model="searchQuery"
                     type="search"
                     aria-label="Search courses"
-                    placeholder="Search courses"
+                    placeholder="What do you want to learn?"
                     class="h-11 w-full rounded-full border border-white/10 bg-foreground/5 pr-4 pl-11 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
                     @keyup.enter="handleSearch"
                   />

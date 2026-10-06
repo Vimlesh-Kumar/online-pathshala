@@ -190,3 +190,57 @@ export const summarizeCourseNotes = async ({ userId, courseId }) => {
 
     return { ...summarizeRuleBased(courseTitle, notes), source: 'basic' };
 };
+
+// ── "Tidy up" a quick note ──────────────────────────────────────────────────
+
+/**
+ * Free fallback: tidy whitespace, capitalise each line, fix a lone "i", and
+ * turn several lines into bullets. Words are never changed or added.
+ */
+const tidyRuleBased = (text) => {
+    const lines = String(text)
+        .split('\n')
+        .map((line) => line.replace(/\s+/g, ' ').trim().replace(/^[-*•]\s*/, ''))
+        .filter(Boolean)
+        .map((line) => line.replace(/(^|\s)i(?=\s|'|$)/g, '$1I'))
+        .map((line) => line.charAt(0).toUpperCase() + line.slice(1));
+
+    return lines.length > 1 ? lines.map((line) => `- ${line}`).join('\n') : (lines[0] || '');
+};
+
+const tidyWithGroq = async (text, lessonName) => {
+    const raw = await groq.chatComplete([
+        {
+            role: 'system',
+            content: "You tidy up a learner's quick note taken while watching a lecture. Fix spelling, grammar and " +
+                'capitalisation, expand obvious shorthand, and put separate points on their own "- " bullet lines. ' +
+                'Keep their meaning and voice, keep any code exactly as written, and never add information that is ' +
+                'not in the note. Plain text only — no headings or bold. Reply with ONLY a JSON object: {"text": string}.'
+        },
+        { role: 'user', content: `${lessonName ? `Lesson: ${lessonName}\n` : ''}Note:\n${text}` }
+    ], { json: true, temperature: 0.2, maxTokens: 800 });
+
+    const parsed = JSON.parse(raw);
+    const tidied = typeof parsed.text === 'string' ? parsed.text.trim() : '';
+    if (!tidied) throw new Error('Groq returned an empty note.');
+    return tidied.slice(0, MAX_NOTE_LENGTH);
+};
+
+/**
+ * Clean up a note draft before it is saved. Nothing is stored here — the
+ * learner sees the result in the composer and can undo it.
+ *
+ * @param {string} text - the draft, already trimmed and length-capped
+ * @param {string} [lessonName] - helps expand shorthand ("fn" in a JS lesson)
+ * @returns {Promise<{text: string, source: 'ai'|'basic'}>}
+ */
+export const tidyNote = async (text, lessonName) => {
+    if (groq.isConfigured()) {
+        try {
+            return { text: await tidyWithGroq(text, lessonName), source: 'ai' };
+        } catch (err) {
+            console.warn('[notes] Groq tidy failed, using rule-based cleanup:', err.message);
+        }
+    }
+    return { text: tidyRuleBased(text), source: 'basic' };
+};

@@ -8,6 +8,13 @@ import { aiQuota } from './aiQuota.js';
 router.post('/support/ask', aiSupport.askSupport);
 router.get('/support/faqs', aiSupport.listFaqs);
 
+// "Describe what you want to learn" search (public, so limited per IP)
+router.get(
+    '/courses/smart-search',
+    aiQuota('smart-search', { limit: 30, windowMs: 10 * 60 * 1000 }),
+    aiSupport.smartSearch
+);
+
 // Course-scoped content search ("ask about this course")
 router.post('/course/:id/ask', aiSupport.askAboutCourse);
 

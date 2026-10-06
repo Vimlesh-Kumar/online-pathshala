@@ -64,14 +64,38 @@
         <span class="text-xs text-muted-foreground">
           {{ draft.length }}/2000 · Ctrl + Enter to save
         </span>
-        <button class="btn-brand" :disabled="saving || !draft.trim()" @click="save">
-          <app-icon
-            :name="saving ? 'lucide:loader-circle' : 'lucide:notebook-pen'"
-            size="18"
-            :class="saving ? 'animate-spin' : ''"
-          />
-          Save note
-        </button>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            v-if="undoDraft !== null"
+            class="inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
+            title="Put back what you wrote"
+            @click="undoTidy"
+          >
+            <app-icon name="lucide:undo-2" size="16" /> Undo tidy
+          </button>
+          <button
+            v-else
+            class="inline-flex items-center gap-1.5 rounded-full border border-black/10 px-4 py-2.5 text-sm font-semibold transition-colors hover:border-primary/50 disabled:opacity-50 dark:border-white/15"
+            title="Fix spelling and grammar, and turn separate points into bullets"
+            :disabled="tidying || draft.trim().length < 10"
+            @click="tidy"
+          >
+            <app-icon
+              :name="tidying ? 'lucide:loader-circle' : 'lucide:wand'"
+              size="16"
+              :class="tidying ? 'animate-spin' : ''"
+            />
+            Tidy up
+          </button>
+          <button class="btn-brand" :disabled="saving || !draft.trim()" @click="save">
+            <app-icon
+              :name="saving ? 'lucide:loader-circle' : 'lucide:notebook-pen'"
+              size="18"
+              :class="saving ? 'animate-spin' : ''"
+            />
+            Save note
+          </button>
+        </div>
       </div>
     </div>
 
@@ -166,6 +190,8 @@ export default {
      * still saved — just without a timestamp.
      */
     getTimestamp: { type: Function, default: null },
+    /** Gives "Tidy up" context, so shorthand like "fn" is read the right way. */
+    lessonName: { type: String, default: '' },
   },
   emits: ['jump'],
   data() {
@@ -179,6 +205,10 @@ export default {
       editDraft: '',
       busyId: null,
       scope: 'lesson',
+      tidying: false,
+      // The draft as it was before "Tidy up", kept until the learner edits the tidied text.
+      undoDraft: null,
+      tidiedDraft: '',
     }
   },
   computed: {
@@ -202,12 +232,15 @@ export default {
     lessonId() {
       // A new lesson starts a fresh note — the old timestamp no longer applies.
       this.draftTimestamp = null
+      this.undoDraft = null
       this.cancelEdit()
     },
     draft(value) {
       // Stamp the note at the moment the user starts writing, not at the moment
       // they finish — by then the video has moved on.
       if (value && this.draftTimestamp === null) this.captureTimestamp()
+      // Once they start changing the tidied text, "undo" would throw that away.
+      if (this.undoDraft !== null && value !== this.tidiedDraft) this.undoDraft = null
     },
   },
   created() {
@@ -223,6 +256,38 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+    /** Called by the player when a note is saved from elsewhere (e.g. the tutor). */
+    addNote(note) {
+      this.notes = [...this.notes, note].sort(
+        (a, b) => a.lesson_id - b.lesson_id || a.timestamp_seconds - b.timestamp_seconds,
+      )
+    },
+    async tidy() {
+      const original = this.draft
+      this.tidying = true
+      try {
+        const result = await this.$store.dispatch('tidyNote', {
+          content: original.trim(),
+          lessonName: this.lessonName,
+        })
+        if (!result?.text || result.text === original.trim()) {
+          toast.info('That note already looks tidy.')
+          return
+        }
+        this.tidiedDraft = result.text
+        this.draft = result.text
+        this.undoDraft = original
+      } catch (error) {
+        console.error(error)
+        toast.error(error?.response?.data?.message || 'Could not tidy this note.')
+      } finally {
+        this.tidying = false
+      }
+    },
+    undoTidy() {
+      this.draft = this.undoDraft
+      this.undoDraft = null
     },
     captureTimestamp() {
       // Without a live player there is no position to stamp — leave it unset so
@@ -243,10 +308,9 @@ export default {
           content,
         })
         // Keep the local list in playback order without a round trip.
-        this.notes = [...this.notes, note].sort(
-          (a, b) => a.lesson_id - b.lesson_id || a.timestamp_seconds - b.timestamp_seconds,
-        )
+        this.addNote(note)
         this.draft = ''
+        this.undoDraft = null
         this.draftTimestamp = null
         toast.success('Note saved.')
       } catch (error) {

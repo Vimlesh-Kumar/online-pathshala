@@ -48,9 +48,9 @@
         </p>
         <p
           v-if="reason"
-          class="mt-2.5 flex items-start gap-1.5 rounded-xl bg-primary/[0.07] px-2.5 py-1.5 text-[0.78rem] leading-snug text-primary"
+          class="mt-2.5 flex items-start gap-1.5 border-l-2 border-primary/50 pl-2.5 text-[0.78rem] leading-snug text-foreground/80"
+          :title="reason"
         >
-          <app-icon name="lucide:sparkles" size="13" class="mt-0.5 shrink-0" />
           <span class="line-clamp-2">{{ reason }}</span>
         </p>
 

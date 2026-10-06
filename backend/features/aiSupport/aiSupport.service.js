@@ -456,3 +456,128 @@ export const explainRecommendations = async (userId, courseIds) => {
 
     return { reasons: ruleBased, source: 'basic' };
 };
+
+// ── Smart search: "describe what you want to learn" ─────────────────────────
+
+const SMART_SEARCH_LIMIT = 12;
+const SMART_SEARCH_CACHE_SECONDS = 24 * 60 * 60;
+
+/** Words that describe the wish, not the topic ("I want to start learning…"). */
+const SEARCH_FILLER = new Set([
+    ...STOPWORDS, 'want', 'wanna', 'learn', 'learning', 'like', 'would', 'need', 'help', 'me', 'with', 'and', 'or',
+    'some', 'something', 'become', 'better', 'start', 'starting', 'beginner', 'beginners', 'basics', 'basic', 'good',
+    'best', 'really', 'im', 'know', 'using', 'use', 'be', 'able', 'from', 'at', 'it', 'that', 'which', 'teach',
+    'courses', 'class', 'classes', 'tutorial', 'tutorials', 'make', 'making', 'way', 'ways', 'get', 'into', 'more',
+    'new', 'skills', 'skill', 'easy', 'quick', 'quickly', 'free', 'online', 'scratch', 'zero', 'pro', 'own',
+    'build', 'building', 'create', 'creating', 'understand', 'understanding', 'master', 'mastering', 'improve',
+    'study', 'studying', 'interested', 'trying', 'try', 'about', 'things', 'thing', 'stuff', 'job', 'career'
+]);
+
+/**
+ * Everyday words mapped onto how the catalog titles things ("website" never
+ * appears in a title, "Web Development" does). Only the free fallback needs
+ * this — Groq already knows "website" means web development.
+ */
+const TOPIC_SYNONYMS = {
+    website: ['web'], websites: ['web'], webpage: ['web'], site: ['web'], frontend: ['web', 'react'],
+    backend: ['node', 'api'], app: ['android', 'ios', 'flutter'], apps: ['android', 'ios', 'flutter'],
+    mobile: ['android', 'ios', 'flutter'], ai: ['machine learning', 'ai'], ml: ['machine learning'],
+    data: ['data science', 'data analysis'], game: ['unity', 'game'], games: ['unity', 'game'],
+    investing: ['invest'], stocks: ['stock'], shares: ['stock'], spreadsheet: ['excel'], spreadsheets: ['excel'],
+    photos: ['photography'], photo: ['photography'], videos: ['video'], logo: ['logo', 'branding'],
+    singing: ['vocal', 'singing'], workout: ['fitness'], weight: ['fitness', 'nutrition']
+};
+
+/**
+ * Everyday words that point at a catalog category, so the free fallback can
+ * still tell "build a website" is a Development search.
+ */
+const CATEGORY_HINTS = {
+    Development: ['code', 'coding', 'program', 'programming', 'developer', 'website', 'websites', 'web', 'app', 'apps', 'software', 'python', 'javascript', 'java', 'react', 'sql', 'html', 'css'],
+    Finance: ['money', 'invest', 'investing', 'investment', 'stock', 'stocks', 'trading', 'crypto', 'accounting', 'budget', 'finance'],
+    Health: ['fitness', 'yoga', 'diet', 'nutrition', 'workout', 'health', 'meditation', 'weight', 'sleep'],
+    Music: ['guitar', 'piano', 'singing', 'sing', 'music', 'drums', 'song', 'songs', 'violin'],
+    Business: ['business', 'marketing', 'startup', 'management', 'sales', 'leadership', 'entrepreneur'],
+    Design: ['design', 'designer', 'photoshop', 'figma', 'logo', 'ui', 'ux', 'illustrator', 'graphic', 'graphics'],
+    PhotoVideo: ['photo', 'photos', 'photography', 'camera', 'video', 'videos', 'editing', 'filmmaking', 'youtube'],
+    'Real Estate': ['property', 'properties', 'house', 'realestate', 'rental', 'landlord', 'mortgage'],
+    Office: ['excel', 'word', 'powerpoint', 'spreadsheet', 'spreadsheets', 'office', 'outlook', 'typing']
+};
+const CATALOG_CATEGORIES = Object.keys(CATEGORY_HINTS);
+
+const interpretSearchRuleBased = (query) => {
+    const tokens = tokenize(query);
+    const topicWords = tokens.filter((t) => t.length > 1 && !SEARCH_FILLER.has(t));
+    const keywords = [...new Set([
+        ...topicWords,
+        ...topicWords.flatMap((t) => TOPIC_SYNONYMS[t] || [])
+    ])].slice(0, 6);
+
+    const lowered = ` ${String(query).toLowerCase()} `;
+    let category = CATALOG_CATEGORIES.find((c) => lowered.includes(` ${c.toLowerCase()} `)) || null;
+    if (!category) {
+        category = CATALOG_CATEGORIES.find((c) => CATEGORY_HINTS[c].some((hint) => tokens.includes(hint))) || null;
+    }
+
+    return { topic: topicWords.slice(0, 4).join(' '), keywords, category };
+};
+
+const interpretSearchWithGroq = async (query) => {
+    const raw = await groq.chatComplete([
+        {
+            role: 'system',
+            content: "You turn a learner's description of what they want to learn into search terms for an " +
+                'online course catalog. Reply with ONLY a JSON object: {"topic": string (2-5 lowercase words naming ' +
+                'what they want to learn), "keywords": string[] (2-6 single words or short phrases likely to appear ' +
+                'in course titles, most specific first), "category": one of ' +
+                `${JSON.stringify(CATALOG_CATEGORIES)} or null}.`
+        },
+        { role: 'user', content: query }
+    ], { json: true, temperature: 0.2, maxTokens: 200 });
+
+    const parsed = JSON.parse(raw);
+    const keywords = (Array.isArray(parsed.keywords) ? parsed.keywords : [])
+        .filter((k) => typeof k === 'string' && k.trim())
+        .map((k) => k.trim().toLowerCase().slice(0, 40))
+        .slice(0, 6);
+    if (!keywords.length) throw new Error('Groq returned no keywords.');
+
+    return {
+        topic: typeof parsed.topic === 'string' && parsed.topic.trim() ? parsed.topic.trim().slice(0, 60) : keywords.join(' '),
+        keywords,
+        category: CATALOG_CATEGORIES.includes(parsed.category) ? parsed.category : null
+    };
+};
+
+/**
+ * Search for a learner who describes what they want ("I want to build my own
+ * website") instead of typing a course title. Groq turns the sentence into
+ * keywords and a category when configured; otherwise stopword stripping and
+ * everyday category hints do the same job more roughly. Either way the
+ * results are real catalog rows ranked by how well they match.
+ *
+ * @param {string} query
+ * @returns {Promise<{courses: object[], interpretation: {topic: string, keywords: string[], category: string|null}, source: 'ai'|'basic'}>}
+ */
+export const smartSearch = async (query) => {
+    let interpretation = null;
+    let source = 'basic';
+
+    if (groq.isConfigured()) {
+        const cacheKey = `ai:smart-search:${tokenize(query).join(' ').slice(0, 200)}`;
+        try {
+            const cached = await cacheService.get(cacheKey);
+            interpretation = cached ? JSON.parse(cached) : await interpretSearchWithGroq(query);
+            if (!cached) await cacheService.set(cacheKey, interpretation, SMART_SEARCH_CACHE_SECONDS);
+            source = 'ai';
+        } catch (err) {
+            console.warn('[aiSupport] Groq search interpretation failed, using rule-based:', err.message);
+        }
+    }
+    if (!interpretation) interpretation = interpretSearchRuleBased(query);
+
+    const courses = await aiSupportRepository.searchByKeywords(
+        interpretation.keywords, interpretation.category, SMART_SEARCH_LIMIT
+    );
+    return { courses, interpretation, source };
+};
